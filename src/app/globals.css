@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  /* === 境曜品牌色 === */
+  --color-primary: #4A4947;        /* 深灰棕 - 標題文字、按鈕跳色 */
+  --color-cta: #AA7452;            /* 暖棕色 - CTA 按鈕 */
+  --color-cta-hover: #8F5F43;      /* CTA hover */
+  --color-accent: #DBD2C2;         /* 暖米色 - 次要強調、手機橫幅 */
+  --color-accent-hover: #C9BFAE;   /* 強調 hover */
+  --color-bg: #F9F7F0;             /* 主要背景色 - 頁面背景 */
+  --color-bg-light: #FFFFFF;       /* 白色 - 卡片背景 */
+  --color-white: #FFFFFF;
+  --color-dark: #3A3937;           /* 更深的主色 */
+  --color-mobile-nav: #DBD2C2;     /* 手機選單橫幅 */
+  /* === 字體 === */
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Noto Sans TC", sans-serif;
+  /* === 自訂 transition === */
+  --transition-duration-1500: 1500ms;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* 滾動動畫 */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeFromLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeFromRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-on-scroll,
+.animate-from-left,
+.animate-from-right {
+  opacity: 0;
+  animation-duration: 0.6s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  animation-play-state: paused;
+}
+
+.animate-on-scroll { animation-name: fadeUp; }
+.animate-from-left { animation-name: fadeFromLeft; }
+.animate-from-right { animation-name: fadeFromRight; }
+
+.animate-on-scroll.is-visible,
+.animate-from-left.is-visible,
+.animate-from-right.is-visible {
+  animation-play-state: running;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+
+
+
+/* Squish Button Effect */
+.squish-btn {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.squish-btn:active {
+  transform: scale(0.88);
+  transition: transform 0.08s ease-out;
+}
+.squish-btn:hover {
+  opacity: 0.9;
+}
+
+/* Product Card */
+
+/* Cases Infinite Scroll */
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll {
+  animation: scroll 45s linear infinite;
+}
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+.animate-scroll-slow {
+  animation: scroll-reverse 35s linear infinite;
+}
+.animate-scroll-slow:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
