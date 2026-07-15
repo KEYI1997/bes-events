@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceClient } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { Resend } from "resend";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     }
 
     // 寫入 Supabase
-    const supabase = getServiceClient();
     const { error } = await supabase.from("contacts").insert({
       name,
       phone,
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     // 發送通知信
-    if (resend && process.env.RESEND_API_KEY) {
+    if (resend) {
       let notifyEmail = "Jingyaoactivities@gmail.com";
       const { data: setting } = await supabase
         .from("site_content")
