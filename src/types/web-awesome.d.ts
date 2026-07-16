@@ -1,11 +1,12 @@
-import type { CSSProperties } from 'react';
+import 'react';
 
-declare namespace JSX {
-  interface IntrinsicElements {
-    'wa-icon': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
-      name?: string;
-      family?: string;
-      style?: CSSProperties;
-    }, HTMLElement>;
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'wa-icon': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
+        name?: string;
+        family?: string;
+      }, HTMLElement>;
+    }
   }
 }
