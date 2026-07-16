@@ -35,6 +35,11 @@ export default function OrdersPage() {
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
+  const [sortField, setSortField] = useState<'borrow_date' | 'return_date' | 'customer_name' | 'created_at'>('borrow_date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterProduct, setFilterProduct] = useState<string>('all');
+  const [searchText, setSearchText] = useState('');
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -80,6 +85,46 @@ export default function OrdersPage() {
     if (!product) return 0;
     const used = getUsedStock(productId, borrowDate, returnDate, excludeOrderId);
     return product.stock - used;
+  };
+
+  // 篩選+排序後的訂單列表
+  const filteredOrders = useMemo(() => {
+    let result = [...orders];
+    // 狀態篩選
+    if (filterStatus !== 'all') {
+      result = result.filter(o => o.status === filterStatus);
+    }
+    // 產品篩選
+    if (filterProduct !== 'all') {
+      result = result.filter(o => o.product_id === filterProduct);
+    }
+    // 搜尋（客戶名稱、活動名稱）
+    if (searchText.trim()) {
+      const keyword = searchText.trim().toLowerCase();
+      result = result.filter(o =>
+        o.customer_name.toLowerCase().includes(keyword) ||
+        (o.event_name || '').toLowerCase().includes(keyword) ||
+        (productMap[o.product_id]?.name || '').toLowerCase().includes(keyword)
+      );
+    }
+    // 排序
+    result.sort((a, b) => {
+      const aVal = a[sortField] || '';
+      const bVal = b[sortField] || '';
+      if (sortDir === 'asc') return aVal > bVal ? 1 : -1;
+      return aVal < bVal ? 1 : -1;
+    });
+    return result;
+  }, [orders, filterStatus, filterProduct, searchText, sortField, sortDir, productMap]);
+
+  // 排序切換
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('desc');
+    }
   };
 
   // 驗證庫存
@@ -258,22 +303,55 @@ export default function OrdersPage() {
       ) : (
         /* ===== 列表視圖 ===== */
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* 篩選列 */}
+          <div className="p-4 border-b flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              placeholder="搜尋客戶/活動/產品..."
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 w-48"
+            />
+            <select
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+            >
+              <option value="all">所有狀態</option>
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select
+              value={filterProduct}
+              onChange={e => setFilterProduct(e.target.value)}
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+            >
+              <option value="all">所有產品</option>
+              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <span className="text-xs text-gray-400 ml-auto">共 {filteredOrders.length} 筆</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
                   <th className="px-4 py-3 text-left">產品</th>
-                  <th className="px-4 py-3 text-left">客戶</th>
+                  <th className="px-4 py-3 text-left cursor-pointer select-none hover:bg-gray-50" onClick={() => toggleSort('customer_name')}>
+                    客戶 {sortField === 'customer_name' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-4 py-3 text-center">數量</th>
-                  <th className="px-4 py-3 text-left">出借日期</th>
-                  <th className="px-4 py-3 text-left">歸還日期</th>
+                  <th className="px-4 py-3 text-left cursor-pointer select-none hover:bg-gray-50" onClick={() => toggleSort('borrow_date')}>
+                    出借日期 {sortField === 'borrow_date' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-4 py-3 text-left cursor-pointer select-none hover:bg-gray-50" onClick={() => toggleSort('return_date')}>
+                    歸還日期 {sortField === 'return_date' && (sortDir === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-4 py-3 text-left">活動名稱</th>
                   <th className="px-4 py-3 text-center">狀態</th>
                   <th className="px-4 py-3 text-center">操作</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map(o => (
+                {filteredOrders.map(o => (
                   <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">{productMap[o.product_id]?.name || '未知產品'}</td>
                     <td className="px-4 py-3">{o.customer_name}</td>
@@ -292,7 +370,7 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ))}
-                {orders.length === 0 && <tr><td colSpan={8} className="px-4 py-12 text-center text-gray-400">尚無訂單資料</td></tr>}
+                {filteredOrders.length === 0 && <tr><td colSpan={8} className="px-4 py-12 text-center text-gray-400">尚無訂單資料</td></tr>}
               </tbody>
             </table>
           </div>
