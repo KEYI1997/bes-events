@@ -9,7 +9,7 @@ export default function Footer() {
           {/* 品牌 Logo */}
           <div>
             <img
-              src="/images/logo/logo.jpg"
+              src="/images/logo/logo-footer.jpg"
               alt="境曜有限公司 BES"
               className="w-40 h-auto rounded-lg"
             />
