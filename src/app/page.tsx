@@ -117,17 +117,14 @@ export default async function HomePage() {
               <AnimateOnScroll delay={0}>
                 <Link
                   href={SERVICES[0].href}
-                  className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
+                  className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
                 >
-                  <img src={SERVICES[0].hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
-                  <div className="relative z-10">
-                    {(() => { const Icon = SERVICES[0].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
-                    <h3 className="text-2xl font-bold text-primary mb-3">{SERVICES[0].title}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[0].desc}</p>
-                    <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                      了解更多 <ArrowRight size={14} />
-                    </span>
-                  </div>
+                  {(() => { const Icon = SERVICES[0].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
+                  <h3 className="text-2xl font-bold text-primary mb-3">{SERVICES[0].title}</h3>
+                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[0].desc}</p>
+                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                    了解更多 <ArrowRight size={14} />
+                  </span>
                 </Link>
               </AnimateOnScroll>
             </div>
@@ -135,17 +132,14 @@ export default async function HomePage() {
             <AnimateOnScroll delay={100}>
               <Link
                 href={SERVICES[1].href}
-                className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
+                className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
               >
-                <img src={SERVICES[1].hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
-                <div className="relative z-10">
-                  {(() => { const Icon = SERVICES[1].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
-                  <h3 className="text-xl font-bold text-primary mb-3">{SERVICES[1].title}</h3>
-                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[1].desc}</p>
-                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                    了解更多 <ArrowRight size={14} />
-                  </span>
-                </div>
+                {(() => { const Icon = SERVICES[1].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
+                <h3 className="text-xl font-bold text-primary mb-3">{SERVICES[1].title}</h3>
+                <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[1].desc}</p>
+                <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                  了解更多 <ArrowRight size={14} />
+                </span>
               </Link>
             </AnimateOnScroll>
           </div>
@@ -155,17 +149,14 @@ export default async function HomePage() {
               <AnimateOnScroll key={service.title} delay={(i + 2) * 100}>
                 <Link
                   href={service.href}
-                  className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
+                  className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
                 >
-                  <img src={service.hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
-                  <div className="relative z-10">
-                    <service.icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />
-                    <h3 className="text-xl font-bold text-primary mb-3">{service.title}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-4">{service.desc}</p>
-                    <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                      了解更多 <ArrowRight size={14} />
-                    </span>
-                  </div>
+                  <service.icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-xl font-bold text-primary mb-3">{service.title}</h3>
+                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{service.desc}</p>
+                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                    了解更多 <ArrowRight size={14} />
+                  </span>
                 </Link>
               </AnimateOnScroll>
             ))}
