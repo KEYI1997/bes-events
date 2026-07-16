@@ -175,7 +175,7 @@ export default function ContactFormInline() {
           className="px-8 py-3 bg-cta text-white font-semibold rounded-lg hover:bg-cta-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <Send size={18} />
-          {loading ? '提交中...' : '送出諮詢'}
+          {loading ? '提交中...' : '送出訂單'}
         </button>
       </div>
     </form>
