@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import ContactModal from '@/components/ContactModal';
 
 interface ProductDetail {
   id: string;
@@ -36,6 +36,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -106,14 +107,14 @@ export default function ProductDetailPage() {
               <p className="text-3xl font-bold mb-8" style={{ color: '#AA7452' }}>{product.price_note || '洽詢'}</p>
 
               {/* 建立訂單 */}
-              <Link
-                href="/contact"
+              <button
+                onClick={() => setContactOpen(true)}
                 className="squish-btn flex items-center justify-center gap-2 w-4/5 mx-auto py-3.5 text-white text-lg font-bold rounded-full transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
                 style={{ backgroundColor: '#AA7452' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" className="w-5 h-5" fill="white"><path d="M0 32C0 14.3 14.3 0 32 0L48 0c44.2 0 80 35.8 80 80l0 288c0 8.8 7.2 16 16 16l416 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-416 0c-44.2 0-80-35.8-80-80L64 80c0-8.8-7.2-16-16-16L32 64C14.3 64 0 49.7 0 32zM160 128l0 64c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32l0-64c0-17.7-14.3-32-32-32L192 96c-17.7 0-32 14.3-32 32zm192 0l0 64c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32l0-64c0-17.7-14.3-32-32-32L384 96c-17.7 0-32 14.3-32 32zM160 320l0-64c0-17.7 14.3-32 32-32l128 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32l-128 0c-17.7 0-32-14.3-32-32zm192 0l0-64c0-17.7 14.3-32 32-32l128 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32l-128 0c-17.7 0-32-14.3-32-32z"/></svg>
                 建立訂單
-              </Link>
+              </button>
 
               {/* 下載 AI 完稿範例 */}
               {product.ai_file_url && (
@@ -221,6 +222,13 @@ export default function ProductDetailPage() {
           </div>
         </section>
       )}
+
+      {/* 聯絡表單 Modal */}
+      <ContactModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        productName={product.name}
+      />
     </div>
   );
 }

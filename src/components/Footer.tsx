@@ -17,7 +17,7 @@ export default function Footer() {
 
           {/* 快速連結 */}
           <div>
-            <h3 className="text-lg font-bold mb-4">服務項目</h3>
+            <h3 className="text-[20px] font-bold mb-4">服務項目</h3>
             <nav className="space-y-2">
               {[
                 { label: '啟動儀式', href: '/products/opening-ceremony' },
@@ -31,7 +31,7 @@ export default function Footer() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="block text-sm text-white/70 hover:text-cta transition-colors"
+                  className="block text-[16px] text-white/70 hover:text-cta transition-colors"
                 >
                   {link.label}
                 </Link>
