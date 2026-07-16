@@ -21,13 +21,6 @@ const CATEGORY_DESC: Record<string, string> = {
   'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
 };
 
-const CATEGORY_HERO_IMG: Record<string, string> = {
-  'opening-ceremony': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196606975-syj452041wn.png',
-  'stage-lighting': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196622151-e7httcbmjkj.png',
-  'event-planning': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196617398-71mam68zxfp.png',
-  'bartending': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196611709-wyxmfyfx61r.png',
-};
-
 type Props = {
   params: Promise<{ category: string }>;
 };
@@ -60,19 +53,8 @@ export default async function ProductCategoryPage({ params }: Props) {
   return (
     <main className="bg-bg min-h-screen">
       {/* Hero */}
-      <section className="relative h-[40vh] flex items-center justify-center pt-32 overflow-hidden">
-        {CATEGORY_HERO_IMG[category] ? (
-          <Image
-            src={CATEGORY_HERO_IMG[category]}
-            alt={categoryName}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 bg-primary" />
-        )}
-        <div className="absolute inset-0 bg-black/50" />
+      <section className="relative bg-primary h-[40vh] flex items-center justify-center pt-32">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
