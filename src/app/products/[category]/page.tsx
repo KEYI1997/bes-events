@@ -60,7 +60,7 @@ export default async function ProductCategoryPage({ params }: Props) {
   return (
     <main className="bg-bg min-h-screen">
       {/* Hero */}
-      <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-32">
+      <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
