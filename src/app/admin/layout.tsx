@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Package, Camera, Users, Building2, Star,
+  Package, Camera, Users, Building2,
   MessageSquare, HelpCircle, LayoutDashboard,
   LogOut, Lock, Menu, X, CalendarDays
 } from 'lucide-react';
@@ -16,7 +16,6 @@ const NAV_ITEMS = [
   { href: '/admin/cases', label: '案例管理', icon: Camera },
   { href: '/admin/showgirls', label: 'Show Girl', icon: Users },
   { href: '/admin/clients', label: '客戶管理', icon: Building2 },
-  { href: '/admin/reviews', label: '評價管理', icon: Star },
   { href: '/admin/contacts', label: '諮詢紀錄', icon: MessageSquare },
   { href: '/admin/faqs', label: 'FAQ 管理', icon: HelpCircle },
 ];
