@@ -82,8 +82,8 @@ export interface Contact {
   email: string;
   service_type: string;
   description: string;
-  budget: string;
   event_date: string;
+  event_end_date: string;
   read: boolean;
   created_at: string;
 }

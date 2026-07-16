@@ -11,7 +11,7 @@ const resend = process.env.RESEND_API_KEY
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, email, service_type, description, budget, event_date } = body;
+    const { name, phone, email, service_type, description, event_end_date, event_date } = body;
 
     if (!name || !phone) {
       return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       email: email || null,
       service_type: service_type || null,
       description: description || null,
-      budget: budget || null,
+      event_end_date: event_end_date || null,
       event_date: event_date || null,
     });
 
@@ -57,8 +57,8 @@ export async function POST(request: Request) {
             <tr><td style="padding:8px;border:1px solid #ddd"><b>電話</b></td><td style="padding:8px;border:1px solid #ddd">${phone}</td></tr>
             ${email ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>Email</b></td><td style="padding:8px;border:1px solid #ddd">${email}</td></tr>` : ""}
             ${service_type ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>服務類型</b></td><td style="padding:8px;border:1px solid #ddd">${service_type}</td></tr>` : ""}
-            ${event_date ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>活動日期</b></td><td style="padding:8px;border:1px solid #ddd">${event_date}</td></tr>` : ""}
-            ${budget ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>預算</b></td><td style="padding:8px;border:1px solid #ddd">${budget}</td></tr>` : ""}
+            ${event_date ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>活動起日</b></td><td style="padding:8px;border:1px solid #ddd">${event_date}</td></tr>` : ""}
+            ${event_end_date ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>活動迄日</b></td><td style="padding:8px;border:1px solid #ddd">${event_end_date}</td></tr>` : ""}
             ${description ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>需求說明</b></td><td style="padding:8px;border:1px solid #ddd">${description}</td></tr>` : ""}
           </table>
         `,

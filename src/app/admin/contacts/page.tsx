@@ -125,8 +125,8 @@ export default function ContactsPage() {
                 <div><p className="text-xs text-gray-500">電話</p><p className="font-medium">{detail.phone}</p></div>
                 <div><p className="text-xs text-gray-500">Email</p><p className="font-medium">{detail.email}</p></div>
                 <div><p className="text-xs text-gray-500">服務類型</p><p className="font-medium">{detail.service_type}</p></div>
-                <div><p className="text-xs text-gray-500">預算</p><p className="font-medium">{detail.budget}</p></div>
-                <div><p className="text-xs text-gray-500">活動日期</p><p className="font-medium">{detail.event_date}</p></div>
+                <div><p className="text-xs text-gray-500">活動起日</p><p className="font-medium">{detail.event_date}</p></div>
+                <div><p className="text-xs text-gray-500">活動迄日</p><p className="font-medium">{detail.event_end_date}</p></div>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">需求描述</p>
