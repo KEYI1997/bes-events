@@ -64,9 +64,9 @@ export default function ProductDetailPage() {
 
       {/* ===== 頂部區域：左圖(64.4%) 右資訊(33.6%) 高度560px ===== */}
       <section className="max-w-[1504px] mx-auto px-12 pt-6">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* 左側圖片：64.4% 寬 */}
-          <div className="w-full lg:w-[64.4%] h-auto lg:h-[500px]">
+          <div className="w-full lg:w-[64.4%]">
             {images.length > 0 ? (
               <>
                 <div className="relative w-full h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm">
@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右側資訊：33.6% 寬 */}
-          <div className="w-full lg:w-[33.6%] h-auto lg:h-[500px]">
+          <div className="w-full lg:w-[33.6%] h-auto lg:h-[440px]">
             <div className="bg-white rounded-2xl p-8 shadow-sm h-full flex flex-col justify-center">
               <h1 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#4A4947' }}>{product.name}</h1>
               <hr className="border-gray-200 mb-6" />
