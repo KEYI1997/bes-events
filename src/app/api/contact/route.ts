@@ -38,17 +38,19 @@ export async function POST(request: Request) {
 
     // 發送通知信
     if (resend) {
-      let notifyEmail = "Jingyaoactivities@gmail.com";
+      let notifyEmails: string[] = ["Jingyaoactivities@gmail.com"];
       const { data: setting } = await supabase
         .from("site_content")
         .select("value")
         .eq("key", "notification_email")
         .single();
-      if (setting?.value) notifyEmail = setting.value;
+      if (setting?.value) {
+        notifyEmails = setting.value.split(",").map((e: string) => e.trim()).filter(Boolean);
+      }
 
       await resend.emails.send({
         from: "境曜活動通知 <onboarding@resend.dev>",
-        to: notifyEmail,
+        to: notifyEmails,
         subject: `【新諮詢】${name} - ${service_type || "一般諮詢"}`,
         html: `
           <h2>📋 新的客戶諮詢</h2>

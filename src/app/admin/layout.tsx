@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Package, Camera, Users, Building2,
   MessageSquare, HelpCircle, LayoutDashboard,
-  LogOut, Lock, Menu, X, CalendarDays
+  LogOut, Lock, Menu, X, CalendarDays, Bell
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/clients', label: '客戶管理', icon: Building2 },
   { href: '/admin/contacts', label: '諮詢紀錄', icon: MessageSquare },
   { href: '/admin/faqs', label: 'FAQ 管理', icon: HelpCircle },
+  { href: '/admin/notifications', label: '通知設定', icon: Bell },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
