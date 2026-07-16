@@ -6,13 +6,13 @@ export default function Footer() {
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* 品牌 */}
+          {/* 品牌 Logo */}
           <div>
-            <h3 className="text-xl font-bold mb-4">境曜有限公司</h3>
-            <p className="text-white/70 text-sm leading-relaxed">
-              Bright Events Services，專注於各類型活動整合與現場執行，
-              致力於為企業打造具影響力與記憶點的活動體驗。
-            </p>
+            <img
+              src="/images/logo/logo.jpg"
+              alt="境曜有限公司 BES"
+              className="w-40 h-auto rounded-lg"
+            />
           </div>
 
           {/* 快速連結 */}
