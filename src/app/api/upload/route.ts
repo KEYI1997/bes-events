@@ -19,8 +19,12 @@ export async function POST(request: NextRequest) {
   const fileExt = file.name.split(".").pop();
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
+  // AI 檔案上傳到 ai-files bucket，其他上傳到 images bucket
+  const isAiFile = ['ai', 'eps'].includes((fileExt || '').toLowerCase()) || folder === 'ai-files';
+  const bucket = isAiFile ? 'ai-files' : 'images';
+
   const { error } = await supabase.storage
-    .from("images")
+    .from(bucket)
     .upload(fileName, file, {
       contentType: file.type,
       upsert: false,
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { data: urlData } = supabase.storage
-    .from("images")
+    .from(bucket)
     .getPublicUrl(fileName);
 
   return NextResponse.json({ url: urlData.publicUrl });

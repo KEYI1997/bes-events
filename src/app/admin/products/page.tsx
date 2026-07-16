@@ -164,6 +164,7 @@ export default function ProductsPage() {
       price_note: form.price_note,
       stock: form.stock,
       visible: form.visible,
+      ai_file_url: form.ai_file_url || null,
     };
 
     try {
