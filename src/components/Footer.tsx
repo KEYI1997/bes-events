@@ -41,11 +41,11 @@ export default function Footer() {
 
           {/* 聯絡資訊 */}
           <div>
-            <h3 className="text-lg font-bold mb-4">隱私權政策</h3>
+            <h3 className="text-[20px] font-bold mb-4">隱私權政策</h3>
             <nav className="space-y-2">
               <Link
                 href="/privacy"
-                className="block text-sm text-white/70 hover:text-cta transition-colors"
+                className="block text-[16px] text-white/70 hover:text-cta transition-colors"
               >
                 隱私權及個資保護政策
               </Link>
@@ -54,15 +54,15 @@ export default function Footer() {
 
           {/* 聯絡我們 */}
           <div>
-            <h3 className="text-lg font-bold mb-4">聯絡我們</h3>
+            <h3 className="text-[20px] font-bold mb-4">聯絡我們</h3>
             <div className="space-y-3">
-              <a href="tel:0912727596" className="flex items-center gap-2 text-sm text-white/70 hover:text-cta transition-colors">
+              <a href="tel:0912727596" className="flex items-center gap-2 text-[16px] text-white/70 hover:text-cta transition-colors">
                 <Phone size={16} /> 0912-727-596
               </a>
-              <a href="mailto:Jingyaoactivities@gmail.com" className="flex items-center gap-2 text-sm text-white/70 hover:text-cta transition-colors">
+              <a href="mailto:Jingyaoactivities@gmail.com" className="flex items-center gap-2 text-[16px] text-white/70 hover:text-cta transition-colors">
                 <Mail size={16} /> Jingyaoactivities@gmail.com
               </a>
-              <a href="https://line.me/ti/p/~@648ubibg" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white/70 hover:text-cta transition-colors">
+              <a href="https://line.me/ti/p/~@648ubibg" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[16px] text-white/70 hover:text-cta transition-colors">
                 <MapPin size={16} /> LINE：@648ubibg
               </a>
             </div>
