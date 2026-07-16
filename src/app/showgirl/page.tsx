@@ -21,8 +21,15 @@ export default async function ShowGirlPage() {
   return (
     <main className="bg-bg min-h-screen">
       {/* Hero */}
-      <section className="relative bg-primary h-[40vh] flex items-center justify-center pt-32">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
+      <section className="relative h-[40vh] flex items-center justify-center pt-32 overflow-hidden">
+        <Image
+          src="https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196602187-15bzi2ybewz.png"
+          alt="Show Girl"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
