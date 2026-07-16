@@ -98,8 +98,8 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右側資訊：33.6% 寬 */}
-          <div className="w-full lg:w-[33.6%]">
-            <div className="bg-white rounded-2xl p-8 shadow-sm flex flex-col justify-center">
+          <div className="w-full lg:w-[33.6%] flex">
+            <div className="bg-white rounded-2xl p-8 shadow-sm flex flex-col justify-center w-full">
               <h1 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#4A4947' }}>{product.name}</h1>
               <hr className="border-gray-200 mb-6" />
               <p className="text-sm font-medium mb-1" style={{ color: '#AA7452' }}>價格</p>
