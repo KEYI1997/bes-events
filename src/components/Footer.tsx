@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Video, Camera, Globe } from 'lucide-react';
+import { Phone, Mail, MapPin, Camera, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -56,7 +56,7 @@ export default function Footer() {
             {/* 社群 */}
             <div className="flex gap-4 mt-6">
               <a href="https://www.youtube.com/@境曜" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-cta transition-colors" aria-label="YouTube">
-                <Video size={18} />
+                <wa-icon name="youtube" family="brands" style={{ fontSize: '18px' }}></wa-icon>
               </a>
               <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-cta transition-colors" aria-label="Instagram">
                 <Camera size={18} />
