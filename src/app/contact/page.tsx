@@ -18,8 +18,8 @@ const CONTACT_INFO = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'service@bes-events.com',
-    href: 'mailto:service@bes-events.com',
+    value: 'Jingyaoactivities@gmail.com',
+    href: 'mailto:Jingyaoactivities@gmail.com',
   },
   {
     icon: MessageCircle,
@@ -30,7 +30,7 @@ const CONTACT_INFO = [
   {
     icon: MapPin,
     label: '地址',
-    value: '新北市三重區',
+    value: '臺北市中山區民權東路2段92巷6之1號',
     href: null,
   },
   {
