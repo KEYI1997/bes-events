@@ -9,7 +9,7 @@ const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date',
 // 台灣手機 (09xxxxxxxx 或 09xx-xxx-xxx) 或市話 (0x-xxxxxxx 或 0xx-xxxxxxx)
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
-export default function ContactFormInline() {
+export default function ContactFormInline({ submitLabel = '送出諮詢' }: { submitLabel?: string }) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: ''
   });
@@ -175,7 +175,7 @@ export default function ContactFormInline() {
           className="px-8 py-3 bg-cta text-white font-semibold rounded-lg hover:bg-cta-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <Send size={18} />
-          {loading ? '提交中...' : '送出訂單'}
+          {loading ? '提交中...' : submitLabel}
         </button>
       </div>
     </form>
