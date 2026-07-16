@@ -145,7 +145,7 @@ export default function ContactsPage() {
               </thead>
               <tbody>
                 {contacts.map(c => (
-                  <tr key={c.id} className={`border-b last:border-0 hover:bg-gray-50 ${!c.read ? 'bg-amber-50/50' : ''}`}>
+                  <tr key={c.id} onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} className={`border-b last:border-0 hover:bg-gray-50 cursor-pointer ${!c.read ? 'bg-amber-50/50' : ''}`}>
                     <td className="px-4 py-3 text-center">
                       {c.read
                         ? <MailOpen className="w-4 h-4 text-gray-400 mx-auto" />
@@ -158,7 +158,7 @@ export default function ContactsPage() {
                     <td className="px-4 py-3"><span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.service_type}</span></td>
                     <td className="px-4 py-3 text-gray-600">{c.event_date}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{new Date(c.created_at).toLocaleString('zh-TW')}</td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} className="p-1.5 rounded-lg hover:bg-gray-100" title="檢視">
                           <Eye className="w-4 h-4 text-gray-600" />
