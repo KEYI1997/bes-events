@@ -317,9 +317,9 @@ export default function OrdersPage() {
                       className="text-[10px] px-1 py-0.5 mb-0.5 rounded truncate cursor-pointer hover:opacity-80"
                       style={{ backgroundColor: '#AA745220', color: '#AA7452' }}
                       onClick={() => openEdit(o)}
-                      title={`${productMap[o.product_id]?.name || '未知產品'} - ${o.customer_name}`}
+                      title={`${o.customer_name}(${productMap[o.product_id]?.name || '未知產品'})`}
                     >
-                      {productMap[o.product_id]?.name?.slice(0, 6) || '?'}
+                      {o.customer_name}({productMap[o.product_id]?.name?.slice(0, 4) || '?'})
                     </div>
                   ))}
                   {dayOrders.length > 3 && (
