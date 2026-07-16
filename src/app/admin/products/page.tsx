@@ -160,6 +160,7 @@ export default function ProductsPage() {
       description,
       image_url: form.image_url,
       price_note: form.price_note,
+      ai_file_url: form.ai_file_url,
       stock: form.stock,
       visible: form.visible,
     };
