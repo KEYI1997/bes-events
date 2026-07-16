@@ -40,10 +40,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-Hant-TW">
-      <head>
-        <link rel="stylesheet" href="https://early.webawesome.com/webawesome@3/dist/styles/theme.css" />
-        <script type="module" src="https://early.webawesome.com/webawesome@3/dist/webawesome.loader.js"></script>
-      </head>
       <body className="antialiased overflow-x-hidden">
         <LayoutWrapper
           header={<Header />}
