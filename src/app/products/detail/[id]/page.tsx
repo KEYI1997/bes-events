@@ -65,12 +65,12 @@ export default function ProductDetailPage() {
 
       {/* ===== 頂部區域：左圖(64.4%) 右資訊(33.6%) 高度560px ===== */}
       <section className="max-w-[1504px] mx-auto px-12 pt-6">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
           {/* 左側圖片：64.4% 寬 */}
-          <div className="w-full lg:w-[64.4%]">
+          <div className="w-full lg:w-[64.4%] flex flex-col">
             {images.length > 0 ? (
               <>
-                <div className="relative w-full h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm">
+                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm">
                   <Image
                     src={images[currentSlide] || images[0]}
                     alt={product.name}
@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
                 )}
               </>
             ) : (
-              <div className="w-full h-[440px] rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">暫無圖片</div>
+              <div className="w-full flex-1 min-h-[440px] rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">暫無圖片</div>
             )}
           </div>
 
