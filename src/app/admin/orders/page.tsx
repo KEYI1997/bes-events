@@ -50,8 +50,38 @@ export default function OrdersPage() {
     ]);
     const ordersJson = await ordersRes.json();
     const productsJson = await productsRes.json();
-    setOrders(ordersJson.data || []);
+    const fetchedOrders: Order[] = ordersJson.data || [];
     setProducts(productsJson.data || []);
+
+    // 自動更新訂單狀態
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const updates: Promise<void>[] = [];
+
+    for (const o of fetchedOrders) {
+      let newStatus: string | null = null;
+
+      if (o.status === '已預約' && o.borrow_date <= today && o.return_date >= today) {
+        // 出借日當天或期間內 → 出借中
+        newStatus = '出借中';
+      } else if ((o.status === '已預約' || o.status === '出借中') && o.return_date < today) {
+        // 已超過歸還日期 → 已歸還
+        newStatus = '已歸還';
+      }
+
+      if (newStatus) {
+        o.status = newStatus as Order['status'];
+        updates.push(
+          fetch('/api/admin', {
+            method: 'PUT',
+            headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ table: 'orders', id: o.id, record: { status: newStatus } }),
+          }).then(() => {})
+        );
+      }
+    }
+
+    if (updates.length > 0) await Promise.all(updates);
+    setOrders(fetchedOrders);
     setLoading(false);
   };
 
