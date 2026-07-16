@@ -101,14 +101,8 @@ h1, h2, h3, h4, h5, h6 {
 .animate-scroll {
   animation: scroll 45s linear infinite;
 }
-.animate-scroll:hover {
-  animation-play-state: paused;
-}
 .animate-scroll-slow {
   animation: scroll-reverse 35s linear infinite;
-}
-.animate-scroll-slow:hover {
-  animation-play-state: paused;
 }
 
 @keyframes scroll-reverse {
