@@ -21,30 +21,35 @@ const SERVICES = [
     title: "啟動儀式",
     desc: "星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。",
     href: "/products/opening-ceremony",
+    hoverImage: "/images/services/opening-ceremony.png",
   },
   {
     icon: Music,
     title: "燈光音響舞台",
     desc: "專業燈光音響設備租賃與搭建，打造完美視聽體驗。",
     href: "/products/stage-lighting",
+    hoverImage: "/images/services/stage-lighting.png",
   },
   {
     icon: CalendarCheck,
     title: "專案企劃",
     desc: "從記者會、尾牙到企業家庭日，提供完整活動企劃與執行服務。",
     href: "/products/event-planning",
+    hoverImage: "/images/services/event-planning.png",
   },
   {
     icon: Wine,
     title: "外派調酒",
     desc: "專業調酒師現場調製，為活動增添品味與儀式感。",
     href: "/products/bartending",
+    hoverImage: "/images/services/bartending.png",
   },
   {
     icon: Users,
     title: "Show Girl",
     desc: "專業活動人員派遣，提供展場接待、活動協助等服務。",
     href: "/showgirl",
+    hoverImage: "/images/services/showgirl.png",
   },
 ];
 
@@ -112,14 +117,17 @@ export default async function HomePage() {
               <AnimateOnScroll delay={0}>
                 <Link
                   href={SERVICES[0].href}
-                  className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
+                  className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
                 >
-                  {(() => { const Icon = SERVICES[0].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
-                  <h3 className="text-2xl font-bold text-primary mb-3">{SERVICES[0].title}</h3>
-                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[0].desc}</p>
-                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                    了解更多 <ArrowRight size={14} />
-                  </span>
+                  <img src={SERVICES[0].hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
+                  <div className="relative z-10">
+                    {(() => { const Icon = SERVICES[0].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
+                    <h3 className="text-2xl font-bold text-primary mb-3">{SERVICES[0].title}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[0].desc}</p>
+                    <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                      了解更多 <ArrowRight size={14} />
+                    </span>
+                  </div>
                 </Link>
               </AnimateOnScroll>
             </div>
@@ -127,14 +135,17 @@ export default async function HomePage() {
             <AnimateOnScroll delay={100}>
               <Link
                 href={SERVICES[1].href}
-                className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
+                className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
               >
-                {(() => { const Icon = SERVICES[1].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
-                <h3 className="text-xl font-bold text-primary mb-3">{SERVICES[1].title}</h3>
-                <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[1].desc}</p>
-                <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                  了解更多 <ArrowRight size={14} />
-                </span>
+                <img src={SERVICES[1].hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
+                <div className="relative z-10">
+                  {(() => { const Icon = SERVICES[1].icon; return <Icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />; })()}
+                  <h3 className="text-xl font-bold text-primary mb-3">{SERVICES[1].title}</h3>
+                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{SERVICES[1].desc}</p>
+                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                    了解更多 <ArrowRight size={14} />
+                  </span>
+                </div>
               </Link>
             </AnimateOnScroll>
           </div>
@@ -144,14 +155,17 @@ export default async function HomePage() {
               <AnimateOnScroll key={service.title} delay={(i + 2) * 100}>
                 <Link
                   href={service.href}
-                  className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
+                  className="relative block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full overflow-hidden"
                 >
-                  <service.icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-xl font-bold text-primary mb-3">{service.title}</h3>
-                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{service.desc}</p>
-                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                    了解更多 <ArrowRight size={14} />
-                  </span>
+                  <img src={service.hoverImage} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-0 translate-x-8 group-hover:opacity-30 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none" />
+                  <div className="relative z-10">
+                    <service.icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-xl font-bold text-primary mb-3">{service.title}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-4">{service.desc}</p>
+                    <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
+                      了解更多 <ArrowRight size={14} />
+                    </span>
+                  </div>
                 </Link>
               </AnimateOnScroll>
             ))}
