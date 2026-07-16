@@ -32,16 +32,17 @@ function getDisplayImage(p: ProductData): string {
   return '';
 }
 
-// 從 description 解析服務內容、注意事項、YouTube
+// 從 description 解析服務內容、注意事項、YouTube、AI圖檔
 function parseProduct(p: ProductData) {
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', notice: p.notice || '', youtube: p.youtube_url || '' };
+    return { service: p.service_content || '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '' };
   }
-  const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '');
+  const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【服務內容】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), notice, youtube };
+  const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
+  return { service: service || (desc.includes('【') ? '' : desc), notice, youtube, ai_file };
 }
 
 export default function ProductsPage() {
@@ -91,7 +92,7 @@ export default function ProductsPage() {
       youtube_url: parsed.youtube || p.youtube_url || '',
       image_url: getDisplayImage(p),
       size_image_url: sizeUrl,
-      ai_file_url: p.ai_file_url || '',
+      ai_file_url: parsed.ai_file || p.ai_file_url || '',
       stock: p.stock ?? 1,
       visible: p.visible,
     });
@@ -152,6 +153,7 @@ export default function ProductsPage() {
       form.notice ? `【注意事項】\n${form.notice}` : '',
       form.youtube_url ? `【YouTube】\n${form.youtube_url}` : '',
       form.size_image_url ? `【尺寸圖】\n${form.size_image_url}` : '',
+      form.ai_file_url ? `【AI圖檔】\n${form.ai_file_url}` : '',
     ].filter(Boolean).join('\n\n');
 
     const record: Record<string, unknown> = {
@@ -160,7 +162,6 @@ export default function ProductsPage() {
       description,
       image_url: form.image_url,
       price_note: form.price_note,
-      ai_file_url: form.ai_file_url,
       stock: form.stock,
       visible: form.visible,
     };
