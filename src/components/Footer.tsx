@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* 品牌 */}
           <div>
             <h3 className="text-xl font-bold mb-4">境曜有限公司</h3>
@@ -40,6 +40,19 @@ export default function Footer() {
           </div>
 
           {/* 聯絡資訊 */}
+          <div>
+            <h3 className="text-lg font-bold mb-4">隱私權政策</h3>
+            <nav className="space-y-2">
+              <Link
+                href="/privacy"
+                className="block text-sm text-white/70 hover:text-cta transition-colors"
+              >
+                隱私權及個資保護政策
+              </Link>
+            </nav>
+          </div>
+
+          {/* 聯絡我們 */}
           <div>
             <h3 className="text-lg font-bold mb-4">聯絡我們</h3>
             <div className="space-y-3">
