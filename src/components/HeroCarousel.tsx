@@ -89,9 +89,13 @@ export default function HeroCarousel() {
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-cta text-white text-sm font-semibold rounded-lg hover:bg-cta-hover transition-colors"
+                  className="group relative inline-flex items-center px-6 py-3 text-sm font-semibold rounded-lg border-2 border-cta transition-all duration-300 ease-in-out bg-cta text-white hover:bg-transparent hover:text-white overflow-hidden"
                 >
-                  免費諮詢 <ArrowRight size={14} />
+                  {/* 左箭頭 - 初始顯示，hover 隱藏 */}
+                  <ArrowRight size={14} className="mr-2 transition-all duration-300 ease-in-out opacity-100 translate-x-0 group-hover:opacity-0 group-hover:-translate-x-4" />
+                  <span>免費諮詢</span>
+                  {/* 右箭頭 - 初始隱藏，hover 顯示 */}
+                  <ArrowRight size={14} className="ml-2 transition-all duration-300 ease-in-out opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0" />
                 </Link>
                 <Link
                   href="/cases"
