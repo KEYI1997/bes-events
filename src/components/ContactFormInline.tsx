@@ -17,6 +17,7 @@ export default function ContactFormInline() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [errorFields, setErrorFields] = useState<string[]>([]);
+  const [phoneError, setPhoneError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +27,7 @@ export default function ContactFormInline() {
     if (missing.length > 0) {
       setErrorFields(missing);
       setError('請填寫所有必填欄位');
+      setPhoneError('');
       setTimeout(() => setErrorFields([]), 500);
       return;
     }
@@ -33,10 +35,13 @@ export default function ContactFormInline() {
     // 驗證電話格式
     if (!PHONE_REGEX.test(form.phone.replace(/\s/g, ''))) {
       setErrorFields(['phone']);
-      setError('請輸入有效的電話號碼（例：0912345678 或 02-23456789）');
+      setPhoneError('請輸入有效的電話號碼（例：0912345678 或 02-23456789）');
+      setError('');
       setTimeout(() => setErrorFields([]), 500);
       return;
     }
+
+    setPhoneError('');
 
     setErrorFields([]);
     setLoading(true);
@@ -110,6 +115,7 @@ export default function ContactFormInline() {
             className={inputClass('phone')}
             placeholder="您的電話"
           />
+          {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-primary mb-1">Email *</label>
