@@ -12,8 +12,8 @@ const CONTACT_INFO = [
   {
     icon: Phone,
     label: '電話',
-    value: '02-2999-8833',
-    href: 'tel:0229998833',
+    value: '0912-727-596',
+    href: 'tel:0912727596',
   },
   {
     icon: Mail,
