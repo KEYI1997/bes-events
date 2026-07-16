@@ -358,9 +358,10 @@ export default async function HomePage() {
       </section>
 
       {/* 聯絡表單區 */}
-      <section className="py-20 bg-bg">
+      <section className="py-20 bg-primary">
         <div className="max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
+            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-10">聯絡我們</h2>
             <div className="bg-white rounded-2xl p-8 md:p-12">
               <ContactFormInline />
             </div>

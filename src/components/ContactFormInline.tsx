@@ -167,15 +167,17 @@ export default function ContactFormInline() {
           placeholder="請簡述您的活動需求..."
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full md:w-auto px-8 py-3 bg-cta text-white font-semibold rounded-lg hover:bg-cta-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-      >
-        <Send size={18} />
-        {loading ? '提交中...' : '送出諮詢'}
-      </button>
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+      <div className="flex justify-center">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-8 py-3 bg-cta text-white font-semibold rounded-lg hover:bg-cta-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+        >
+          <Send size={18} />
+          {loading ? '提交中...' : '送出諮詢'}
+        </button>
+      </div>
     </form>
   );
 }
