@@ -99,14 +99,14 @@ export default async function HomePage() {
       <HeroCarousel />
 
       {/* 服務項目 */}
-      <section className="py-20 bg-bg">
+      <section className="py-20" style={{ backgroundColor: '#23212C' }}>
         <div className="max-w-7xl mx-auto px-4">
           <AnimateOnScroll>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 我們的服務
               </h2>
-              <p className="text-primary/70 text-lg">
+              <p className="text-white/70 text-lg">
                 一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值
               </p>
             </div>
