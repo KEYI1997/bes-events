@@ -99,8 +99,30 @@ export default async function HomePage() {
       <HeroCarousel />
 
       {/* 服務項目 */}
-      <section className="py-20" style={{ backgroundColor: '#23212C' }}>
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-20 relative overflow-hidden" style={{ backgroundColor: '#23212C' }}>
+        {/* Cosmic 光暈背景 */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: `
+            radial-gradient(ellipse 600px 400px at 15% 80%, rgba(120, 60, 180, 0.15) 0%, transparent 70%),
+            radial-gradient(ellipse 500px 350px at 85% 20%, rgba(60, 100, 200, 0.12) 0%, transparent 70%),
+            radial-gradient(ellipse 400px 300px at 70% 75%, rgba(180, 50, 80, 0.10) 0%, transparent 70%),
+            radial-gradient(ellipse 300px 250px at 30% 30%, rgba(80, 120, 220, 0.08) 0%, transparent 70%),
+            radial-gradient(circle 2px at 20% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+            radial-gradient(circle 1.5px at 45% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
+            radial-gradient(circle 1px at 75% 10%, rgba(255,255,255,0.35) 0%, transparent 100%),
+            radial-gradient(circle 1.5px at 90% 45%, rgba(255,255,255,0.25) 0%, transparent 100%),
+            radial-gradient(circle 1px at 10% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+            radial-gradient(circle 2px at 60% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
+            radial-gradient(circle 1px at 35% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
+            radial-gradient(circle 1.5px at 80% 65%, rgba(255,255,255,0.3) 0%, transparent 100%)
+          `
+        }} />
+        {/* 玻璃霧面遮罩 */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backdropFilter: 'blur(0.5px)',
+          background: 'linear-gradient(180deg, rgba(35,33,44,0.3) 0%, rgba(35,33,44,0.1) 50%, rgba(35,33,44,0.3) 100%)'
+        }} />
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <AnimateOnScroll>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
