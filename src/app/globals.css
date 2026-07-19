@@ -104,6 +104,9 @@ h1, h2, h3, h4, h5, h6 {
 .animate-scroll-slow {
   animation: scroll-reverse 35s linear infinite;
 }
+.animate-scroll-clients {
+  animation: scroll 40s linear infinite;
+}
 
 @keyframes scroll-reverse {
   0% { transform: translateX(-50%); }

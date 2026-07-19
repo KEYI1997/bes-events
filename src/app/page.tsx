@@ -13,6 +13,7 @@ import {
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
+import CoverflowCarousel from "@/components/CoverflowCarousel";
 import { supabase } from "@/lib/supabase";
 
 const SERVICES = [
@@ -199,14 +200,31 @@ export default async function HomePage() {
             <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">案例展示</h2>
           </AnimateOnScroll>
         </div>
-        <div className="relative w-full">
-          <div className="flex gap-6 animate-scroll">
-            {[1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10].map((n, i) => (
-              <div key={i} className="flex-shrink-0 w-[400px] h-[260px] rounded-xl overflow-hidden">
-                <img src={`/images/cases/case-${n}.${n === 3 ? 'webp' : 'jpg'}`} alt={`案例${n}`} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
+        <div className="relative w-full h-[460px]">
+          <CoverflowCarousel
+            images={[
+              { src: "/images/cases/case-1.jpg", alt: "案例1" },
+              { src: "/images/cases/case-2.jpg", alt: "案例2" },
+              { src: "/images/cases/case-3.webp", alt: "案例3" },
+              { src: "/images/cases/case-4.jpg", alt: "案例4" },
+              { src: "/images/cases/case-5.jpg", alt: "案例5" },
+              { src: "/images/cases/case-6.jpg", alt: "案例6" },
+              { src: "/images/cases/case-7.jpg", alt: "案例7" },
+              { src: "/images/cases/case-8.jpg", alt: "案例8" },
+              { src: "/images/cases/case-9.jpg", alt: "案例9" },
+              { src: "/images/cases/case-10.jpg", alt: "案例10" },
+            ]}
+            autoplay={true}
+            autoplayDirection="rightToLeft"
+            showArrows={true}
+            activeWidth={600}
+            activeHeight={400}
+            restWidth={200}
+            restHeight={270}
+            gap={30}
+            radius={4}
+            transition={{ duration: 0.3, delay: 2 }}
+          />
         </div>
       </section>
 
@@ -220,8 +238,8 @@ export default async function HomePage() {
             </div>
           </AnimateOnScroll>
         </div>
-        <div className="relative w-full">
-          <div className="flex items-center gap-12 animate-scroll-slow">
+        <div className="relative w-full overflow-hidden">
+          <div className="flex items-center gap-12 w-max animate-scroll-clients">
             {[
               { name: "今周刊", file: "今周刊.jpg" },
               { name: "燦坤", file: "燦坤.jpg" },

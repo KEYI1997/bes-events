@@ -66,7 +66,7 @@ export default function Header() {
         <div className="px-5 py-2 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
-            <Image src="/images/logo/logo-v3.png" alt="境曜有限公司" width={120} height={120} className="rounded-[8px] w-auto h-9" unoptimized />
+            <Image src="/images/logo/logo-header.png" alt="境曜有限公司" width={120} height={120} className="rounded-[8px] w-auto h-9" unoptimized />
           </Link>
 
           {/* Desktop Nav - 中間 */}
@@ -89,16 +89,18 @@ export default function Header() {
                       <ChevronDown size={14} />
                     </Link>
                     {dropdownOpen && (
-                      <div className="absolute top-full left-0 mt-4 bg-white rounded-xl shadow-xl py-2 min-w-[160px] border border-gray-100">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.label}
-                            href={child.href}
-                            className="block px-4 py-2 text-sm text-primary hover:bg-bg hover:text-primary/70 transition-colors"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
+                      <div className="absolute top-full left-0 pt-4">
+                        <div className="bg-white rounded-xl shadow-xl py-2 min-w-[160px] border border-gray-100">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.label}
+                              href={child.href}
+                              className="block px-4 py-2 text-sm text-primary hover:bg-bg hover:text-cta transition-colors"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
