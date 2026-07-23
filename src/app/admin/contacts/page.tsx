@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Mail, MailOpen, Eye, ArrowRightCircle } from 'lucide-react';
 import type { Contact, Product } from '@/lib/types';
+import { getServiceTypeColor } from '@/lib/serviceTypeColors';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -155,7 +156,7 @@ export default function ContactsPage() {
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3 text-gray-600">{c.phone}</td>
                     <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.service_type}</span></td>
+                    <td className="px-4 py-3"><span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: getServiceTypeColor(c.service_type).bg, color: getServiceTypeColor(c.service_type).text }}>{c.service_type}</span></td>
                     <td className="px-4 py-3 text-gray-600">{c.event_date}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{new Date(c.created_at).toLocaleString('zh-TW')}</td>
                     <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>

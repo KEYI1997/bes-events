@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil } from 'lucide-react';
 import type { Product, Order } from '@/lib/types';
+import { getCategoryColor } from '@/lib/serviceTypeColors';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -311,17 +312,20 @@ export default function OrdersPage() {
                   >
                     {day}
                   </div>
-                  {dayOrders.slice(0, 3).map(o => (
+                  {dayOrders.slice(0, 3).map(o => {
+                    const color = getCategoryColor(productMap[o.product_id]?.category);
+                    return (
                     <div
                       key={o.id}
                       className="text-[10px] px-1 py-0.5 mb-0.5 rounded truncate cursor-pointer hover:opacity-80"
-                      style={{ backgroundColor: '#AA745220', color: '#AA7452' }}
+                      style={{ backgroundColor: color.bg, color: color.text }}
                       onClick={() => openEdit(o)}
                       title={`${o.customer_name}(${productMap[o.product_id]?.name || '未知產品'})`}
                     >
                       {o.customer_name}({productMap[o.product_id]?.name?.slice(0, 4) || '?'})
                     </div>
-                  ))}
+                    );
+                  })}
                   {dayOrders.length > 3 && (
                     <div className="text-[10px] text-gray-400 px-1">+{dayOrders.length - 3} 筆</div>
                   )}
