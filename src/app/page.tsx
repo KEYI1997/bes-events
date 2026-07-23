@@ -5,10 +5,8 @@ import {
   CalendarCheck,
   Wine,
   Users,
-  Star,
   ArrowRight,
   Phone,
-  CheckCircle,
 } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
@@ -54,28 +52,7 @@ const SERVICES = [
   },
 ];
 
-const ADVANTAGES = [
-  {
-    icon: CheckCircle,
-    title: "一站式服務",
-    desc: "從企劃到執行全程包辦，省去多方溝通成本。",
-  },
-  {
-    icon: Star,
-    title: "豐富經驗",
-    desc: "服務超過百場活動，累積各產業活動執行經驗。",
-  },
-  {
-    icon: CalendarCheck,
-    title: "彈性客製",
-    desc: "依據預算與需求量身打造專屬活動方案。",
-  },
-  {
-    icon: Users,
-    title: "7 年以上活動經驗",
-    desc: "經驗豐富的企劃、技術與執行團隊，確保活動完美呈現。",
-  },
-];
+
 
 export default async function HomePage() {
   // 取得客戶 Logo
@@ -187,30 +164,86 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 核心優勢 */}
-      <section className="py-20 bg-white">
+      {/* 核心優勢 — 循環圖 */}
+      <section className="py-20 bg-[#0a0a0a] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
+          {/* 標題 */}
           <AnimateOnScroll>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                為什麼選擇境曜？
-              </h2>
-            </div>
+            <h2 className="text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-16 md:mb-20 tracking-wider" style={{ fontFamily: 'var(--font-heading)' }}>
+              WHY BES EVENTS
+            </h2>
           </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {ADVANTAGES.map((adv, i) => (
-              <AnimateOnScroll key={adv.title} delay={i * 100}>
-                <div className="text-center p-6">
-                  <div className="w-16 h-16 bg-cta/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <adv.icon size={28} className="text-cta" />
+
+          {/* 左文字 + 右循環圖 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* 左側：標題 + 說明 */}
+            <AnimateOnScroll direction="left">
+              <div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-snug">
+                  全方位活動服務循環<br />打造品牌影響力
+                </h3>
+                <p className="text-white/60 leading-relaxed text-sm md:text-base">
+                  境曜以「顧問式服務」為核心，從前期活動企劃、現場執行到後續成效追蹤，建立完整的服務循環。我們持續蒐集客戶回饋、優化執行流程，確保每一場活動都能精準傳遞品牌價值，讓企業的每一次投入都轉化為可感受的影響力。
+                </p>
+              </div>
+            </AnimateOnScroll>
+
+            {/* 右側：循環圖 */}
+            <AnimateOnScroll direction="right">
+              <div className="flex justify-center">
+                <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px]">
+                  {/* 中心大圓 */}
+                  <div className="absolute inset-[15%] rounded-full border border-white/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-white text-sm md:text-base font-medium">一站式整合</p>
+                      <p className="text-white/60 text-xs md:text-sm mt-1">品牌活動夥伴</p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-primary mb-2">
-                    {adv.title}
-                  </h3>
-                  <p className="text-primary/70 text-sm">{adv.desc}</p>
+
+                  {/* 虛線圓環 */}
+                  <div className="absolute inset-0 rounded-full border border-dashed border-white/20" />
+
+                  {/* 頂部圓 — 顧問式企劃 */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <div className="text-center">
+                      <p className="text-white text-xs md:text-sm font-medium">顧問式</p>
+                      <p className="text-white text-xs md:text-sm font-medium">活動企劃</p>
+                    </div>
+                  </div>
+
+                  {/* 右下圓 — 現場執行 */}
+                  <div className="absolute bottom-[5%] right-0 translate-x-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <div className="text-center">
+                      <p className="text-white text-xs md:text-sm font-medium">專業現場</p>
+                      <p className="text-white text-xs md:text-sm font-medium">執行管理</p>
+                    </div>
+                  </div>
+
+                  {/* 左下圓 — 回饋優化 */}
+                  <div className="absolute bottom-[5%] left-0 -translate-x-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <div className="text-center">
+                      <p className="text-white text-xs md:text-sm font-medium">成效回饋</p>
+                      <p className="text-white text-xs md:text-sm font-medium">持續優化</p>
+                    </div>
+                  </div>
+
+                  {/* 連接箭頭（SVG 弧線） */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 400" fill="none">
+                    {/* 頂 → 右下 */}
+                    <path d="M 230 60 C 310 100, 350 200, 330 280" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
+                    {/* 右下 → 左下 */}
+                    <path d="M 280 340 C 240 380, 160 380, 120 340" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
+                    {/* 左下 → 頂 */}
+                    <path d="M 70 280 C 50 200, 90 100, 170 60" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
+                    <defs>
+                      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M 0 0 L 6 3 L 0 6 Z" fill="rgba(255,255,255,0.4)" />
+                      </marker>
+                    </defs>
+                  </svg>
                 </div>
-              </AnimateOnScroll>
-            ))}
+              </div>
+            </AnimateOnScroll>
           </div>
         </div>
       </section>
