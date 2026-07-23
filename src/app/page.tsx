@@ -165,11 +165,11 @@ export default async function HomePage() {
       </section>
 
       {/* 核心優勢 — 循環圖 */}
-      <section className="py-20 bg-[#0a0a0a] overflow-hidden">
+      <section className="py-20 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           {/* 標題 */}
           <AnimateOnScroll>
-            <h2 className="text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-16 md:mb-20 tracking-wider" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h2 className="text-center text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-16 md:mb-20 tracking-wider" style={{ fontFamily: 'var(--font-heading)' }}>
               WHY BES EVENTS
             </h2>
           </AnimateOnScroll>
@@ -179,10 +179,10 @@ export default async function HomePage() {
             {/* 左側：標題 + 說明 */}
             <AnimateOnScroll direction="left">
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-snug">
+                <h3 className="text-2xl md:text-3xl font-bold text-primary mb-6 leading-snug">
                   全方位活動服務循環<br />打造品牌影響力
                 </h3>
-                <p className="text-white/60 leading-relaxed text-sm md:text-base">
+                <p className="text-primary/60 leading-relaxed text-sm md:text-base">
                   境曜以「顧問式服務」為核心，從前期活動企劃、現場執行到後續成效追蹤，建立完整的服務循環。我們持續蒐集客戶回饋、優化執行流程，確保每一場活動都能精準傳遞品牌價值，讓企業的每一次投入都轉化為可感受的影響力。
                 </p>
               </div>
@@ -191,56 +191,50 @@ export default async function HomePage() {
             {/* 右側：循環圖 */}
             <AnimateOnScroll direction="right">
               <div className="flex justify-center">
-                <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px]">
-                  {/* 中心大圓 */}
-                  <div className="absolute inset-[15%] rounded-full border border-white/20 flex items-center justify-center">
+                <div className="relative w-[320px] h-[320px] md:w-[420px] md:h-[420px]">
+                  {/* 外層圓環（三個小圓定位在此圓上） */}
+                  <div className="absolute inset-0 rounded-full border border-gray-200" />
+
+                  {/* 中心文字 */}
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-white text-sm md:text-base font-medium">一站式整合</p>
-                      <p className="text-white/60 text-xs md:text-sm mt-1">品牌活動夥伴</p>
+                      <p className="text-primary text-sm md:text-base font-medium">一站式整合</p>
+                      <p className="text-primary/50 text-xs md:text-sm mt-1">品牌活動夥伴</p>
                     </div>
                   </div>
 
-                  {/* 虛線圓環 */}
-                  <div className="absolute inset-0 rounded-full border border-dashed border-white/20" />
+                  {/* 旋轉的箭頭虛線圓環 */}
+                  <svg className="absolute inset-[12%] w-[76%] h-[76%] animate-[spin_20s_linear_infinite]" viewBox="0 0 200 200" fill="none">
+                    <circle cx="100" cy="100" r="90" stroke="rgba(59,130,246,0.3)" strokeWidth="1" strokeDasharray="6 4" fill="none" />
+                    {/* 箭頭標記在圓上 */}
+                    <polygon points="100,7 104,14 96,14" fill="rgba(59,130,246,0.5)" />
+                    <polygon points="178,135 172,140 174,132" fill="rgba(59,130,246,0.5)" />
+                    <polygon points="22,135 28,132 26,140" fill="rgba(59,130,246,0.5)" />
+                  </svg>
 
-                  {/* 頂部圓 — 顧問式企劃 */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                  {/* 頂部圓 — 顧問式活動企劃（12點鐘方向） */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
                       <p className="text-white text-xs md:text-sm font-medium">顧問式</p>
                       <p className="text-white text-xs md:text-sm font-medium">活動企劃</p>
                     </div>
                   </div>
 
-                  {/* 右下圓 — 現場執行 */}
-                  <div className="absolute bottom-[5%] right-0 translate-x-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                  {/* 右下圓 — 專業現場執行管理（5點鐘方向） */}
+                  <div className="absolute bottom-[6%] right-[1%] translate-x-[15%] w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
                       <p className="text-white text-xs md:text-sm font-medium">專業現場</p>
                       <p className="text-white text-xs md:text-sm font-medium">執行管理</p>
                     </div>
                   </div>
 
-                  {/* 左下圓 — 回饋優化 */}
-                  <div className="absolute bottom-[5%] left-0 -translate-x-[10%] w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-gradient-to-br from-blue-600/80 to-blue-900/80 border border-blue-400/30 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                  {/* 左下圓 — 成效回饋持續優化（7點鐘方向） */}
+                  <div className="absolute bottom-[6%] left-[1%] -translate-x-[15%] w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
                       <p className="text-white text-xs md:text-sm font-medium">成效回饋</p>
                       <p className="text-white text-xs md:text-sm font-medium">持續優化</p>
                     </div>
                   </div>
-
-                  {/* 連接箭頭（SVG 弧線） */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 400" fill="none">
-                    {/* 頂 → 右下 */}
-                    <path d="M 230 60 C 310 100, 350 200, 330 280" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
-                    {/* 右下 → 左下 */}
-                    <path d="M 280 340 C 240 380, 160 380, 120 340" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
-                    {/* 左下 → 頂 */}
-                    <path d="M 70 280 C 50 200, 90 100, 170 60" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4 4" markerEnd="url(#arrowhead)" />
-                    <defs>
-                      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                        <path d="M 0 0 L 6 3 L 0 6 Z" fill="rgba(255,255,255,0.4)" />
-                      </marker>
-                    </defs>
-                  </svg>
                 </div>
               </div>
             </AnimateOnScroll>
