@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { ReactNode, useState, useEffect } from 'react';
 import IntroAnimation, { shouldPlayIntro } from './IntroAnimation';
+import CustomCursor from './CustomCursor';
 
 export function LayoutWrapper({
   children,
@@ -40,6 +41,7 @@ export function LayoutWrapper({
   // After check, if no intro needed, show content immediately
   return (
     <>
+      <CustomCursor />
       <div
         style={{
           visibility: contentVisible ? 'visible' : 'hidden',

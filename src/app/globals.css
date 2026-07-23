@@ -27,6 +27,13 @@ body {
   color: var(--color-primary);
 }
 
+/* 自訂游標 — 隱藏預設（僅桌面） */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
