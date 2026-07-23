@@ -166,11 +166,11 @@ export default async function HomePage() {
 
       {/* 核心優勢 — 循環圖 */}
       <section className="py-20 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4">
           {/* 標題 */}
           <AnimateOnScroll>
             <h2 className="text-center text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-16 md:mb-20 tracking-wider" style={{ fontFamily: 'var(--font-heading)' }}>
-              WHY BES EVENTS
+              顧問式服務
             </h2>
           </AnimateOnScroll>
 
@@ -206,33 +206,29 @@ export default async function HomePage() {
                   {/* 旋轉的箭頭虛線圓環 */}
                   <svg className="absolute inset-[12%] w-[76%] h-[76%] animate-[spin_20s_linear_infinite]" viewBox="0 0 200 200" fill="none">
                     <circle cx="100" cy="100" r="90" stroke="rgba(59,130,246,0.3)" strokeWidth="1" strokeDasharray="6 4" fill="none" />
-                    {/* 箭頭標記在圓上 */}
-                    <polygon points="100,7 104,14 96,14" fill="rgba(59,130,246,0.5)" />
-                    <polygon points="178,135 172,140 174,132" fill="rgba(59,130,246,0.5)" />
-                    <polygon points="22,135 28,132 26,140" fill="rgba(59,130,246,0.5)" />
                   </svg>
 
                   {/* 頂部圓 — 顧問式活動企劃（12點鐘方向） */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
-                      <p className="text-white text-xs md:text-sm font-medium">顧問式</p>
-                      <p className="text-white text-xs md:text-sm font-medium">活動企劃</p>
+                      <p className="text-black text-xs md:text-sm font-medium">顧問式</p>
+                      <p className="text-black text-xs md:text-sm font-medium">活動企劃</p>
                     </div>
                   </div>
 
                   {/* 右下圓 — 專業現場執行管理（5點鐘方向） */}
                   <div className="absolute bottom-[6%] right-[1%] translate-x-[15%] w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
-                      <p className="text-white text-xs md:text-sm font-medium">專業現場</p>
-                      <p className="text-white text-xs md:text-sm font-medium">執行管理</p>
+                      <p className="text-black text-xs md:text-sm font-medium">專業現場</p>
+                      <p className="text-black text-xs md:text-sm font-medium">執行管理</p>
                     </div>
                   </div>
 
                   {/* 左下圓 — 成效回饋持續優化（7點鐘方向） */}
                   <div className="absolute bottom-[6%] left-[1%] -translate-x-[15%] w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(59,130,246,0.4)]" style={{ background: 'radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.7) 60%, rgba(37,99,235,0.95) 100%)' }}>
                     <div className="text-center">
-                      <p className="text-white text-xs md:text-sm font-medium">成效回饋</p>
-                      <p className="text-white text-xs md:text-sm font-medium">持續優化</p>
+                      <p className="text-black text-xs md:text-sm font-medium">成效回饋</p>
+                      <p className="text-black text-xs md:text-sm font-medium">持續優化</p>
                     </div>
                   </div>
                 </div>
