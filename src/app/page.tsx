@@ -129,7 +129,7 @@ export default async function HomePage() {
                 我們的服務
               </h2>
               <p className="text-white/70 text-lg">
-                一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值
+                一站式活動服務，<br className="md:hidden" />協助品牌在每一個重要時刻精準傳遞價值
               </p>
             </div>
           </AnimateOnScroll>
