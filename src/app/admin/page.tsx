@@ -59,7 +59,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: '#4A4947' }}>儀表板</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: '#4A4947' }}>總覽</h1>
 
       {unreadContacts > 0 && (
         <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3">

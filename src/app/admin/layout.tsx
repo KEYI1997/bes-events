@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/admin', label: '儀表板', icon: LayoutDashboard },
+  { href: '/admin', label: '總覽', icon: LayoutDashboard },
   { href: '/admin/products', label: '產品管理', icon: Package },
   { href: '/admin/orders', label: '訂單 / 行事曆', icon: CalendarDays },
   { href: '/admin/cases', label: '案例管理', icon: Camera },
