@@ -89,9 +89,9 @@ export default function HeroCarousel() {
                     mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
                   }`}
                 >
-                  活動，不只是辦
+                  一場活動
                   <br />
-                  <span className="text-accent">是打造影響力</span>
+                  <span className="text-accent">改變一次品牌印象</span>
                 </h1>
                 <p
                   className={`text-lg text-white/70 leading-relaxed mb-4 transition-all duration-1000 ease-out delay-300 ${
@@ -165,9 +165,9 @@ export default function HeroCarousel() {
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            活動，不只是辦
+            一場活動
             <br />
-            <span className="text-accent">是打造影響力</span>
+            <span className="text-accent">改變一次品牌印象</span>
           </h1>
           <p
             className={`text-sm text-white/70 leading-relaxed mb-3 transition-all duration-1000 ease-out delay-300 ${
