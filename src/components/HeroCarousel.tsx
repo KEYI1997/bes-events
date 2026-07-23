@@ -151,99 +151,94 @@ export default function HeroCarousel() {
         </div>
       </section>
 
-      {/* === 手機版 Hero（md 以下）：文字在上，圖片在下 === */}
-      <section
-        className="md:hidden flex flex-col h-screen w-full overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* 上半部：黑色背景 + 文字 */}
-        <div className="flex-shrink-0 bg-black px-6 pt-24 pb-0 flex flex-col justify-end">
-          <h1
-            className={`text-3xl font-bold text-white leading-tight mb-4 tracking-tight transition-all duration-1000 ease-out ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-          >
-            活動，不只是辦
-            <br />
-            <span className="text-accent">是打造影響力</span>
-          </h1>
-          <p
-            className={`text-sm text-white/70 leading-relaxed mb-3 transition-all duration-1000 ease-out delay-300 ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-            }`}
-          >
-            專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務。
-          </p>
-          <p
-            className={`text-sm text-white/70 leading-relaxed mb-5 transition-all duration-1000 ease-out delay-500 ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-            }`}
-          >
-            讓品牌的重要時刻，被精準呈現，也被深刻記住。
-          </p>
-          <div
-            className={`flex flex-wrap gap-3 mb-6 transition-all duration-1000 ease-out delay-700 ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-            }`}
-          >
-            <Link
-              href="/contact"
-              className="inline-flex items-center px-5 py-2.5 text-sm font-semibold rounded-lg border-2 border-cta bg-cta text-white"
-            >
-              <ArrowRight size={14} className="mr-2" />
-              <span>免費諮詢</span>
-            </Link>
-            <Link
-              href="/cases"
-              className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/60 text-white text-sm font-semibold rounded-lg"
-            >
-              查看案例
-            </Link>
-          </div>
-        </div>
-
-        {/* 下半部：圖片 + 頂部漸層（漸漸從圖片融入上方黑色） */}
-        <div className="relative flex-1 min-h-0">
-          {/* 圖片輪播 */}
-          {SLIDES.map((slide, index) => (
-            <div
-              key={slide.src}
-              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-                index === current ? 'opacity-100' : 'opacity-0'
+      {/* === 手機版 Hero（md 以下）：sticky 效果，下方區塊滾上來覆蓋 === */}
+      <div className="md:hidden relative h-[100svh]">
+        {/* Hero 內容固定不動（sticky），滾動時被下方區塊蓋住 */}
+        <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
+          {/* 上半部：黑色背景 + 文字 */}
+          <div className="bg-black px-6 pt-24 pb-0">
+            <h1
+              className={`text-3xl font-bold text-white leading-tight mb-4 tracking-tight transition-all duration-1000 ease-out ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             >
-              <img
-                src={slide.src}
-                alt={slide.alt}
-                className="w-full h-full object-cover"
-              />
+              活動，不只是辦
+              <br />
+              <span className="text-accent">是打造影響力</span>
+            </h1>
+            <p
+              className={`text-sm text-white/70 leading-relaxed mb-3 transition-all duration-1000 ease-out delay-300 ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
+              專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務。
+            </p>
+            <p
+              className={`text-sm text-white/70 leading-relaxed mb-5 transition-all duration-1000 ease-out delay-500 ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
+              讓品牌的重要時刻，被精準呈現，也被深刻記住。
+            </p>
+            <div
+              className={`flex flex-wrap gap-3 mb-6 transition-all duration-1000 ease-out delay-700 ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
+              <Link
+                href="/contact"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-semibold rounded-lg border-2 border-cta bg-cta text-white"
+              >
+                <ArrowRight size={14} className="mr-2" />
+                <span>免費諮詢</span>
+              </Link>
+              <Link
+                href="/cases"
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/60 text-white text-sm font-semibold rounded-lg"
+              >
+                查看案例
+              </Link>
             </div>
-          ))}
+          </div>
 
-          {/* 圖片頂部漸層：往上漸變到黑色，與文字區銜接 */}
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black to-transparent" />
-
-          {/* 指示點 */}
-          <div
-            className={`absolute bottom-6 left-6 flex gap-2 z-20 transition-all duration-700 ease-out delay-1000 ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            {SLIDES.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrent(index)}
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  index === current ? 'w-8 bg-white' : 'w-4 bg-white/40 hover:bg-white/70'
+          {/* 下半部：圖片 */}
+          <div className="relative flex-1 h-[calc(100svh-280px)]">
+            {SLIDES.map((slide, index) => (
+              <div
+                key={slide.src}
+                className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                  index === current ? 'opacity-100' : 'opacity-0'
                 }`}
-                aria-label={`切換到第 ${index + 1} 張圖片`}
-              />
+              >
+                <img
+                  src={slide.src}
+                  alt={slide.alt}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ))}
+            {/* 頂部漸層銜接黑色文字區 */}
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black to-transparent" />
+            {/* 指示點 */}
+            <div
+              className={`absolute bottom-6 left-6 flex gap-2 z-20 transition-all duration-700 ease-out delay-1000 ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
+              {SLIDES.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrent(index)}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    index === current ? 'w-8 bg-white' : 'w-4 bg-white/40 hover:bg-white/70'
+                  }`}
+                  aria-label={`切換到第 ${index + 1} 張圖片`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 }
