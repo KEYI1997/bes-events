@@ -84,27 +84,33 @@ export default function HeroCarousel() {
         <div className="absolute inset-0 flex items-center justify-end">
           <div className="w-full md:w-[45%] px-6 md:px-12 lg:pr-20">
             <div className="max-w-md">
-              {/* 標題 — 從右方滑入 */}
+              {/* 標題 — 桌面從右滑入，手機從下浮入 */}
               <h1
                 className={`text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5 tracking-tight transition-all duration-1000 ease-out ${
-                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                  mounted
+                    ? 'opacity-100 translate-x-0 translate-y-0'
+                    : 'opacity-0 translate-y-8 md:translate-y-0 md:translate-x-12'
                 }`}
               >
                 活動，不只是辦
                 <br />
                 <span className="text-accent">是打造影響力</span>
               </h1>
-              {/* 描述文字 — 延遲後從右方滑入 */}
+              {/* 描述文字 — 延遲後進入 */}
               <p
                 className={`text-base md:text-lg text-white/70 leading-relaxed mb-4 transition-all duration-1000 ease-out delay-300 ${
-                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                  mounted
+                    ? 'opacity-100 translate-x-0 translate-y-0'
+                    : 'opacity-0 translate-y-6 md:translate-y-0 md:translate-x-12'
                 }`}
               >
                 專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到到整體專案企劃與媒體曝光的一站式服務。
               </p>
               <p
                 className={`text-base md:text-lg text-white/70 leading-relaxed mb-8 transition-all duration-1000 ease-out delay-500 ${
-                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                  mounted
+                    ? 'opacity-100 translate-x-0 translate-y-0'
+                    : 'opacity-0 translate-y-6 md:translate-y-0 md:translate-x-12'
                 }`}
               >
                 讓品牌的重要時刻，被精準呈現，也被深刻記住。
