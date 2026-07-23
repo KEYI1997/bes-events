@@ -12,6 +12,7 @@ export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % SLIDES.length);
@@ -19,6 +20,12 @@ export default function HeroCarousel() {
 
   const prev = useCallback(() => {
     setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+  }, []);
+
+  // 進場動畫觸發
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   // 自動輪播
@@ -43,14 +50,14 @@ export default function HeroCarousel() {
 
   return (
     <section
-      className="relative h-screen w-full"
+      className="relative h-screen w-full overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* 內縮的圓角容器 */}
       <div className="relative w-full h-full overflow-hidden">
-        {/* 背景圖片輪播 */}
+        {/* 背景圖片輪播 — 帶 Ken Burns 緩慢放大效果 */}
         {SLIDES.map((slide, index) => (
           <div
             key={slide.src}
@@ -61,7 +68,9 @@ export default function HeroCarousel() {
             <img
               src={slide.src}
               alt={slide.alt}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover transition-transform duration-[20000ms] ease-out ${
+                mounted && index === current ? 'scale-110' : 'scale-100'
+              }`}
             />
           </div>
         ))}
@@ -71,22 +80,41 @@ export default function HeroCarousel() {
         {/* 底部微漸層 */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
-        {/* 文字內容 — 右側 */}
+        {/* 文字內容 — 右側（帶進場動畫） */}
         <div className="absolute inset-0 flex items-center justify-end">
           <div className="w-full md:w-[45%] px-6 md:px-12 lg:pr-20">
             <div className="max-w-md">
-              <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5 tracking-tight">
+              {/* 標題 — 從右方滑入 */}
+              <h1
+                className={`text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5 tracking-tight transition-all duration-1000 ease-out ${
+                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                }`}
+              >
                 活動，不只是辦
                 <br />
                 <span className="text-accent">是打造影響力</span>
               </h1>
-              <p className="text-base md:text-lg text-white/70 leading-relaxed mb-4">
+              {/* 描述文字 — 延遲後從右方滑入 */}
+              <p
+                className={`text-base md:text-lg text-white/70 leading-relaxed mb-4 transition-all duration-1000 ease-out delay-300 ${
+                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                }`}
+              >
                 專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到到整體專案企劃與媒體曝光的一站式服務。
               </p>
-              <p className="text-base md:text-lg text-white/70 leading-relaxed mb-8">
+              <p
+                className={`text-base md:text-lg text-white/70 leading-relaxed mb-8 transition-all duration-1000 ease-out delay-500 ${
+                  mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                }`}
+              >
                 讓品牌的重要時刻，被精準呈現，也被深刻記住。
               </p>
-              <div className="flex flex-wrap gap-4">
+              {/* 按鈕 — 延遲最久，從下方浮入 */}
+              <div
+                className={`flex flex-wrap gap-4 transition-all duration-1000 ease-out delay-700 ${
+                  mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                }`}
+              >
                 <Link
                   href="/contact"
                   className="group relative inline-flex items-center px-6 py-3 text-sm font-semibold rounded-lg border-2 border-cta transition-all duration-300 ease-in-out bg-cta text-white hover:bg-white hover:text-cta overflow-hidden"
@@ -109,7 +137,11 @@ export default function HeroCarousel() {
         </div>
 
         {/* 底部指示點 */}
-        <div className="absolute bottom-8 right-6 md:right-12 lg:right-20 flex gap-2 z-20">
+        <div
+          className={`absolute bottom-8 right-6 md:right-12 lg:right-20 flex gap-2 z-20 transition-all duration-700 ease-out delay-1000 ${
+            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
           {SLIDES.map((_, index) => (
             <button
               key={index}
