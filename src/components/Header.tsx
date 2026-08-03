@@ -87,7 +87,7 @@ export default function Header() {
         visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}>
         <div className={`transition-all duration-300 ${
-          scrolled ? 'mx-4 md:mx-8 mt-3 bg-black/70 rounded-[10px]' : ''
+          scrolled ? 'mx-4 md:mx-8 mt-3 bg-black/70 rounded-[10px]' : 'bg-white/80 backdrop-blur-md'
         }`}>
           <div className="px-6 md:px-12 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center flex-shrink-0">
@@ -107,7 +107,7 @@ export default function Header() {
                         <Link
                           href={item.href}
                           className={`flex items-center gap-1.5 text-base font-medium px-3 py-1.5 rounded-[8px] transition-colors ${
-                            isActive(item.href) ? 'bg-cta text-white' : 'text-white hover:bg-cta hover:text-white'
+                            isActive(item.href) ? 'bg-cta text-white' : scrolled ? 'text-white hover:bg-cta hover:text-white' : 'text-primary hover:bg-cta hover:text-white'
                           }`}
                         >
                           {item.label}
@@ -133,7 +133,7 @@ export default function Header() {
                       <Link
                         href={item.href}
                         className={`text-base font-medium px-3 py-1.5 rounded-[8px] transition-colors ${
-                          isActive(item.href) ? 'bg-cta text-white' : 'text-white hover:bg-cta hover:text-white'
+                          isActive(item.href) ? 'bg-cta text-white' : scrolled ? 'text-white hover:bg-cta hover:text-white' : 'text-primary hover:bg-cta hover:text-white'
                         }`}
                       >
                         {item.label}
@@ -145,15 +145,15 @@ export default function Header() {
 
               <button
                 onClick={() => setFullNavOpen(true)}
-                className="p-2 text-white hover:text-white/70 transition-colors"
+                className={`p-2 transition-colors ${scrolled ? 'text-white hover:text-white/70' : 'text-primary hover:text-cta'}`}
                 aria-label="開啟網站導覽"
               >
                 <Menu size={32} />
               </button>
             </div>
           </div>
-          {/* 底部白色細線 */}
-          {!scrolled && <div className="h-px bg-white/40 mx-6 md:mx-12" />}
+          {/* 底部細線 */}
+          {!scrolled && <div className="h-px bg-primary/10 mx-6 md:mx-12" />}
         </div>
       </header>
 

@@ -15,6 +15,8 @@ export default function ContactsPage() {
   
   // 篩選狀態
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'replied' | 'converted'>('all');
+  const [filterServiceType, setFilterServiceType] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'event_date_asc' | 'event_date_desc'>('newest');
   
   const [orderForm, setOrderForm] = useState({
     product_id: '',
@@ -166,21 +168,29 @@ export default function ContactsPage() {
   };
 
   // 篩選後的資料
-  const filteredContacts = contacts.filter(c => {
-    if (filterStatus === 'all') return true;
-    if (filterStatus === 'pending') return !c.read || (!c.status && c.read);
-    if (filterStatus === 'replied') return c.status === 'replied';
-    if (filterStatus === 'converted') return c.status === 'converted';
-    return true;
-  });
+  const filteredContacts = contacts
+    .filter(c => {
+      // 狀態篩選
+      if (filterStatus !== 'all') {
+        if (filterStatus === 'pending' && (c.status === 'replied' || c.status === 'converted')) return false;
+        if (filterStatus === 'replied' && c.status !== 'replied') return false;
+        if (filterStatus === 'converted' && c.status !== 'converted') return false;
+      }
+      // 服務類型篩選
+      if (filterServiceType !== 'all' && c.service_type !== filterServiceType) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // 排序
+      if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (sortBy === 'event_date_asc') return new Date(a.event_date || '9999-12-31').getTime() - new Date(b.event_date || '9999-12-31').getTime();
+      if (sortBy === 'event_date_desc') return new Date(b.event_date || '0000-01-01').getTime() - new Date(a.event_date || '0000-01-01').getTime();
+      return 0;
+    });
 
-  // 統計各狀態數量
-  const statusCounts = {
-    all: contacts.length,
-    pending: contacts.filter(c => !c.read || (!c.status && c.read)).length,
-    replied: contacts.filter(c => c.status === 'replied').length,
-    converted: contacts.filter(c => c.status === 'converted').length,
-  };
+  // 取得所有服務類型（去重）
+  const serviceTypes = [...new Set(contacts.map(c => c.service_type).filter(Boolean))];
 
   const unreadCount = contacts.filter(c => !c.read).length;
 
@@ -200,50 +210,83 @@ export default function ContactsPage() {
       </div>
 
       {/* 篩選區 */}
-      <div className="mb-4 flex items-center gap-2">
-        <Filter className="w-4 h-4 text-gray-500" />
-        <span className="text-sm text-gray-500">篩選：</span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilterStatus('all')}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
-              filterStatus === 'all' 
-                ? 'bg-gray-800 text-white border-gray-800' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-            }`}
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        {/* 狀態篩選 */}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-500">狀態：</span>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setFilterStatus('all')}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                filterStatus === 'all' 
+                  ? 'bg-gray-800 text-white border-gray-800' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              全部
+            </button>
+            <button
+              onClick={() => setFilterStatus('pending')}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                filterStatus === 'pending' 
+                  ? 'bg-amber-500 text-white border-amber-500' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              待處理
+            </button>
+            <button
+              onClick={() => setFilterStatus('replied')}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                filterStatus === 'replied' 
+                  ? 'bg-gray-500 text-white border-gray-500' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              已回覆
+            </button>
+            <button
+              onClick={() => setFilterStatus('converted')}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                filterStatus === 'converted' 
+                  ? 'bg-green-500 text-white border-green-500' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              已轉訂單
+            </button>
+          </div>
+        </div>
+
+        {/* 服務類型篩選 */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">服務類型：</span>
+          <select
+            value={filterServiceType}
+            onChange={e => setFilterServiceType(e.target.value)}
+            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 bg-white"
           >
-            全部 ({statusCounts.all})
-          </button>
-          <button
-            onClick={() => setFilterStatus('pending')}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
-              filterStatus === 'pending' 
-                ? 'bg-amber-500 text-white border-amber-500' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-            }`}
+            <option value="all">全部</option>
+            {serviceTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 排序 */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">排序：</span>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as typeof sortBy)}
+            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 bg-white"
           >
-            待處理 ({statusCounts.pending})
-          </button>
-          <button
-            onClick={() => setFilterStatus('replied')}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
-              filterStatus === 'replied' 
-                ? 'bg-gray-500 text-white border-gray-500' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-            }`}
-          >
-            已回覆 ({statusCounts.replied})
-          </button>
-          <button
-            onClick={() => setFilterStatus('converted')}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
-              filterStatus === 'converted' 
-                ? 'bg-green-500 text-white border-green-500' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-            }`}
-          >
-            已轉訂單 ({statusCounts.converted})
-          </button>
+            <option value="newest">提交時間（新→舊）</option>
+            <option value="oldest">提交時間（舊→新）</option>
+            <option value="event_date_asc">活動日期（近→遠）</option>
+            <option value="event_date_desc">活動日期（遠→近）</option>
+          </select>
         </div>
       </div>
 
