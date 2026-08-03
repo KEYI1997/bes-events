@@ -66,27 +66,26 @@ export default function HeroCarousel() {
           </div>
         ))}
 
-        {/* 自然的暗色漸層覆蓋 — 從左到右漸淡 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-        {/* 底部微漸層 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        {/* 暗色覆蓋層 — 讓文字更清晰 */}
+        <div className="absolute inset-0 bg-black/50" />
 
-        {/* 文字內容 — 左側 */}
-        <div className="absolute inset-0 flex items-center justify-start">
-          <div className="w-full md:w-[60%] px-6 md:px-12 lg:pl-[12%]">
-            <div className="max-w-xl">
-              <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5 tracking-tight">
+        {/* 文字內容 — 置中 */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center px-6 md:px-12">
+            <div className="max-w-3xl mx-auto">
+              <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-6 tracking-tight">
                 每一場活動
                 <br />
                 成為品牌被記住的時刻
               </h1>
-              <p className="text-lg md:text-xl text-white/70 leading-relaxed mb-4">
-                從企劃、設計到現場執行，境曜整合每一個環節，將品牌想法完整呈現。
+              <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
+                從企劃、設計到現場執行
+                <br />
+                境曜整合每一個環節
+                <br />
+                將品牌想法完整呈現
               </p>
-              <p className="text-lg md:text-xl text-white/70 leading-relaxed mb-8">
-                專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務。
-              </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Link
                   href="/contact"
                   className="group relative inline-flex items-center px-6 py-3 text-sm font-semibold rounded-lg border-2 border-cta transition-all duration-300 ease-in-out bg-cta text-white hover:bg-white hover:text-cta overflow-hidden"
@@ -109,7 +108,7 @@ export default function HeroCarousel() {
         </div>
 
         {/* 底部指示點 */}
-        <div className="absolute bottom-8 left-6 md:left-12 lg:left-[12%] flex gap-2 z-20">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {SLIDES.map((_, index) => (
             <button
               key={index}
