@@ -150,8 +150,8 @@ export default async function HomePage() {
       </section>
 
       {/* 分隔線 */}
-      <div className="flex justify-center bg-white">
-        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
       </div>
 
       {/* 核心優勢 */}
@@ -183,8 +183,8 @@ export default async function HomePage() {
       </section>
 
       {/* 分隔線 */}
-      <div className="flex justify-center bg-white">
-        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
       </div>
 
       {/* 案例展示輪播 */}
@@ -223,8 +223,8 @@ export default async function HomePage() {
       </section>
 
       {/* 分隔線 */}
-      <div className="flex justify-center bg-white">
-        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
       </div>
 
       {/* 客戶一覽 */}
@@ -264,8 +264,8 @@ export default async function HomePage() {
       </section>
 
       {/* 分隔線 */}
-      <div className="flex justify-center bg-white">
-        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
       </div>
 
       {/* 案例預覽 */}
@@ -324,8 +324,8 @@ export default async function HomePage() {
           </div>
         </section>
         {/* 分隔線 */}
-        <div className="flex justify-center bg-white">
-          <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+        <div className="flex justify-center bg-white px-8">
+          <div className="w-full h-[2px] bg-gray-300"></div>
         </div>
         </>
       )}
@@ -361,8 +361,8 @@ export default async function HomePage() {
           </div>
         </section>
         {/* 分隔線 */}
-        <div className="flex justify-center bg-white">
-          <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+        <div className="flex justify-center bg-white px-8">
+          <div className="w-full h-[2px] bg-gray-300"></div>
         </div>
         </>
       )}
