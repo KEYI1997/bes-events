@@ -154,39 +154,6 @@ export default async function HomePage() {
         <div className="w-full h-[2px] bg-gray-300"></div>
       </div>
 
-      {/* 核心優勢 */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <AnimateOnScroll>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                為什麼選擇境曜？
-              </h2>
-            </div>
-          </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {ADVANTAGES.map((adv, i) => (
-              <AnimateOnScroll key={adv.title} delay={i * 100}>
-                <div className="text-center p-6">
-                  <div className="w-16 h-16 bg-cta/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <adv.icon size={28} className="text-cta" />
-                  </div>
-                  <h3 className="text-lg font-bold text-primary mb-2">
-                    {adv.title}
-                  </h3>
-                  <p className="text-primary/70 text-sm">{adv.desc}</p>
-                </div>
-              </AnimateOnScroll>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
       {/* 案例展示輪播 */}
       <section className="py-16 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 mb-10">
