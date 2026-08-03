@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff } from 'lucide-react';
 import type { Case } from '@/lib/types';
 
-const CATEGORIES = ['記者會/發表會', '尾牙春酒', '企業家庭日', '典禮節慶', '市集', '展覽'] as const;
+const CATEGORIES = ['開幕典禮', '記者會', '新品發表會', '展覽攤位', '政府活動', '春酒尾牙', '典禮節慶'] as const;
 
 const EMPTY_CASE = {
-  title: '', category: '記者會/發表會' as Case['category'],
+  title: '', category: '開幕典禮' as Case['category'],
   description: '', image_url: '', client_name: '', event_date: '', visible: true,
 };
 

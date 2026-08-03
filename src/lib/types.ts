@@ -37,7 +37,7 @@ export interface Order {
 export interface Case {
   id: string;
   title: string;
-  category: '記者會/發表會' | '尾牙春酒' | '企業家庭日' | '典禮節慶' | '市集' | '展覽';
+  category: '開幕典禮' | '記者會' | '新品發表會' | '展覽攤位' | '政府活動' | '春酒尾牙' | '典禮節慶';
   description: string;
   image_url: string;
   client_name: string;
