@@ -6,6 +6,7 @@ export interface Product {
   category: '啟動儀式' | '燈光音響舞台' | '外派調酒' | 'Show Girl';
   service_content: string;
   notice: string;
+  image_url?: string;
   image_urls: string[];
   size_image_urls: string[];
   ai_file_url: string;
