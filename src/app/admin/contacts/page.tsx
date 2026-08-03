@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Mail, MailOpen, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote } from 'lucide-react';
+import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, Filter } from 'lucide-react';
 import type { Contact, Product } from '@/lib/types';
 
 export default function ContactsPage() {
@@ -12,6 +12,10 @@ export default function ContactsPage() {
   const [detail, setDetail] = useState<Contact | null>(null);
   const [convertContact, setConvertContact] = useState<Contact | null>(null);
   const [staffNoteEdit, setStaffNoteEdit] = useState<{ id: string; note: string } | null>(null);
+  
+  // 篩選狀態
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'replied' | 'converted'>('all');
+  
   const [orderForm, setOrderForm] = useState({
     product_id: '',
     customer_name: '',
@@ -141,10 +145,10 @@ export default function ContactsPage() {
 
   // 取得列的背景色
   const getRowBgColor = (contact: Contact) => {
-    if (contact.status === 'converted') return 'bg-green-50'; // 已轉訂單 - 淺綠色
-    if (contact.status === 'replied') return 'bg-gray-100'; // 已回覆 - 淺灰色
-    if (!contact.read) return 'bg-amber-50/50'; // 未讀 - 淺黃色
-    return ''; // 預設
+    if (contact.status === 'converted') return 'bg-green-50';
+    if (contact.status === 'replied') return 'bg-gray-100';
+    if (!contact.read) return 'bg-amber-50/50';
+    return '';
   };
 
   // 取得狀態標籤
@@ -161,6 +165,23 @@ export default function ContactsPage() {
     return <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">已讀</span>;
   };
 
+  // 篩選後的資料
+  const filteredContacts = contacts.filter(c => {
+    if (filterStatus === 'all') return true;
+    if (filterStatus === 'pending') return !c.read || (!c.status && c.read);
+    if (filterStatus === 'replied') return c.status === 'replied';
+    if (filterStatus === 'converted') return c.status === 'converted';
+    return true;
+  });
+
+  // 統計各狀態數量
+  const statusCounts = {
+    all: contacts.length,
+    pending: contacts.filter(c => !c.read || (!c.status && c.read)).length,
+    replied: contacts.filter(c => c.status === 'replied').length,
+    converted: contacts.filter(c => c.status === 'converted').length,
+  };
+
   const unreadCount = contacts.filter(c => !c.read).length;
 
   return (
@@ -175,6 +196,54 @@ export default function ContactsPage() {
         <div className="flex gap-2 text-xs">
           <span className="px-2 py-1 rounded bg-green-50 text-green-700">淺綠 = 已轉訂單</span>
           <span className="px-2 py-1 rounded bg-gray-100 text-gray-600">淺灰 = 已回覆</span>
+        </div>
+      </div>
+
+      {/* 篩選區 */}
+      <div className="mb-4 flex items-center gap-2">
+        <Filter className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-gray-500">篩選：</span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilterStatus('all')}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+              filterStatus === 'all' 
+                ? 'bg-gray-800 text-white border-gray-800' 
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            全部 ({statusCounts.all})
+          </button>
+          <button
+            onClick={() => setFilterStatus('pending')}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+              filterStatus === 'pending' 
+                ? 'bg-amber-500 text-white border-amber-500' 
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            待處理 ({statusCounts.pending})
+          </button>
+          <button
+            onClick={() => setFilterStatus('replied')}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+              filterStatus === 'replied' 
+                ? 'bg-gray-500 text-white border-gray-500' 
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            已回覆 ({statusCounts.replied})
+          </button>
+          <button
+            onClick={() => setFilterStatus('converted')}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+              filterStatus === 'converted' 
+                ? 'bg-green-500 text-white border-green-500' 
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            已轉訂單 ({statusCounts.converted})
+          </button>
         </div>
       </div>
 
@@ -196,7 +265,7 @@ export default function ContactsPage() {
                 </tr>
               </thead>
               <tbody>
-                {contacts.map(c => (
+                {filteredContacts.map(c => (
                   <tr 
                     key={c.id} 
                     onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} 
@@ -224,16 +293,6 @@ export default function ContactsPage() {
                         <button onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} className="p-1.5 rounded-lg hover:bg-white/50" title="檢視">
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>
-                        {c.status !== 'replied' && c.status !== 'converted' && (
-                          <button onClick={() => markAsReplied(c.id)} className="p-1.5 rounded-lg hover:bg-white/50" title="標記已回覆">
-                            <MessageSquare className="w-4 h-4 text-gray-500" />
-                          </button>
-                        )}
-                        {c.status !== 'converted' && (
-                          <button onClick={() => openConvert(c)} className="p-1.5 rounded-lg hover:bg-white/50" title="轉為訂單">
-                            <ArrowRightCircle className="w-4 h-4 text-green-600" />
-                          </button>
-                        )}
                         <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="刪除">
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </button>
@@ -241,7 +300,13 @@ export default function ContactsPage() {
                     </td>
                   </tr>
                 ))}
-                {contacts.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">尚無諮詢紀錄</td></tr>}
+                {filteredContacts.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                      {contacts.length === 0 ? '尚無諮詢紀錄' : '沒有符合篩選條件的紀錄'}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -333,7 +398,7 @@ export default function ContactsPage() {
                     onClick={() => { markAsReplied(detail.id); setDetail({ ...detail, status: 'replied' }); }}
                     className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 transition"
                   >
-                    <MessageSquare className="w-4 h-4" /> 已回覆
+                    <MessageSquare className="w-4 h-4" /> 標記已回覆
                   </button>
                 )}
               </div>
