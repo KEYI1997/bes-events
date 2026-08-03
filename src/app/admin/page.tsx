@@ -71,7 +71,7 @@ const TABLES = [
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [contactStats, setContactStats] = useState({ total: 0, unread: 0, read: 0 });
-  const [orderStats, setOrderStats] = useState({ total: 0, processing: 0, completed: 0 });
+  const [orderStats, setOrderStats] = useState({ total: 0, processing: 0, completed: 0, cancelled: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -114,11 +114,14 @@ export default function AdminDashboard() {
             const completed = orderData.data.filter((o: { status: string }) => 
               o.status === '已歸還'
             ).length;
-            setOrderStats({ total, processing, completed });
+            const cancelled = orderData.data.filter((o: { status: string }) => 
+              o.status === '已取消'
+            ).length;
+            setOrderStats({ total, processing, completed, cancelled });
           }
         } catch {
           // 如果沒有 orders 表格，使用預設值
-          setOrderStats({ total: 0, processing: 0, completed: 0 });
+          setOrderStats({ total: 0, processing: 0, completed: 0, cancelled: 0 });
         }
 
       } catch (err) {
@@ -212,32 +215,38 @@ export default function AdminDashboard() {
             </h2>
             <span className="text-xs text-gray-400">確認後的正式訂單</span>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-2">總訂單數</p>
-              <p className="text-3xl font-bold" style={{ color: '#4A4947' }}>
+              <p className="text-xs text-gray-500 mb-2">總訂單</p>
+              <p className="text-2xl font-bold" style={{ color: '#4A4947' }}>
                 {loading ? '—' : orderStats.total}
               </p>
             </div>
             <div className="text-center border-x border-gray-100">
               <p className="text-xs text-gray-500 mb-2">進行中</p>
-              <p className="text-3xl font-bold" style={{ color: '#4A4947' }}>
+              <p className="text-2xl font-bold" style={{ color: '#4A4947' }}>
                 {loading ? '—' : orderStats.processing}
               </p>
             </div>
-            <div className="text-center">
+            <div className="text-center border-r border-gray-100">
               <p className="text-xs text-gray-500 mb-2">已完成</p>
-              <p className="text-3xl font-bold" style={{ color: '#4A4947' }}>
+              <p className="text-2xl font-bold" style={{ color: '#4A4947' }}>
                 {loading ? '—' : orderStats.completed}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-2">已取消</p>
+              <p className="text-2xl font-bold" style={{ color: '#9CA3AF' }}>
+                {loading ? '—' : orderStats.cancelled}
               </p>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">完成率</span>
+              <span className="text-gray-500">完成率（不含取消）</span>
               <span className="font-medium" style={{ color: '#4A4947' }}>
-                {orderStats.total > 0 
-                  ? `${Math.round((orderStats.completed / orderStats.total) * 100)}%` 
+                {(orderStats.total - orderStats.cancelled) > 0 
+                  ? `${Math.round((orderStats.completed / (orderStats.total - orderStats.cancelled)) * 100)}%` 
                   : '0%'}
               </span>
             </div>
@@ -245,8 +254,8 @@ export default function AdminDashboard() {
               <div 
                 className="h-full rounded-full transition-all duration-500"
                 style={{ 
-                  width: orderStats.total > 0 
-                    ? `${(orderStats.completed / orderStats.total) * 100}%` 
+                  width: (orderStats.total - orderStats.cancelled) > 0 
+                    ? `${(orderStats.completed / (orderStats.total - orderStats.cancelled)) * 100}%` 
                     : '0%',
                   backgroundColor: '#4A4947'
                 }}

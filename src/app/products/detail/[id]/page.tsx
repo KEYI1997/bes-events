@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
+import ImageLightbox from '@/components/ImageLightbox';
 
 interface ProductDetail {
   id: string;
@@ -37,6 +38,7 @@ export default function ProductDetailPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [contactOpen, setContactOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -71,7 +73,7 @@ export default function ProductDetailPage() {
           <div className="w-full lg:w-[64.4%] flex flex-col">
             {images.length > 0 ? (
               <>
-                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm group cursor-pointer">
+                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
                   <Image
                     src={images[currentSlide] || images[0]}
                     alt={product.name}
@@ -93,14 +95,14 @@ export default function ProductDetailPage() {
                   {images.length > 1 && (
                     <>
                       <button
-                        onClick={() => setCurrentSlide((prev) => (prev - 1 + images.length) % images.length)}
+                        onClick={(e) => { e.stopPropagation(); setCurrentSlide((prev) => (prev - 1 + images.length) % images.length); }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center transition-all hover:scale-110"
                         aria-label="上一張"
                       >
                         <ChevronLeft className="w-6 h-6 text-gray-700" />
                       </button>
                       <button
-                        onClick={() => setCurrentSlide((prev) => (prev + 1) % images.length)}
+                        onClick={(e) => { e.stopPropagation(); setCurrentSlide((prev) => (prev + 1) % images.length); }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center transition-all hover:scale-110"
                         aria-label="下一張"
                       >
@@ -259,6 +261,15 @@ export default function ProductDetailPage() {
         onClose={() => setContactOpen(false)}
         productName={product.name}
       />
+
+      {/* 圖片放大 Lightbox */}
+      {lightboxOpen && images.length > 0 && (
+        <ImageLightbox
+          src={images[currentSlide] || images[0]}
+          alt={product.name}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }
