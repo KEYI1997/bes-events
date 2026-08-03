@@ -60,7 +60,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F9F7F0' }}>
       {/* 返回 */}
-      <div className="max-w-[1504px] mx-auto px-12 pt-20">
+      <div className="max-w-[1504px] mx-auto px-12 pt-28">
         <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition">
           <ChevronLeft className="w-4 h-4" /> 返回列表
         </button>
@@ -135,8 +135,7 @@ export default function ProductDetailPage() {
             <div className="bg-white rounded-2xl p-8 shadow-sm flex flex-col justify-center w-full">
               <h1 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#4A4947' }}>{product.name}</h1>
               <hr className="border-gray-200 mb-6" />
-              <p className="text-sm font-medium mb-1" style={{ color: '#AA7452' }}>價格</p>
-              <p className="text-3xl font-bold mb-8" style={{ color: '#AA7452' }}>{product.price_note || '洽詢'}</p>
+              <p className="text-3xl font-bold mb-8" style={{ color: '#AA7452' }}>NT {product.price_note || '洽詢'}</p>
 
               {/* 建立訂單 */}
               <button

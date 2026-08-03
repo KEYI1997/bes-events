@@ -208,7 +208,7 @@ export default function ContactsPage() {
                     <td className="px-4 py-3 font-medium">
                       {c.name}
                       {c.staff_note && (
-                        <StickyNote className="w-3 h-3 inline-block ml-1 text-amber-500" title="有工作人員備註" />
+                        <StickyNote className="w-3 h-3 inline-block ml-1 text-amber-500" />
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">{c.phone}</td>
