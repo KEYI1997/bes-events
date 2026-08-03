@@ -79,11 +79,11 @@ export default function HeroCarousel() {
                 成為品牌被記住的時刻
               </h1>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
-                從企劃、設計到現場執行
+                從企劃、設計到現場執行，境曜整合每一個環節，將品牌想法完整呈現
                 <br />
-                境曜整合每一個環節
+                專注企業活動整合與現場執行
                 <br />
-                將品牌想法完整呈現
+                提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
                 <Link
