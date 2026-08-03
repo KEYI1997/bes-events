@@ -367,35 +367,6 @@ export default async function HomePage() {
         </>
       )}
 
-      {/* CTA 標語區 */}
-      <section className="relative py-20 overflow-hidden">
-        {/* 背景圖片 */}
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{ backgroundImage: "url('/images/cta-bg.png')", backgroundPosition: "center calc(50% + 80px)" }}
-        />
-        {/* 黑色遮罩 */}
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative max-w-4xl mx-auto px-4">
-          <AnimateOnScroll>
-            <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                讓我們為您打造完美活動
-              </h2>
-              <p className="text-white/70 text-lg mb-6">
-                無論規模大小，我們都能提供最專業的活動服務
-              </p>
-              <a
-                href="tel:0912727596"
-                className="inline-flex items-center gap-2 text-white text-xl font-bold"
-              >
-                <Phone size={24} className="text-white" /> 0912-727-596
-              </a>
-            </div>
-          </AnimateOnScroll>
-        </div>
-      </section>
-
       {/* 聯絡表單區 */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4">
