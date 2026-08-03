@@ -255,7 +255,7 @@ export default async function HomePage() {
               { name: "台大PM校友會", file: "台大PM校友會.jpg" },
               { name: "星宇航空", file: "星宇航空.png" },
             ].map((client, i) => (
-              <div key={i} className="flex-shrink-0 w-[240px] h-[120px] flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
+              <div key={i} className="flex-shrink-0 w-[240px] h-[120px] flex items-center justify-center">
                 <img src={`/images/clients/${client.file}`} alt={client.name} className="max-w-full max-h-full object-contain" />
               </div>
             ))}
