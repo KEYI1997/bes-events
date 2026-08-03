@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -15,7 +15,7 @@
   --color-dark: #3A3937;           /* 更深的主色 */
   --color-mobile-nav: #DBD2C2;     /* 手機選單橫幅 */
   /* === 字體 === */
-  --font-heading: "Poppins", sans-serif;
+  --font-heading: "Noto Sans TC", sans-serif;
   --font-body: "Noto Sans TC", sans-serif;
   /* === 自訂 transition === */
   --transition-duration-1500: 1500ms;

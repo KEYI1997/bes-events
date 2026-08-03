@@ -83,13 +83,13 @@ export default function Header() {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 px-6 md:px-12 pt-4 transition-all duration-500 ease-in-out ${
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
         visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}>
-        <div className={`max-w-7xl mx-auto transition-all duration-300 ${
-          scrolled ? 'bg-black/30 backdrop-blur-md rounded-[12px]' : ''
+        <div className={`transition-all duration-300 ${
+          scrolled ? 'mx-4 md:mx-8 mt-3 bg-black/70 rounded-[10px]' : ''
         }`}>
-          <div className="px-6 py-3 flex items-center justify-between">
+          <div className="px-6 md:px-12 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center flex-shrink-0">
               <Image src="/images/logo/logo-header.png" alt="境曜有限公司" width={180} height={180} className="rounded-[8px] w-auto h-14" unoptimized />
             </Link>
@@ -106,7 +106,7 @@ export default function Header() {
                       >
                         <Link
                           href={item.href}
-                          className={`flex items-center gap-1.5 text-base font-medium px-5 py-2.5 rounded-[10px] transition-colors ${
+                          className={`flex items-center gap-1.5 text-base font-medium px-3 py-1.5 rounded-[8px] transition-colors ${
                             isActive(item.href) ? 'bg-cta text-white' : 'text-white hover:bg-cta hover:text-white'
                           }`}
                         >
@@ -132,7 +132,7 @@ export default function Header() {
                     ) : (
                       <Link
                         href={item.href}
-                        className={`text-base font-medium px-5 py-2.5 rounded-[10px] transition-colors ${
+                        className={`text-base font-medium px-3 py-1.5 rounded-[8px] transition-colors ${
                           isActive(item.href) ? 'bg-cta text-white' : 'text-white hover:bg-cta hover:text-white'
                         }`}
                       >
@@ -152,6 +152,8 @@ export default function Header() {
               </button>
             </div>
           </div>
+          {/* 底部白色細線 */}
+          {!scrolled && <div className="h-px bg-white/40 mx-6 md:mx-12" />}
         </div>
       </header>
 

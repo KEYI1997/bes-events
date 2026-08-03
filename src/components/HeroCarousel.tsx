@@ -61,30 +61,30 @@ export default function HeroCarousel() {
             <img
               src={slide.src}
               alt={slide.alt}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover scale-x-[-1]"
             />
           </div>
         ))}
 
-        {/* 自然的暗色漸層覆蓋 — 從右到左漸淡 */}
-        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/40 to-transparent" />
+        {/* 自然的暗色漸層覆蓋 — 從左到右漸淡 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
         {/* 底部微漸層 */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
-        {/* 文字內容 — 右側 */}
-        <div className="absolute inset-0 flex items-center justify-end">
-          <div className="w-full md:w-[45%] px-6 md:px-12 lg:pr-20">
-            <div className="max-w-md">
+        {/* 文字內容 — 左側 */}
+        <div className="absolute inset-0 flex items-center justify-start">
+          <div className="w-full md:w-[60%] px-6 md:px-12 lg:pl-[12%]">
+            <div className="max-w-xl">
               <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5 tracking-tight">
-                活動，不只是辦
+                每一場活動
                 <br />
-                <span className="text-accent">是打造影響力</span>
+                成為品牌被記住的時刻
               </h1>
-              <p className="text-base md:text-lg text-white/70 leading-relaxed mb-4">
-                專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到到整體專案企劃與媒體曝光的一站式服務。
+              <p className="text-lg md:text-xl text-white/70 leading-relaxed mb-4">
+                從企劃、設計到現場執行，境曜整合每一個環節，將品牌想法完整呈現。
               </p>
-              <p className="text-base md:text-lg text-white/70 leading-relaxed mb-8">
-                讓品牌的重要時刻，被精準呈現，也被深刻記住。
+              <p className="text-lg md:text-xl text-white/70 leading-relaxed mb-8">
+                專注企業活動整合與現場執行，提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務。
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
@@ -109,7 +109,7 @@ export default function HeroCarousel() {
         </div>
 
         {/* 底部指示點 */}
-        <div className="absolute bottom-8 right-6 md:right-12 lg:right-20 flex gap-2 z-20">
+        <div className="absolute bottom-8 left-6 md:left-12 lg:left-[12%] flex gap-2 z-20">
           {SLIDES.map((_, index) => (
             <button
               key={index}

@@ -140,14 +140,30 @@ export default async function HomePage() {
               <AnimateOnScroll key={service.title} delay={i * 100}>
                 <Link
                   href={service.href}
-                  className="block p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group h-full"
+                  className="block rounded-[24px] border border-white/20 bg-white/5 hover:border-cta/60 transition-all duration-300 cursor-pointer group h-full overflow-hidden relative"
                 >
-                  <service.icon size={40} className="text-cta mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-xl font-bold text-primary mb-3">{service.title}</h3>
-                  <p className="text-primary/70 text-sm leading-relaxed mb-4">{service.desc}</p>
-                  <span className="inline-flex items-center gap-1 text-cta text-sm font-medium group-hover:gap-2 transition-all">
-                    了解更多 <ArrowRight size={14} />
-                  </span>
+                  {/* 上方內凹色塊 */}
+                  <div className="mx-3 mt-3">
+                    <div className="bg-primary/80 rounded-[18px] p-8 flex items-center justify-center min-h-[140px]">
+                      <service.icon size={48} className="text-cta group-hover:scale-110 transition-transform" />
+                    </div>
+                  </div>
+                  {/* 下方文字區 */}
+                  <div className="p-6 pt-5 pb-8">
+                    <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
+                    <p className="text-white/60 text-sm leading-relaxed mb-5">{service.desc}</p>
+                    <span className="text-cta text-sm font-medium">了解更多</span>
+                  </div>
+                  {/* 右下角凹陷按鈕 */}
+                  <div className="absolute bottom-0 right-0 w-14 h-14">
+                    {/* 凹陷背景遮罩 */}
+                    <div className="absolute inset-0" style={{
+                      background: `radial-gradient(circle at 100% 100%, transparent 24px, rgba(35,33,44,1) 24px)`,
+                    }} />
+                    <div className="absolute bottom-1.5 right-1.5 w-9 h-9 rounded-full bg-cta flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ArrowRight size={14} className="text-white -rotate-45" />
+                    </div>
+                  </div>
                 </Link>
               </AnimateOnScroll>
             ))}
