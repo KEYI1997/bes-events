@@ -5,8 +5,8 @@ import {
   Users, Eye, MousePointerClick, Clock, TrendingUp, TrendingDown,
   Monitor, Smartphone, Globe, ArrowUpRight, ArrowDownRight,
   BarChart3, PieChart, Activity, ShoppingCart, FileText,
-  AlertCircle, MessageSquare, Package, Camera, Building2, CalendarCheck,
-  Phone, Mail, CheckCircle, XCircle, Clock3
+  AlertCircle, MessageSquare, Package, Camera, Building2,
+  CheckCircle, Clock3, FileQuestion, ClipboardList
 } from 'lucide-react';
 
 // 模擬數據 - 之後可以串接 Google Analytics API
@@ -17,6 +17,18 @@ const MOCK_DATA = {
     pageViews: { value: 8934, change: 8.2, trend: 'up' },
     bounceRate: { value: 42.3, change: -3.1, trend: 'down' },
     avgSessionDuration: { value: '3:24', change: 15.7, trend: 'up' },
+  },
+  // 諮詢統計
+  inquiries: {
+    total: { value: 32, change: 18.2, trend: 'up' },
+    pending: { value: 8, change: 5.0, trend: 'up' },
+    resolved: { value: 24, change: 22.4, trend: 'up' },
+  },
+  // 訂單統計
+  orders: {
+    total: { value: 15, change: 25.0, trend: 'up' },
+    processing: { value: 3, change: 10.0, trend: 'up' },
+    completed: { value: 12, change: 30.0, trend: 'up' },
   },
   // 流量來源
   trafficSources: [
@@ -50,21 +62,6 @@ const MOCK_DATA = {
     { day: '週六', visitors: 342 },
     { day: '週日', visitors: 334 },
   ],
-  // 諮詢/訂單統計
-  inquiries: {
-    total: { value: 47, change: 18.2, trend: 'up' },
-    pending: { value: 12, change: 5.0, trend: 'up' },
-    completed: { value: 35, change: 22.4, trend: 'up' },
-    conversionRate: { value: 74.5, change: 3.2, trend: 'up' },
-  },
-  // 最近諮詢（模擬）
-  recentInquiries: [
-    { id: 1, name: '王先生', service: '啟動儀式', date: '2026-08-03', status: 'pending' },
-    { id: 2, name: '李小姐', service: '燈光音響舞台', date: '2026-08-03', status: 'completed' },
-    { id: 3, name: '張經理', service: '活動策劃統包', date: '2026-08-02', status: 'completed' },
-    { id: 4, name: '陳先生', service: '外派調酒', date: '2026-08-02', status: 'pending' },
-    { id: 5, name: '林小姐', service: 'SHOW GIRL', date: '2026-08-01', status: 'completed' },
-  ],
   // 熱門服務
   popularServices: [
     { name: '啟動儀式', inquiries: 18, percentage: 38 },
@@ -86,7 +83,6 @@ const TABLES = [
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [unreadContacts, setUnreadContacts] = useState(0);
-  const [recentContacts, setRecentContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,8 +106,6 @@ export default function AdminDashboard() {
         if (contactResult) {
           const unread = contactResult.data.filter((c: { read: boolean }) => !c.read).length;
           setUnreadContacts(unread);
-          // 取得最近 5 筆諮詢
-          setRecentContacts(contactResult.data.slice(0, 5));
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -143,44 +137,105 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* 諮詢/訂單總覽 */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
-          <FileText className="w-5 h-5" /> 諮詢與訂單總覽
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            icon={MessageSquare} 
-            label="本週諮詢總數" 
-            value={loading ? '—' : (counts['contacts'] || MOCK_DATA.inquiries.total.value).toString()} 
-            change={MOCK_DATA.inquiries.total.change}
-            trend={MOCK_DATA.inquiries.total.trend as 'up' | 'down'}
-            color="#AA7452"
-          />
-          <StatCard 
-            icon={Clock3} 
-            label="待處理諮詢" 
-            value={unreadContacts.toString()} 
-            change={MOCK_DATA.inquiries.pending.change}
-            trend={MOCK_DATA.inquiries.pending.trend as 'up' | 'down'}
-            color="#EA4335"
-          />
-          <StatCard 
-            icon={CheckCircle} 
-            label="已完成諮詢" 
-            value={MOCK_DATA.inquiries.completed.value.toString()} 
-            change={MOCK_DATA.inquiries.completed.change}
-            trend={MOCK_DATA.inquiries.completed.trend as 'up' | 'down'}
-            color="#34A853"
-          />
-          <StatCard 
-            icon={TrendingUp} 
-            label="諮詢轉換率" 
-            value={`${MOCK_DATA.inquiries.conversionRate.value}%`} 
-            change={MOCK_DATA.inquiries.conversionRate.change}
-            trend={MOCK_DATA.inquiries.conversionRate.trend as 'up' | 'down'}
-            color="#4285F4"
-          />
+      {/* 諮詢單與訂單總覽 - 分成兩個區塊 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 諮詢單統計 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+            <FileQuestion className="w-5 h-5 text-orange-500" /> 客戶諮詢單
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">客戶透過網站提交的諮詢，待處理後可轉為訂單</p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center p-4 rounded-xl bg-orange-50">
+              <p className="text-sm text-gray-500 mb-1">總諮詢數</p>
+              <p className="text-3xl font-bold" style={{ color: '#AA7452' }}>
+                {loading ? '—' : counts['contacts'] || MOCK_DATA.inquiries.total.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <ArrowUpRight className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-green-500">+{MOCK_DATA.inquiries.total.change}%</span>
+              </div>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-yellow-50">
+              <p className="text-sm text-gray-500 mb-1">待處理</p>
+              <p className="text-3xl font-bold text-yellow-600">
+                {unreadContacts || MOCK_DATA.inquiries.pending.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <Clock3 className="w-3 h-3 text-yellow-600" />
+                <span className="text-xs text-yellow-600">需處理</span>
+              </div>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-green-50">
+              <p className="text-sm text-gray-500 mb-1">已解決</p>
+              <p className="text-3xl font-bold text-green-600">
+                {MOCK_DATA.inquiries.resolved.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-green-500">已完成</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 訂單統計 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+            <ClipboardList className="w-5 h-5 text-blue-500" /> 客戶訂單
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">諮詢單確認後轉換的正式訂單</p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center p-4 rounded-xl bg-blue-50">
+              <p className="text-sm text-gray-500 mb-1">總訂單數</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {MOCK_DATA.orders.total.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <ArrowUpRight className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-green-500">+{MOCK_DATA.orders.total.change}%</span>
+              </div>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-purple-50">
+              <p className="text-sm text-gray-500 mb-1">進行中</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {MOCK_DATA.orders.processing.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <Clock3 className="w-3 h-3 text-purple-600" />
+                <span className="text-xs text-purple-600">執行中</span>
+              </div>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-green-50">
+              <p className="text-sm text-gray-500 mb-1">已完成</p>
+              <p className="text-3xl font-bold text-green-600">
+                {MOCK_DATA.orders.completed.value}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-green-500">已結案</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 轉換流程說明 */}
+      <div className="bg-gradient-to-r from-orange-50 to-blue-50 rounded-xl p-4 border border-orange-100">
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <FileQuestion className="w-5 h-5 text-orange-500" />
+            <span className="font-medium text-gray-700">客戶諮詢</span>
+          </div>
+          <div className="flex items-center gap-1 text-gray-400">
+            <span>→</span>
+            <span className="text-xs">管理員處理</span>
+            <span>→</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-blue-500" />
+            <span className="font-medium text-gray-700">正式訂單</span>
+          </div>
         </div>
       </div>
 
@@ -226,64 +281,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* 中間區塊：最近諮詢 + 熱門服務 */}
+      {/* 中間區塊：熱門服務 + 流量來源 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 最近諮詢 */}
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
-            <MessageSquare className="w-5 h-5" /> 最近諮詢紀錄
-          </h3>
-          <div className="space-y-3">
-            {recentContacts.length > 0 ? (
-              recentContacts.map((contact: any) => (
-                <div key={contact.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-cta" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm" style={{ color: '#4A4947' }}>{contact.name}</p>
-                      <p className="text-xs text-gray-500">{contact.service_type || '一般諮詢'}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      contact.read ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {contact.read ? <CheckCircle className="w-3 h-3" /> : <Clock3 className="w-3 h-3" />}
-                      {contact.read ? '已讀' : '未讀'}
-                    </span>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(contact.created_at).toLocaleDateString('zh-TW')}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              MOCK_DATA.recentInquiries.map((inquiry) => (
-                <div key={inquiry.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-cta" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm" style={{ color: '#4A4947' }}>{inquiry.name}</p>
-                      <p className="text-xs text-gray-500">{inquiry.service}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      inquiry.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {inquiry.status === 'completed' ? <CheckCircle className="w-3 h-3" /> : <Clock3 className="w-3 h-3" />}
-                      {inquiry.status === 'completed' ? '已完成' : '處理中'}
-                    </span>
-                    <p className="text-xs text-gray-400 mt-1">{inquiry.date}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
         {/* 熱門服務 */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
@@ -311,10 +310,7 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
-      </div>
 
-      {/* 下方區塊：流量來源 + 每日趨勢 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 流量來源 */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
@@ -336,29 +332,29 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* 每日訪客趨勢 */}
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
-            <BarChart3 className="w-5 h-5" /> 每日訪客趨勢（近 7 天）
-          </h3>
-          <div className="flex items-end justify-between gap-2 h-40">
-            {MOCK_DATA.dailyVisitors.map((day) => (
-              <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex justify-center">
-                  <div 
-                    className="w-8 rounded-t-lg transition-all duration-500 hover:opacity-80"
-                    style={{ 
-                      height: `${(day.visitors / maxVisitors) * 120}px`,
-                      backgroundColor: '#AA7452'
-                    }}
-                  />
-                </div>
-                <span className="text-xs text-gray-500">{day.day}</span>
-                <span className="text-xs font-medium" style={{ color: '#4A4947' }}>{day.visitors}</span>
+      {/* 每日訪客趨勢 */}
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+          <BarChart3 className="w-5 h-5" /> 每日訪客趨勢（近 7 天）
+        </h3>
+        <div className="flex items-end justify-between gap-2 h-40">
+          {MOCK_DATA.dailyVisitors.map((day) => (
+            <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full flex justify-center">
+                <div 
+                  className="w-12 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                  style={{ 
+                    height: `${(day.visitors / maxVisitors) * 120}px`,
+                    backgroundColor: '#AA7452'
+                  }}
+                />
               </div>
-            ))}
-          </div>
+              <span className="text-xs text-gray-500">{day.day}</span>
+              <span className="text-xs font-medium" style={{ color: '#4A4947' }}>{day.visitors}</span>
+            </div>
+          ))}
         </div>
       </div>
 
