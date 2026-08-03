@@ -86,6 +86,8 @@ export interface Contact {
   event_date: string;
   event_end_date: string;
   read: boolean;
+  status?: 'pending' | 'replied' | 'converted';  // 待處理 | 已回覆 | 已轉訂單
+  staff_note?: string;  // 工作人員備註
   created_at: string;
 }
 
