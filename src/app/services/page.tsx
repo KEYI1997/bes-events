@@ -52,20 +52,12 @@ export default function ServicesPage() {
   return (
     <main className="bg-bg min-h-screen">
       {/* Hero Banner */}
-      <section className="relative h-[40vh] min-h-[280px] flex items-center justify-center overflow-hidden">
-        <Image
-          src="/images/services/啟動儀式.png"
-          alt="服務項目"
-          fill
-          className="object-cover scale-x-[-1]"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="relative z-10 text-center px-4 pt-16">
+      <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
+        <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
-            <p className="text-cta text-sm font-semibold tracking-widest uppercase mb-3">Our Services</p>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">服務項目</h1>
-            <p className="text-white/75 text-lg max-w-xl mx-auto">一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">服務項目</h1>
+            <p className="text-white/80 text-lg max-w-2xl mx-auto">一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值</p>
           </AnimateOnScroll>
         </div>
       </section>

@@ -7,7 +7,7 @@ import type { Case } from '@/lib/types';
 const CATEGORIES = ['開幕典禮', '記者會', '新品發表會', '展覽攤位', '政府活動', '春酒尾牙', '典禮節慶'] as const;
 
 const EMPTY_CASE = {
-  title: '', category: '開幕典禮' as Case['category'],
+  title: '', category: '開幕典禮' as string,
   description: '', image_url: '', client_name: '', event_date: '', visible: true,
 };
 
@@ -137,7 +137,7 @@ export default function CasesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">分類 *</label>
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as Case['category'] }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
+                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
