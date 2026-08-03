@@ -100,36 +100,14 @@ export default async function HomePage() {
       <HeroCarousel />
 
       {/* 服務項目 */}
-      <section className="py-20 relative overflow-hidden" style={{ backgroundColor: '#23212C' }}>
-        {/* Cosmic 光暈背景 */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: `
-            radial-gradient(ellipse 600px 400px at 15% 80%, rgba(120, 60, 180, 0.15) 0%, transparent 70%),
-            radial-gradient(ellipse 500px 350px at 85% 20%, rgba(60, 100, 200, 0.12) 0%, transparent 70%),
-            radial-gradient(ellipse 400px 300px at 70% 75%, rgba(180, 50, 80, 0.10) 0%, transparent 70%),
-            radial-gradient(ellipse 300px 250px at 30% 30%, rgba(80, 120, 220, 0.08) 0%, transparent 70%),
-            radial-gradient(circle 2px at 20% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
-            radial-gradient(circle 1.5px at 45% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
-            radial-gradient(circle 1px at 75% 10%, rgba(255,255,255,0.35) 0%, transparent 100%),
-            radial-gradient(circle 1.5px at 90% 45%, rgba(255,255,255,0.25) 0%, transparent 100%),
-            radial-gradient(circle 1px at 10% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
-            radial-gradient(circle 2px at 60% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
-            radial-gradient(circle 1px at 35% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
-            radial-gradient(circle 1.5px at 80% 65%, rgba(255,255,255,0.3) 0%, transparent 100%)
-          `
-        }} />
-        {/* 玻璃霧面遮罩 */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backdropFilter: 'blur(0.5px)',
-          background: 'linear-gradient(180deg, rgba(35,33,44,0.3) 0%, rgba(35,33,44,0.1) 50%, rgba(35,33,44,0.3) 100%)'
-        }} />
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
           <AnimateOnScroll>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
                 服務項目
               </h2>
-              <p className="text-white/70 text-lg">
+              <p className="text-primary/70 text-lg">
                 一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值
               </p>
             </div>
@@ -140,25 +118,25 @@ export default async function HomePage() {
               <AnimateOnScroll key={service.title} delay={i * 100}>
                 <Link
                   href={service.href}
-                  className="block rounded-[24px] border border-white/20 bg-white/5 hover:border-cta/60 transition-all duration-300 cursor-pointer group h-full overflow-hidden relative"
+                  className="block rounded-[24px] border border-gray-200 bg-gray-50 hover:border-cta/60 transition-all duration-300 cursor-pointer group h-full overflow-hidden relative"
                 >
                   {/* 上方內凹色塊 */}
                   <div className="mx-3 mt-3">
-                    <div className="bg-primary/80 rounded-[18px] p-8 flex items-center justify-center min-h-[140px]">
+                    <div className="bg-primary/10 rounded-[18px] p-8 flex items-center justify-center min-h-[140px]">
                       <service.icon size={48} className="text-cta group-hover:scale-110 transition-transform" />
                     </div>
                   </div>
                   {/* 下方文字區 */}
                   <div className="p-6 pt-5 pb-8">
-                    <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-                    <p className="text-white/60 text-sm leading-relaxed mb-5">{service.desc}</p>
+                    <h3 className="text-xl font-bold text-primary mb-2">{service.title}</h3>
+                    <p className="text-primary/60 text-sm leading-relaxed mb-5">{service.desc}</p>
                     <span className="text-cta text-sm font-medium">了解更多</span>
                   </div>
                   {/* 右下角凹陷按鈕 */}
                   <div className="absolute bottom-0 right-0 w-14 h-14">
                     {/* 凹陷背景遮罩 */}
                     <div className="absolute inset-0" style={{
-                      background: `radial-gradient(circle at 100% 100%, transparent 24px, rgba(35,33,44,1) 24px)`,
+                      background: `radial-gradient(circle at 100% 100%, transparent 24px, rgb(249,250,251) 24px)`,
                     }} />
                     <div className="absolute bottom-1.5 right-1.5 w-9 h-9 rounded-full bg-cta flex items-center justify-center group-hover:scale-110 transition-transform">
                       <ArrowRight size={14} className="text-white -rotate-45" />
@@ -170,6 +148,11 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white">
+        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      </div>
 
       {/* 核心優勢 */}
       <section className="py-20 bg-white">
@@ -199,8 +182,13 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white">
+        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      </div>
+
       {/* 案例展示輪播 */}
-      <section className="py-16 bg-bg overflow-hidden">
+      <section className="py-16 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 mb-10">
           <AnimateOnScroll>
             <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">案例展示</h2>
@@ -233,6 +221,11 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white">
+        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      </div>
 
       {/* 客戶一覽 */}
       <section className="py-16 bg-white overflow-hidden">
@@ -270,9 +263,15 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white">
+        <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+      </div>
+
       {/* 案例預覽 */}
       {cases && cases.length > 0 && (
-        <section className="py-20 bg-bg">
+        <>
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <AnimateOnScroll>
               <div className="text-center mb-16">
@@ -287,7 +286,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {cases.map((c, i) => (
                 <AnimateOnScroll key={c.id} delay={i * 100}>
-                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group">
+                  <div className="bg-gray-50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group border border-gray-200">
                     <div className="aspect-video bg-primary/10 relative overflow-hidden">
                       {c.image_url && (
                         <img
@@ -324,10 +323,16 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+        {/* 分隔線 */}
+        <div className="flex justify-center bg-white">
+          <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+        </div>
+        </>
       )}
 
       {/* 客戶 Logo 跑馬燈 */}
       {clients && clients.length > 0 && (
+        <>
         <section className="py-16 bg-white overflow-hidden">
           <div className="max-w-7xl mx-auto px-4">
             <AnimateOnScroll>
@@ -355,6 +360,11 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+        {/* 分隔線 */}
+        <div className="flex justify-center bg-white">
+          <div className="w-1/2 max-w-md h-px bg-gray-200"></div>
+        </div>
+        </>
       )}
 
       {/* CTA 標語區 */}
@@ -387,11 +397,11 @@ export default async function HomePage() {
       </section>
 
       {/* 聯絡表單區 */}
-      <section className="py-20" style={{ backgroundColor: '#FDFBF7' }}>
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
             <h2 className="text-3xl md:text-4xl font-bold text-primary text-center mb-10">聯絡我們</h2>
-            <div className="bg-white rounded-2xl p-8 md:p-12">
+            <div className="bg-gray-50 rounded-2xl p-8 md:p-12 border border-gray-200">
               <ContactFormInline />
             </div>
           </AnimateOnScroll>
