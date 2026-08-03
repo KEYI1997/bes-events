@@ -14,6 +14,7 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
 import CoverflowCarousel from "@/components/CoverflowCarousel";
+import ServiceCard from "@/components/ServiceCard";
 import { supabase } from "@/lib/supabase";
 
 const SERVICES = [
@@ -112,37 +113,15 @@ export default async function HomePage() {
               </p>
             </div>
           </AnimateOnScroll>
-          {/* 3x2 均等網格 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* 服務項目列表 */}
+          <div className="space-y-0">
             {SERVICES.map((service, i) => (
-              <AnimateOnScroll key={service.title} delay={i * 100}>
-                <Link
+              <AnimateOnScroll key={service.title} delay={i * 80}>
+                <ServiceCard
+                  title={service.title}
+                  desc={service.desc}
                   href={service.href}
-                  className="block rounded-[24px] border border-gray-200 bg-gray-50 hover:border-cta/60 transition-all duration-300 cursor-pointer group h-full overflow-hidden relative"
-                >
-                  {/* 上方內凹色塊 */}
-                  <div className="mx-3 mt-3">
-                    <div className="bg-primary/10 rounded-[18px] p-8 flex items-center justify-center min-h-[140px]">
-                      <service.icon size={48} className="text-cta group-hover:scale-110 transition-transform" />
-                    </div>
-                  </div>
-                  {/* 下方文字區 */}
-                  <div className="p-6 pt-5 pb-8">
-                    <h3 className="text-xl font-bold text-primary mb-2">{service.title}</h3>
-                    <p className="text-primary/60 text-sm leading-relaxed mb-5">{service.desc}</p>
-                    <span className="text-cta text-sm font-medium">了解更多</span>
-                  </div>
-                  {/* 右下角凹陷按鈕 */}
-                  <div className="absolute bottom-0 right-0 w-14 h-14">
-                    {/* 凹陷背景遮罩 */}
-                    <div className="absolute inset-0" style={{
-                      background: `radial-gradient(circle at 100% 100%, transparent 24px, rgb(249,250,251) 24px)`,
-                    }} />
-                    <div className="absolute bottom-1.5 right-1.5 w-9 h-9 rounded-full bg-cta flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <ArrowRight size={14} className="text-white -rotate-45" />
-                    </div>
-                  </div>
-                </Link>
+                />
               </AnimateOnScroll>
             ))}
           </div>
