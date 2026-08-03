@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { 
   Users, Eye, MousePointerClick, Clock, TrendingUp, TrendingDown,
   Monitor, Smartphone, Globe, ArrowUpRight, ArrowDownRight,
-  BarChart3, PieChart, Activity, Target, DollarSign, ShoppingCart,
-  AlertCircle, MessageSquare, Package, Camera, Building2, Star, HelpCircle
+  BarChart3, PieChart, Activity, ShoppingCart, FileText,
+  AlertCircle, MessageSquare, Package, Camera, Building2, CalendarCheck,
+  Phone, Mail, CheckCircle, XCircle, Clock3
 } from 'lucide-react';
 
 // 模擬數據 - 之後可以串接 Google Analytics API
@@ -16,14 +17,6 @@ const MOCK_DATA = {
     pageViews: { value: 8934, change: 8.2, trend: 'up' },
     bounceRate: { value: 42.3, change: -3.1, trend: 'down' },
     avgSessionDuration: { value: '3:24', change: 15.7, trend: 'up' },
-  },
-  // Google Ads 數據
-  googleAds: {
-    impressions: { value: 15420, change: 5.3, trend: 'up' },
-    clicks: { value: 892, change: 11.2, trend: 'up' },
-    ctr: { value: 5.78, change: 0.4, trend: 'up' },
-    conversions: { value: 47, change: 23.5, trend: 'up' },
-    cost: { value: 12500, change: 8.1, trend: 'up' },
   },
   // 流量來源
   trafficSources: [
@@ -57,6 +50,29 @@ const MOCK_DATA = {
     { day: '週六', visitors: 342 },
     { day: '週日', visitors: 334 },
   ],
+  // 諮詢/訂單統計
+  inquiries: {
+    total: { value: 47, change: 18.2, trend: 'up' },
+    pending: { value: 12, change: 5.0, trend: 'up' },
+    completed: { value: 35, change: 22.4, trend: 'up' },
+    conversionRate: { value: 74.5, change: 3.2, trend: 'up' },
+  },
+  // 最近諮詢（模擬）
+  recentInquiries: [
+    { id: 1, name: '王先生', service: '啟動儀式', date: '2026-08-03', status: 'pending' },
+    { id: 2, name: '李小姐', service: '燈光音響舞台', date: '2026-08-03', status: 'completed' },
+    { id: 3, name: '張經理', service: '活動策劃統包', date: '2026-08-02', status: 'completed' },
+    { id: 4, name: '陳先生', service: '外派調酒', date: '2026-08-02', status: 'pending' },
+    { id: 5, name: '林小姐', service: 'SHOW GIRL', date: '2026-08-01', status: 'completed' },
+  ],
+  // 熱門服務
+  popularServices: [
+    { name: '啟動儀式', inquiries: 18, percentage: 38 },
+    { name: '燈光音響舞台', inquiries: 12, percentage: 26 },
+    { name: '活動策劃統包', inquiries: 8, percentage: 17 },
+    { name: '外派調酒', inquiries: 5, percentage: 11 },
+    { name: 'SHOW GIRL', inquiries: 4, percentage: 8 },
+  ],
 };
 
 // 後台資料表
@@ -70,6 +86,7 @@ const TABLES = [
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [unreadContacts, setUnreadContacts] = useState(0);
+  const [recentContacts, setRecentContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -93,6 +110,8 @@ export default function AdminDashboard() {
         if (contactResult) {
           const unread = contactResult.data.filter((c: { read: boolean }) => !c.read).length;
           setUnreadContacts(unread);
+          // 取得最近 5 筆諮詢
+          setRecentContacts(contactResult.data.slice(0, 5));
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -107,10 +126,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>數據分析儀表板</h1>
         <div className="text-sm text-gray-500 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200">
-          ⚠️ 示範數據 - 串接 Google API 後顯示真實數據
+          ⚠️ 流量為示範數據 - 串接 Google API 後顯示真實數據
         </div>
       </div>
 
@@ -123,6 +142,47 @@ export default function AdminDashboard() {
           </span>
         </div>
       )}
+
+      {/* 諮詢/訂單總覽 */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+          <FileText className="w-5 h-5" /> 諮詢與訂單總覽
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard 
+            icon={MessageSquare} 
+            label="本週諮詢總數" 
+            value={loading ? '—' : (counts['contacts'] || MOCK_DATA.inquiries.total.value).toString()} 
+            change={MOCK_DATA.inquiries.total.change}
+            trend={MOCK_DATA.inquiries.total.trend as 'up' | 'down'}
+            color="#AA7452"
+          />
+          <StatCard 
+            icon={Clock3} 
+            label="待處理諮詢" 
+            value={unreadContacts.toString()} 
+            change={MOCK_DATA.inquiries.pending.change}
+            trend={MOCK_DATA.inquiries.pending.trend as 'up' | 'down'}
+            color="#EA4335"
+          />
+          <StatCard 
+            icon={CheckCircle} 
+            label="已完成諮詢" 
+            value={MOCK_DATA.inquiries.completed.value.toString()} 
+            change={MOCK_DATA.inquiries.completed.change}
+            trend={MOCK_DATA.inquiries.completed.trend as 'up' | 'down'}
+            color="#34A853"
+          />
+          <StatCard 
+            icon={TrendingUp} 
+            label="諮詢轉換率" 
+            value={`${MOCK_DATA.inquiries.conversionRate.value}%`} 
+            change={MOCK_DATA.inquiries.conversionRate.change}
+            trend={MOCK_DATA.inquiries.conversionRate.trend as 'up' | 'down'}
+            color="#4285F4"
+          />
+        </div>
+      </div>
 
       {/* 網站流量總覽 */}
       <div>
@@ -166,61 +226,94 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Google Ads 成效 */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
-          <Target className="w-5 h-5" /> Google Ads 廣告成效
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard 
-            icon={Eye} 
-            label="曝光次數" 
-            value={MOCK_DATA.googleAds.impressions.value.toLocaleString()} 
-            change={MOCK_DATA.googleAds.impressions.change}
-            trend="up"
-            color="#4285F4"
-            small
-          />
-          <StatCard 
-            icon={MousePointerClick} 
-            label="點擊次數" 
-            value={MOCK_DATA.googleAds.clicks.value.toLocaleString()} 
-            change={MOCK_DATA.googleAds.clicks.change}
-            trend="up"
-            color="#34A853"
-            small
-          />
-          <StatCard 
-            icon={TrendingUp} 
-            label="點擊率 (CTR)" 
-            value={`${MOCK_DATA.googleAds.ctr.value}%`} 
-            change={MOCK_DATA.googleAds.ctr.change}
-            trend="up"
-            color="#FBBC04"
-            small
-          />
-          <StatCard 
-            icon={ShoppingCart} 
-            label="轉換次數" 
-            value={MOCK_DATA.googleAds.conversions.value.toString()} 
-            change={MOCK_DATA.googleAds.conversions.change}
-            trend="up"
-            color="#9333EA"
-            small
-          />
-          <StatCard 
-            icon={DollarSign} 
-            label="廣告花費" 
-            value={`$${MOCK_DATA.googleAds.cost.value.toLocaleString()}`} 
-            change={MOCK_DATA.googleAds.cost.change}
-            trend="up"
-            color="#EA4335"
-            small
-          />
+      {/* 中間區塊：最近諮詢 + 熱門服務 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 最近諮詢 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+            <MessageSquare className="w-5 h-5" /> 最近諮詢紀錄
+          </h3>
+          <div className="space-y-3">
+            {recentContacts.length > 0 ? (
+              recentContacts.map((contact: any) => (
+                <div key={contact.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-cta" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm" style={{ color: '#4A4947' }}>{contact.name}</p>
+                      <p className="text-xs text-gray-500">{contact.service_type || '一般諮詢'}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      contact.read ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {contact.read ? <CheckCircle className="w-3 h-3" /> : <Clock3 className="w-3 h-3" />}
+                      {contact.read ? '已讀' : '未讀'}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(contact.created_at).toLocaleDateString('zh-TW')}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              MOCK_DATA.recentInquiries.map((inquiry) => (
+                <div key={inquiry.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-cta" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm" style={{ color: '#4A4947' }}>{inquiry.name}</p>
+                      <p className="text-xs text-gray-500">{inquiry.service}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      inquiry.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {inquiry.status === 'completed' ? <CheckCircle className="w-3 h-3" /> : <Clock3 className="w-3 h-3" />}
+                      {inquiry.status === 'completed' ? '已完成' : '處理中'}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">{inquiry.date}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 熱門服務 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#4A4947' }}>
+            <ShoppingCart className="w-5 h-5" /> 熱門服務項目
+          </h3>
+          <div className="space-y-4">
+            {MOCK_DATA.popularServices.map((service, index) => (
+              <div key={service.name}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-cta/10 flex items-center justify-center text-xs font-bold text-cta">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm font-medium" style={{ color: '#4A4947' }}>{service.name}</span>
+                  </div>
+                  <span className="text-sm text-gray-500">{service.inquiries} 筆諮詢</span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${service.percentage}%`, backgroundColor: '#AA7452' }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 中間區塊：流量來源 + 每日趨勢 */}
+      {/* 下方區塊：流量來源 + 每日趨勢 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 流量來源 */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -269,7 +362,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* 下方區塊：熱門頁面 + 裝置分佈 + 後台統計 */}
+      {/* 底部區塊：熱門頁面 + 裝置分佈 + 後台統計 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 熱門頁面 */}
         <div className="bg-white rounded-xl p-6 shadow-sm lg:col-span-2">
@@ -366,7 +459,6 @@ function StatCard({
   trend, 
   color,
   invertTrend = false,
-  small = false
 }: { 
   icon: React.ElementType;
   label: string;
@@ -375,28 +467,27 @@ function StatCard({
   trend: 'up' | 'down';
   color: string;
   invertTrend?: boolean;
-  small?: boolean;
 }) {
   const isPositive = invertTrend ? trend === 'down' : trend === 'up';
   const TrendIcon = trend === 'up' ? ArrowUpRight : ArrowDownRight;
   
   return (
-    <div className={`bg-white rounded-xl shadow-sm ${small ? 'p-4' : 'p-6'}`}>
+    <div className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className={`text-gray-500 ${small ? 'text-xs' : 'text-sm'}`}>{label}</p>
-          <p className={`font-bold mt-1 ${small ? 'text-xl' : 'text-2xl'}`} style={{ color: '#4A4947' }}>
+          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-2xl font-bold mt-1" style={{ color: '#4A4947' }}>
             {value}
           </p>
         </div>
         <div 
-          className={`${small ? 'w-8 h-8' : 'w-10 h-10'} rounded-lg flex items-center justify-center`}
+          className="w-10 h-10 rounded-lg flex items-center justify-center"
           style={{ backgroundColor: `${color}15` }}
         >
-          <Icon className={`${small ? 'w-4 h-4' : 'w-5 h-5'}`} style={{ color }} />
+          <Icon className="w-5 h-5" style={{ color }} />
         </div>
       </div>
-      <div className={`flex items-center gap-1 ${small ? 'mt-2' : 'mt-3'}`}>
+      <div className="flex items-center gap-1 mt-3">
         <TrendIcon className={`w-4 h-4 ${isPositive ? 'text-green-500' : 'text-red-500'}`} />
         <span className={`text-xs font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
           {Math.abs(change)}%
