@@ -10,7 +10,7 @@ const NAV_ITEMS = [
     label: '服務項目',
     href: '/services',
     children: [
-      { label: '活動計劃統包', href: '/services/event-package' },
+      { label: '活動策劃統包', href: '/services/event-package' },
       { label: '啟動儀式', href: '/services/opening-ceremony' },
       { label: '活動特效', href: '/services/special-effects' },
       { label: '燈光音響舞台', href: '/services/stage-lighting' },

@@ -14,13 +14,13 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
 import CoverflowCarousel from "@/components/CoverflowCarousel";
-import ServiceCard from "@/components/ServiceCard";
+import ServiceTabs from "@/components/ServiceTabs";
 import { supabase } from "@/lib/supabase";
 
 const SERVICES = [
   {
     icon: CalendarCheck,
-    title: "活動計劃統包",
+    title: "活動策劃統包",
     desc: "從企劃到執行，提供一站式活動統包服務，讓您省心省力。",
     href: "/services/event-package",
   },
@@ -102,9 +102,9 @@ export default async function HomePage() {
 
       {/* 服務項目 */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 md:px-16">
           <AnimateOnScroll>
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
                 服務項目
               </h2>
@@ -113,18 +113,9 @@ export default async function HomePage() {
               </p>
             </div>
           </AnimateOnScroll>
-          {/* 服務項目列表 */}
-          <div className="space-y-0">
-            {SERVICES.map((service, i) => (
-              <AnimateOnScroll key={service.title} delay={i * 80}>
-                <ServiceCard
-                  title={service.title}
-                  desc={service.desc}
-                  href={service.href}
-                />
-              </AnimateOnScroll>
-            ))}
-          </div>
+          <AnimateOnScroll delay={100}>
+            <ServiceTabs />
+          </AnimateOnScroll>
         </div>
       </section>
 

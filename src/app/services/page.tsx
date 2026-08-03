@@ -5,11 +5,11 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 
 export const metadata: Metadata = {
   title: '服務項目 | 境曜有限公司 BES Events',
-  description: '境曜有限公司提供活動計劃統包、啟動儀式、活動特效、燈光音響舞台、外派調酒、SHOW GIRL 等一站式活動服務。',
+  description: '境曜有限公司提供活動策劃統包、啟動儀式、活動特效、燈光音響舞台、外派調酒、SHOW GIRL 等一站式活動服務。',
 };
 
 const SERVICES = [
-  { icon: CalendarCheck, title: '活動計劃統包', desc: '從企劃到執行，提供一站式活動統包服務，讓您省心省力。', href: '/services/event-package' },
+  { icon: CalendarCheck, title: '活動策劃統包', desc: '從企劃到執行，提供一站式活動統包服務，讓您省心省力。', href: '/services/event-package' },
   { icon: Star, title: '啟動儀式', desc: '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。', href: '/services/opening-ceremony' },
   { icon: Sparkles, title: '活動特效', desc: '專業活動特效服務，為現場營造震撼視覺效果。', href: '/services/special-effects' },
   { icon: Music, title: '燈光音響舞台', desc: '專業燈光音響設備租賃與搭建，打造完美視聽體驗。', href: '/services/stage-lighting' },

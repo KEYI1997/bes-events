@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { Product, ShowGirl } from '@/lib/types';
 
 const CATEGORY_MAP: Record<string, string> = {
-  'event-package': '活動計劃統包',
+  'event-package': '活動策劃統包',
   'opening-ceremony': '啟動儀式',
   'special-effects': '活動特效',
   'stage-lighting': '燈光音響舞台',
