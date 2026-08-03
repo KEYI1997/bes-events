@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 
@@ -78,6 +78,25 @@ export default function ProductDetailPage() {
                     fill
                     className="object-cover"
                   />
+                  {/* 左右切換按鈕 */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentSlide((prev) => (prev - 1 + images.length) % images.length)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center transition-all hover:scale-110"
+                        aria-label="上一張"
+                      >
+                        <ChevronLeft className="w-6 h-6 text-gray-700" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentSlide((prev) => (prev + 1) % images.length)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center transition-all hover:scale-110"
+                        aria-label="下一張"
+                      >
+                        <ChevronRight className="w-6 h-6 text-gray-700" />
+                      </button>
+                    </>
+                  )}
                 </div>
                 {images.length > 1 && (
                   <div className="flex justify-center gap-2 mt-4">
