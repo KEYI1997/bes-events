@@ -47,16 +47,26 @@ const SERVICES = [
 export default function ServiceTabs() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
-    const activeTab = tabRefs.current[activeIndex];
-    if (activeTab) {
-      setUnderlineStyle({
-        left: activeTab.offsetLeft,
-        width: activeTab.offsetWidth,
-      });
-    }
+    const updateUnderline = () => {
+      const activeTab = tabRefs.current[activeIndex];
+      const container = tabsContainerRef.current;
+      if (activeTab && container) {
+        const containerRect = container.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+        setUnderlineStyle({
+          left: tabRect.left - containerRect.left,
+          width: tabRect.width,
+        });
+      }
+    };
+    
+    updateUnderline();
+    window.addEventListener('resize', updateUnderline);
+    return () => window.removeEventListener('resize', updateUnderline);
   }, [activeIndex]);
 
   const handlePrev = () => {
@@ -73,7 +83,10 @@ export default function ServiceTabs() {
     <div className="w-full">
       {/* Tab 按鈕列 */}
       <div className="relative mb-8">
-        <div className="flex justify-center gap-3 flex-wrap">
+        <div 
+          ref={tabsContainerRef}
+          className="relative flex justify-center gap-3 flex-wrap"
+        >
           {SERVICES.map((service, index) => (
             <button
               key={service.title}
@@ -88,26 +101,14 @@ export default function ServiceTabs() {
               {service.title}
             </button>
           ))}
-        </div>
-        {/* 底部滑動線 */}
-        <div className="relative mt-4 h-1 flex justify-center">
-          <div className="relative w-fit flex gap-3">
-            {SERVICES.map((service, index) => (
-              <div
-                key={service.title}
-                className="px-6 py-2.5 text-sm font-medium opacity-0 pointer-events-none"
-              >
-                {service.title}
-              </div>
-            ))}
-            <div
-              className="absolute bottom-0 h-1 bg-cta rounded-full transition-all duration-500 ease-out"
-              style={{
-                left: underlineStyle.left,
-                width: underlineStyle.width,
-              }}
-            />
-          </div>
+          {/* 底部滑動線 */}
+          <div
+            className="absolute -bottom-3 h-1 bg-cta rounded-full transition-all duration-500 ease-out"
+            style={{
+              left: underlineStyle.left,
+              width: underlineStyle.width,
+            }}
+          />
         </div>
       </div>
 
