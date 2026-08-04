@@ -239,9 +239,9 @@ export default async function ServiceCategoryPage({ params }: Props) {
             <div className="relative w-full h-[280px] md:h-[340px] overflow-hidden border-t-2 border-white border-b-2">
               <Image
                 src="/images/services/bartending.png"
-                alt="小型聚會方案"
+                alt="主題客製化方案"
                 fill
-                className="object-cover object-top scale-x-[-1]"
+                className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
