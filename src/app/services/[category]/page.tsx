@@ -167,23 +167,20 @@ export default async function ServiceCategoryPage({ params }: Props) {
 
         {/* Banner 方案：方案一（文字左） */}
         <AnimateOnScroll delay={0}>
-          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+          <div className="relative w-full h-[280px] md:h-[340px] overflow-hidden border-t-2 border-white">
             <Image
               src="/images/services/bartending.png"
               alt="迎賓雞尾酒方案"
               fill
               className="object-cover object-center"
             />
-            {/* 深色遮罩，左側較深 */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
-            {/* 文字區：左側 */}
-            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-xl">
-              <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[0].name}</h3>
-              {/* 價格欄位（預留，暫不顯示） */}
+            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-2xl">
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plans[0].name}</h3>
               {/* <div className="bg-cta px-5 py-2 text-white font-semibold text-lg mb-4 inline-block">NT$ —</div> */}
               <div className="bg-black/50 px-5 py-4 space-y-2">
                 {plans[0].highlights.map((item, i) => (
-                  <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                  <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
                 ))}
               </div>
             </div>
@@ -192,22 +189,20 @@ export default async function ServiceCategoryPage({ params }: Props) {
 
         {/* Banner 方案：方案二（文字右） */}
         <AnimateOnScroll delay={100}>
-          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+          <div className="relative w-full h-[280px] md:h-[340px] overflow-hidden border-t-2 border-white">
             <Image
               src="/images/services/bartending.png"
               alt="派對暢飲方案"
               fill
               className="object-cover object-center scale-x-[-1]"
             />
-            {/* 深色遮罩，右側較深 */}
             <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent" />
-            {/* 文字區：右側 */}
             <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
-              <div className="max-w-xl text-right">
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[1].name}</h3>
+              <div className="max-w-2xl text-right">
+                <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plans[1].name}</h3>
                 <div className="bg-black/50 px-5 py-4 space-y-2">
                   {plans[1].highlights.map((item, i) => (
-                    <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                    <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
                   ))}
                 </div>
               </div>
@@ -217,21 +212,19 @@ export default async function ServiceCategoryPage({ params }: Props) {
 
         {/* Banner 方案：方案三（文字左） */}
         <AnimateOnScroll delay={200}>
-          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+          <div className="relative w-full h-[280px] md:h-[340px] overflow-hidden border-t-2 border-white">
             <Image
               src="/images/services/bartending.png"
               alt="主題客製化方案"
               fill
               className="object-cover object-bottom"
             />
-            {/* 深色遮罩，左側較深 */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
-            {/* 文字區：左側 */}
-            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-xl">
-              <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[2].name}</h3>
+            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-2xl">
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plans[2].name}</h3>
               <div className="bg-black/50 px-5 py-4 space-y-2">
                 {plans[2].highlights.map((item, i) => (
-                  <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                  <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
                 ))}
               </div>
             </div>
@@ -240,22 +233,20 @@ export default async function ServiceCategoryPage({ params }: Props) {
 
         {/* Banner 方案：方案四（文字右） */}
         <AnimateOnScroll delay={300}>
-          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+          <div className="relative w-full h-[280px] md:h-[340px] overflow-hidden border-t-2 border-white border-b-2">
             <Image
               src="/images/services/bartending.png"
               alt="小型聚會方案"
               fill
               className="object-cover object-top scale-x-[-1]"
             />
-            {/* 深色遮罩，右側較深 */}
             <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent" />
-            {/* 文字區：右側 */}
             <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
-              <div className="max-w-xl text-right">
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[3].name}</h3>
+              <div className="max-w-2xl text-right">
+                <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plans[3].name}</h3>
                 <div className="bg-black/50 px-5 py-4 space-y-2">
                   {plans[3].highlights.map((item, i) => (
-                    <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                    <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
                   ))}
                 </div>
               </div>
