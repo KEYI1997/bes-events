@@ -15,7 +15,7 @@ const NAV_ITEMS = [
       { label: '活動特效', href: '/services/special-effects' },
       { label: '燈光音響舞台', href: '/services/stage-lighting' },
       { label: '外派調酒', href: '/services/bartending' },
-      { label: 'SHOW GIRL', href: '/services/showgirl' },
+      { label: 'SHOW GIRL', href: '/showgirl' },
     ],
   },
   {
@@ -81,6 +81,11 @@ export default function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [fullNavOpen]);
 
+  // scrolled 時保持黑色膠囊的頁面
+  const isDarkScrollPage =
+    pathname === '/' ||
+    pathname.startsWith('/products');
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
@@ -88,7 +93,9 @@ export default function Header() {
       }`}>
         <div className={`transition-all duration-300 ${
           scrolled
-            ? 'mx-4 md:mx-8 mt-3 bg-black/70 rounded-[10px]'
+            ? isDarkScrollPage
+              ? 'mx-4 md:mx-8 mt-3 bg-black/70 rounded-[10px]'
+              : 'mx-4 md:mx-8 mt-3 bg-white/90 backdrop-blur-md rounded-[10px] shadow-md'
             : pathname === '/'
               ? ''
               : 'bg-white/80 backdrop-blur-md'
@@ -114,7 +121,11 @@ export default function Header() {
                             isActive(item.href)
                               ? 'bg-cta text-white'
                               : scrolled || pathname !== '/'
-                                ? scrolled ? 'text-white hover:bg-cta hover:text-white' : 'text-primary hover:bg-cta hover:text-white'
+                                ? scrolled
+                                  ? isDarkScrollPage
+                                    ? 'text-white hover:bg-cta hover:text-white'
+                                    : 'text-primary hover:bg-cta hover:text-white'
+                                  : 'text-primary hover:bg-cta hover:text-white'
                                 : 'text-white hover:bg-cta hover:text-white'
                           }`}
                         >
@@ -144,7 +155,11 @@ export default function Header() {
                           isActive(item.href)
                             ? 'bg-cta text-white'
                             : scrolled || pathname !== '/'
-                              ? scrolled ? 'text-white hover:bg-cta hover:text-white' : 'text-primary hover:bg-cta hover:text-white'
+                              ? scrolled
+                                ? isDarkScrollPage
+                                  ? 'text-white hover:bg-cta hover:text-white'
+                                  : 'text-primary hover:bg-cta hover:text-white'
+                                : 'text-primary hover:bg-cta hover:text-white'
                               : 'text-white hover:bg-cta hover:text-white'
                         }`}
                       >
@@ -157,7 +172,15 @@ export default function Header() {
 
               <button
                 onClick={() => setFullNavOpen(true)}
-                className={`p-2 transition-colors ${scrolled || pathname !== '/' ? scrolled ? 'text-white hover:text-white/70' : 'text-primary hover:text-cta' : 'text-white hover:text-white/70'}`}
+                className={`p-2 transition-colors ${
+                  scrolled
+                    ? isDarkScrollPage
+                      ? 'text-white hover:text-white/70'
+                      : 'text-primary hover:text-cta'
+                    : pathname !== '/'
+                      ? 'text-primary hover:text-cta'
+                      : 'text-white hover:text-white/70'
+                }`}
                 aria-label="開啟網站導覽"
               >
                 <Menu size={32} />
