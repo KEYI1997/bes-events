@@ -32,7 +32,7 @@ export default function AboutPage() {
             <div className="md:sticky md:top-32">
               <p className="text-xs tracking-[0.3em] text-cta uppercase mb-4 font-medium">Our Story</p>
               <h2 className="text-4xl md:text-5xl font-bold text-primary leading-tight">
-                我們的<br />故事
+                我們的故事
               </h2>
             </div>
             {/* 右欄：段落 */}
@@ -75,7 +75,7 @@ export default function AboutPage() {
             <div className="md:sticky md:top-32">
               <p className="text-xs tracking-[0.3em] text-cta uppercase mb-4 font-medium">Our Values</p>
               <h2 className="text-4xl md:text-5xl font-bold text-primary leading-tight">
-                我們的<br />理念
+                我們的理念
               </h2>
             </div>
             {/* 右欄：三個理念條目 */}
