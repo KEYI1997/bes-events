@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { supabase } from '@/lib/supabase';
 import { Case } from '@/lib/types';
@@ -35,7 +36,10 @@ export default async function CasesPage() {
 
       {/* Cases Content */}
       <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-        <CasesGrid cases={(cases as Case[]) || []} />
+        {/* Suspense 包覆 CasesGrid，因為內部使用 useSearchParams */}
+        <Suspense fallback={<div className="text-center py-16 text-primary/50">載入中...</div>}>
+          <CasesGrid cases={(cases as Case[]) || []} />
+        </Suspense>
       </section>
     </main>
   );

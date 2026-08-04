@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Case } from '@/lib/types';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
@@ -15,7 +16,17 @@ const CATEGORIES = [
 ];
 
 export default function CasesGrid({ cases }: { cases: Case[] }) {
-  const [activeCategory, setActiveCategory] = useState('全部');
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category') ?? '';
+  const validInitial = CATEGORIES.includes(categoryParam) ? categoryParam : '全部';
+
+  const [activeCategory, setActiveCategory] = useState(validInitial);
+
+  // 當 URL query 變動時同步更新篩選（例如使用者點 Header 下拉切換分類）
+  useEffect(() => {
+    const cat = searchParams.get('category') ?? '';
+    setActiveCategory(CATEGORIES.includes(cat) ? cat : '全部');
+  }, [searchParams]);
 
   const filteredCases = activeCategory === '全部'
     ? cases
