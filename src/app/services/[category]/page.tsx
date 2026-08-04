@@ -157,131 +157,113 @@ export default async function ServiceCategoryPage({ params }: Props) {
           </div>
         </section>
 
-        {/* 方案卡片 */}
-        <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        {/* 方案標題 */}
+        <section className="max-w-7xl mx-auto px-4 pt-16 pb-8 md:pt-24 md:pb-10">
           <AnimateOnScroll>
-            <h2 className="text-2xl md:text-3xl font-bold text-primary text-center mb-4">服務方案</h2>
-            <p className="text-primary/60 text-center mb-12">依照您的活動規模與需求，選擇最適合的調酒方案</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-primary text-center mb-3">服務方案</h2>
+            <p className="text-primary/60 text-center">依照您的活動規模與需求，選擇最適合的調酒方案</p>
           </AnimateOnScroll>
-
-          {/* 第一列：方案一（左）＋ 方案二（右） */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* 方案一：橫式，文字置左 */}
-            <AnimateOnScroll delay={0}>
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
-                <div className="bg-primary w-2 flex-shrink-0" />
-                <div className="p-8 flex flex-col justify-between flex-1 text-left">
-                  <div>
-                    <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                      {plans[0].badge}
-                    </span>
-                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[0].name}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[0].desc}</p>
-                    <ul className="space-y-2">
-                      {plans[0].highlights.map((item) => (
-                        <li key={item} className="flex items-start gap-2 text-sm text-primary/80">
-                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-6 pt-5 border-t border-primary/10">
-                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
-                  </div>
-                </div>
-              </div>
-            </AnimateOnScroll>
-
-            {/* 方案二：橫式，文字置右 */}
-            <AnimateOnScroll delay={100}>
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
-                <div className="p-8 flex flex-col justify-between flex-1 text-right">
-                  <div>
-                    <div className="flex justify-end">
-                      <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                        {plans[1].badge}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[1].name}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[1].desc}</p>
-                    <ul className="space-y-2">
-                      {plans[1].highlights.map((item) => (
-                        <li key={item} className="flex items-start justify-end gap-2 text-sm text-primary/80">
-                          {item}
-                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-6 pt-5 border-t border-primary/10">
-                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
-                  </div>
-                </div>
-                <div className="bg-primary w-2 flex-shrink-0" />
-              </div>
-            </AnimateOnScroll>
-          </div>
-
-          {/* 第二列：方案三（左）＋ 方案四（右，可選） */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 方案三：橫式，文字置左 */}
-            <AnimateOnScroll delay={200}>
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
-                <div className="bg-primary w-2 flex-shrink-0" />
-                <div className="p-8 flex flex-col justify-between flex-1 text-left">
-                  <div>
-                    <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                      {plans[2].badge}
-                    </span>
-                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[2].name}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[2].desc}</p>
-                    <ul className="space-y-2">
-                      {plans[2].highlights.map((item) => (
-                        <li key={item} className="flex items-start gap-2 text-sm text-primary/80">
-                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-6 pt-5 border-t border-primary/10">
-                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
-                  </div>
-                </div>
-              </div>
-            </AnimateOnScroll>
-
-            {/* 方案四：橫式，文字置右 */}
-            <AnimateOnScroll delay={300}>
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
-                <div className="p-8 flex flex-col justify-between flex-1 text-right">
-                  <div>
-                    <div className="flex justify-end">
-                      <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                        {plans[3].badge}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[3].name}</h3>
-                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[3].desc}</p>
-                    <ul className="space-y-2">
-                      {plans[3].highlights.map((item) => (
-                        <li key={item} className="flex items-start justify-end gap-2 text-sm text-primary/80">
-                          {item}
-                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-6 pt-5 border-t border-primary/10">
-                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
-                  </div>
-                </div>
-                <div className="bg-primary w-2 flex-shrink-0" />
-              </div>
-            </AnimateOnScroll>
-          </div>
         </section>
+
+        {/* Banner 方案：方案一（文字左） */}
+        <AnimateOnScroll delay={0}>
+          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+            <Image
+              src="/images/services/bartending.png"
+              alt="迎賓雞尾酒方案"
+              fill
+              className="object-cover object-center"
+            />
+            {/* 深色遮罩，左側較深 */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
+            {/* 文字區：左側 */}
+            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-xl">
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[0].name}</h3>
+              {/* 價格欄位（預留，暫不顯示） */}
+              {/* <div className="bg-cta px-5 py-2 text-white font-semibold text-lg mb-4 inline-block">NT$ —</div> */}
+              <div className="bg-black/50 px-5 py-4 space-y-2">
+                {plans[0].highlights.map((item, i) => (
+                  <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </AnimateOnScroll>
+
+        {/* Banner 方案：方案二（文字右） */}
+        <AnimateOnScroll delay={100}>
+          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+            <Image
+              src="/images/services/bartending.png"
+              alt="派對暢飲方案"
+              fill
+              className="object-cover object-center scale-x-[-1]"
+            />
+            {/* 深色遮罩，右側較深 */}
+            <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent" />
+            {/* 文字區：右側 */}
+            <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
+              <div className="max-w-xl text-right">
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[1].name}</h3>
+                <div className="bg-black/50 px-5 py-4 space-y-2">
+                  {plans[1].highlights.map((item, i) => (
+                    <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </AnimateOnScroll>
+
+        {/* Banner 方案：方案三（文字左） */}
+        <AnimateOnScroll delay={200}>
+          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+            <Image
+              src="/images/services/bartending.png"
+              alt="主題客製化方案"
+              fill
+              className="object-cover object-bottom"
+            />
+            {/* 深色遮罩，左側較深 */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
+            {/* 文字區：左側 */}
+            <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-xl">
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[2].name}</h3>
+              <div className="bg-black/50 px-5 py-4 space-y-2">
+                {plans[2].highlights.map((item, i) => (
+                  <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </AnimateOnScroll>
+
+        {/* Banner 方案：方案四（文字右） */}
+        <AnimateOnScroll delay={300}>
+          <div className="relative w-full h-[280px] md:h-[320px] overflow-hidden">
+            <Image
+              src="/images/services/bartending.png"
+              alt="小型聚會方案"
+              fill
+              className="object-cover object-top scale-x-[-1]"
+            />
+            {/* 深色遮罩，右側較深 */}
+            <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/40 to-transparent" />
+            {/* 文字區：右側 */}
+            <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
+              <div className="max-w-xl text-right">
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow">{plans[3].name}</h3>
+                <div className="bg-black/50 px-5 py-4 space-y-2">
+                  {plans[3].highlights.map((item, i) => (
+                    <p key={item} className="text-white/90 text-sm">{i + 1}.{item}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </AnimateOnScroll>
+
+        <div className="pb-16 md:pb-24" />
 
         {/* CTA */}
         <section className="bg-primary py-16">
