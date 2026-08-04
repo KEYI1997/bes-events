@@ -163,35 +163,123 @@ export default async function ServiceCategoryPage({ params }: Props) {
             <h2 className="text-2xl md:text-3xl font-bold text-primary text-center mb-4">服務方案</h2>
             <p className="text-primary/60 text-center mb-12">依照您的活動規模與需求，選擇最適合的調酒方案</p>
           </AnimateOnScroll>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {plans.map((plan, index) => (
-              <AnimateOnScroll key={plan.name} delay={index * 100}>
-                <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col h-full overflow-hidden border border-primary/10 hover:-translate-y-1 transition-transform">
-                  {/* 方案名稱區 */}
-                  <div className="bg-primary px-6 pt-6 pb-5 text-white">
+
+          {/* 第一列：方案一（左）＋ 方案二（右） */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* 方案一：橫式，文字置左 */}
+            <AnimateOnScroll delay={0}>
+              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
+                <div className="bg-primary w-2 flex-shrink-0" />
+                <div className="p-8 flex flex-col justify-between flex-1 text-left">
+                  <div>
                     <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                      {plan.badge}
+                      {plans[0].badge}
                     </span>
-                    <h3 className="text-xl font-bold leading-snug">{plan.name}</h3>
-                  </div>
-                  {/* 方案內容 */}
-                  <div className="p-6 flex flex-col flex-1">
-                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plan.desc}</p>
-                    <ul className="space-y-2 flex-1">
-                      {plan.highlights.map((item) => (
+                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[0].name}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[0].desc}</p>
+                    <ul className="space-y-2">
+                      {plans[0].highlights.map((item) => (
                         <li key={item} className="flex items-start gap-2 text-sm text-primary/80">
                           <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
                           {item}
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-6 pt-5 border-t border-primary/10 text-center">
-                      <span className="text-primary/50 text-sm">價格依規模另行報價</span>
-                    </div>
+                  </div>
+                  <div className="mt-6 pt-5 border-t border-primary/10">
+                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
                   </div>
                 </div>
-              </AnimateOnScroll>
-            ))}
+              </div>
+            </AnimateOnScroll>
+
+            {/* 方案二：橫式，文字置右 */}
+            <AnimateOnScroll delay={100}>
+              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
+                <div className="p-8 flex flex-col justify-between flex-1 text-right">
+                  <div>
+                    <div className="flex justify-end">
+                      <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                        {plans[1].badge}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[1].name}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[1].desc}</p>
+                    <ul className="space-y-2">
+                      {plans[1].highlights.map((item) => (
+                        <li key={item} className="flex items-start justify-end gap-2 text-sm text-primary/80">
+                          {item}
+                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6 pt-5 border-t border-primary/10">
+                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
+                  </div>
+                </div>
+                <div className="bg-primary w-2 flex-shrink-0" />
+              </div>
+            </AnimateOnScroll>
+          </div>
+
+          {/* 第二列：方案三（左）＋ 方案四（右，可選） */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 方案三：橫式，文字置左 */}
+            <AnimateOnScroll delay={200}>
+              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
+                <div className="bg-primary w-2 flex-shrink-0" />
+                <div className="p-8 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                      {plans[2].badge}
+                    </span>
+                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[2].name}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[2].desc}</p>
+                    <ul className="space-y-2">
+                      {plans[2].highlights.map((item) => (
+                        <li key={item} className="flex items-start gap-2 text-sm text-primary/80">
+                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6 pt-5 border-t border-primary/10">
+                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
+                  </div>
+                </div>
+              </div>
+            </AnimateOnScroll>
+
+            {/* 方案四：橫式，文字置右 */}
+            <AnimateOnScroll delay={300}>
+              <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-primary/10 overflow-hidden flex flex-row h-full">
+                <div className="p-8 flex flex-col justify-between flex-1 text-right">
+                  <div>
+                    <div className="flex justify-end">
+                      <span className="inline-block bg-cta text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                        {plans[3].badge}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-primary mb-3">{plans[3].name}</h3>
+                    <p className="text-primary/70 text-sm leading-relaxed mb-5">{plans[3].desc}</p>
+                    <ul className="space-y-2">
+                      {plans[3].highlights.map((item) => (
+                        <li key={item} className="flex items-start justify-end gap-2 text-sm text-primary/80">
+                          {item}
+                          <span className="mt-1 w-2 h-2 rounded-full bg-cta flex-shrink-0" />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6 pt-5 border-t border-primary/10">
+                    <span className="text-primary/50 text-sm">價格依規模另行報價</span>
+                  </div>
+                </div>
+                <div className="bg-primary w-2 flex-shrink-0" />
+              </div>
+            </AnimateOnScroll>
           </div>
         </section>
 
