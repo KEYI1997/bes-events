@@ -86,6 +86,14 @@ export default function Header() {
     pathname === '/' ||
     pathname.startsWith('/products');
 
+  // 決定用哪個 logo
+  // 首頁未捲動 或 黑色膠囊 → 白色線條 logo
+  // 其他（白底）→ 彩色 logo
+  const isWhiteBg = !isDarkScrollPage || (!scrolled && pathname !== '/');
+  const logoSrc = (pathname === '/' && !scrolled) || (isDarkScrollPage && scrolled)
+    ? '/images/logo/logo-header.png'
+    : '/images/logo/logo-color.png';
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
@@ -98,11 +106,11 @@ export default function Header() {
               : 'mx-4 md:mx-8 mt-3 bg-white/90 backdrop-blur-md rounded-[10px] shadow-md'
             : pathname === '/'
               ? ''
-              : 'bg-white/80 backdrop-blur-md'
+              : 'bg-white shadow-sm'
         }`}>
           <div className="px-6 md:px-12 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center flex-shrink-0">
-              <Image src="/images/logo/logo-header.png" alt="境曜有限公司" width={180} height={180} className="rounded-[8px] w-auto h-14" unoptimized />
+              <Image src={logoSrc} alt="境曜有限公司" width={180} height={180} className="rounded-[8px] w-auto h-14" unoptimized />
             </Link>
 
             <div className="flex items-center gap-7">
