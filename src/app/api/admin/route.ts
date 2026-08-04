@@ -19,10 +19,21 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getServiceClient();
-  const { data, error } = await supabase
+
+  // 先嘗試用 created_at 排序，若該表無此欄位則改用 id
+  let { data, error } = await supabase
     .from(table)
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (error && error.message.includes("created_at")) {
+    const fallback = await supabase
+      .from(table)
+      .select("*")
+      .order("id", { ascending: true });
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

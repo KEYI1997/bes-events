@@ -63,23 +63,41 @@ export default function NotificationsPage() {
     const adminPwd = localStorage.getItem('admin_password') || '';
     const value = emails.join(',');
     try {
-      const res = await fetch('/api/admin?table=site_content', { headers: getHeaders() });
+      // 先 GET 找到現有記錄的 id
+      const res = await fetch('/api/admin?table=site_content', {
+        headers: { 'x-admin-password': adminPwd },
+      });
       const json = await res.json();
-      const items = json.data || [];
-      const existing = items.find((item: { key: string; id: string }) => item.key === 'notification_email');
+
+      if (!res.ok) {
+        setError(`讀取設定失敗：${json.error || res.status}`);
+        setSaving(false);
+        return;
+      }
+
+      const items: { key: string; id: string }[] = json.data || [];
+      const existing = items.find(item => item.key === 'notification_email');
+
       if (existing) {
-        await fetch('/api/admin', {
+        // 更新
+        const putRes = await fetch('/api/admin', {
           method: 'PUT',
           headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'site_content', id: existing.id, record: { value } }),
+          body: JSON.stringify({ table: 'site_content', id: existing.id, record: { value, updated_at: new Date().toISOString() } }),
         });
+        const putJson = await putRes.json();
+        if (!putRes.ok) { setError(`儲存失敗：${putJson.error || putRes.status}`); setSaving(false); return; }
       } else {
-        await fetch('/api/admin', {
+        // 新增
+        const postRes = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
           body: JSON.stringify({ table: 'site_content', record: { key: 'notification_email', value } }),
         });
+        const postJson = await postRes.json();
+        if (!postRes.ok) { setError(`儲存失敗：${postJson.error || postRes.status}`); setSaving(false); return; }
       }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
