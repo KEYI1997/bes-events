@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { Resend } from "resend";
+import { contactEmailHtml } from "@/lib/emailTemplates";
 
 export const dynamic = "force-dynamic";
 
@@ -35,8 +36,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "提交失敗" }, { status: 500 });
     }
 
-    // 發送通知信
+    // 發送品牌通知信
     if (resend) {
+      // 取得通知收件人
       let notifyEmails: string[] = ["Jingyaoactivities@gmail.com"];
       const { data: setting } = await supabase
         .from("site_content")
@@ -50,19 +52,8 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: "境曜活動通知 <onboarding@resend.dev>",
         to: notifyEmails,
-        subject: `【新諮詢】${name} - ${service_type || "一般諮詢"}`,
-        html: `
-          <h2>📋 新的客戶諮詢</h2>
-          <table style="border-collapse:collapse;width:100%">
-            <tr><td style="padding:8px;border:1px solid #ddd"><b>姓名</b></td><td style="padding:8px;border:1px solid #ddd">${name}</td></tr>
-            <tr><td style="padding:8px;border:1px solid #ddd"><b>電話</b></td><td style="padding:8px;border:1px solid #ddd">${phone}</td></tr>
-            ${email ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>Email</b></td><td style="padding:8px;border:1px solid #ddd">${email}</td></tr>` : ""}
-            ${service_type ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>服務類型</b></td><td style="padding:8px;border:1px solid #ddd">${service_type}</td></tr>` : ""}
-            ${event_date ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>活動起日</b></td><td style="padding:8px;border:1px solid #ddd">${event_date}</td></tr>` : ""}
-            ${event_end_date ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>活動迄日</b></td><td style="padding:8px;border:1px solid #ddd">${event_end_date}</td></tr>` : ""}
-            ${description ? `<tr><td style="padding:8px;border:1px solid #ddd"><b>需求說明</b></td><td style="padding:8px;border:1px solid #ddd">${description}</td></tr>` : ""}
-          </table>
-        `,
+        subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
+        html: contactEmailHtml({ name, phone, email, service_type, event_date, event_end_date, description }),
       });
     }
 

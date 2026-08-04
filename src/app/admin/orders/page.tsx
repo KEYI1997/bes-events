@@ -205,6 +205,12 @@ export default function OrdersPage() {
       await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: form }) });
     } else {
       await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: form }) });
+      // 新增訂單時發送 Email 通知（非阻塞，失敗不影響訂單建立）
+      fetch('/api/notify-order', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(form),
+      }).catch(err => console.error('notify-order failed:', err));
     }
     setShowModal(false);
     fetchData();
