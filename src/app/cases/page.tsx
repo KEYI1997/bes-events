@@ -18,7 +18,7 @@ export default async function CasesPage() {
     .order('event_date', { ascending: false });
 
   return (
-    <main className="bg-bg min-h-screen">
+    <main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -35,7 +35,7 @@ export default async function CasesPage() {
       </section>
 
       {/* Cases Content */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      <section className="bg-white max-w-7xl mx-auto px-4 py-16 md:py-24">
         {/* Suspense 包覆 CasesGrid，因為內部使用 useSearchParams */}
         <Suspense fallback={<div className="text-center py-16 text-primary/50">載入中...</div>}>
           <CasesGrid cases={(cases as Case[]) || []} />

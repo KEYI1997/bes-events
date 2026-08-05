@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, GripVertical } from 'lucide-react';
 import type { Case } from '@/lib/types';
 
 const CATEGORIES = ['開幕典禮', '記者會', '新品發表會', '展覽攤位', '政府活動', '春酒尾牙', '典禮節慶'] as const;
+const SERVICE_TYPES = ['活動策劃統包', '啟動儀式', '活動特效', '燈光音響舞台', '外派調酒', 'SHOW GIRL', '其他'] as const;
 
 const EMPTY_CASE = {
-  title: '', category: '開幕典禮' as string,
-  description: '', image_url: '', client_name: '', event_date: '', visible: true,
+  title: '', category: '開幕典禮' as string, service_type: '',
+  description: '', image_url: '', client_name: '', event_date: '', visible: true, sort_order: 0,
 };
 
 export default function CasesPage() {
@@ -20,21 +21,31 @@ export default function CasesPage() {
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const dragIndex = useRef<number | null>(null);
+  const dragOverIndex = useRef<number | null>(null);
+
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=cases', { headers: getHeaders() });
     const json = await res.json();
-    setCases(json.data || []);
+    const sorted = (json.data || []).sort((a: Case, b: Case) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    setCases(sorted);
     setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY_CASE); setShowModal(true); };
+  const openCreate = () => {
+    setEditing(null);
+    const maxOrder = cases.length > 0 ? Math.max(...cases.map(c => c.sort_order ?? 0)) + 1 : 1;
+    setForm({ ...EMPTY_CASE, sort_order: maxOrder });
+    setShowModal(true);
+  };
+
   const openEdit = (c: Case) => {
     setEditing(c);
-    setForm({ title: c.title, category: c.category, description: c.description, image_url: c.image_url, client_name: c.client_name, event_date: c.event_date, visible: c.visible });
+    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, client_name: c.client_name, event_date: c.event_date, visible: c.visible, sort_order: c.sort_order ?? 0 });
     setShowModal(true);
   };
 
@@ -70,6 +81,26 @@ export default function CasesPage() {
     fetchData();
   };
 
+  const handleDragStart = (index: number) => { dragIndex.current = index; };
+  const handleDragOver = (e: React.DragEvent, index: number) => { e.preventDefault(); dragOverIndex.current = index; };
+
+  const handleDrop = async () => {
+    const from = dragIndex.current;
+    const to = dragOverIndex.current;
+    if (from === null || to === null || from === to) return;
+    const reordered = [...cases];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    const updated = reordered.map((c, i) => ({ ...c, sort_order: i + 1 }));
+    setCases(updated);
+    const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
+    await Promise.all(updated.map(c =>
+      fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: c.id, record: { sort_order: c.sort_order } }) })
+    ));
+    dragIndex.current = null;
+    dragOverIndex.current = null;
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -85,28 +116,47 @@ export default function CasesPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b" style={{ backgroundColor: '#FFFFFF' }}>
+              <thead className="border-b bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left">圖片</th>
-                  <th className="px-4 py-3 text-left">標題</th>
-                  <th className="px-4 py-3 text-left">分類</th>
-                  <th className="px-4 py-3 text-left">客戶</th>
-                  <th className="px-4 py-3 text-left">活動日期</th>
-                  <th className="px-4 py-3 text-center">狀態</th>
-                  <th className="px-4 py-3 text-center">操作</th>
+                  <th className="px-4 py-3 w-10"></th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">圖片</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">活動名稱</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">活動類型</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">服務項目</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">主辦方</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">活動日期</th>
+                  <th className="px-4 py-3 text-center text-gray-500 font-medium">狀態</th>
+                  <th className="px-4 py-3 text-center text-gray-500 font-medium">操作</th>
                 </tr>
               </thead>
-              <tbody>
-                {cases.map(c => (
-                  <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
+              <tbody onDragOver={e => e.preventDefault()}>
+                {cases.map((c, index) => (
+                  <tr
+                    key={c.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={e => handleDragOver(e, index)}
+                    onDrop={handleDrop}
+                    className="border-b last:border-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 flex justify-center">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       {c.image_url ? <img src={c.image_url} alt={c.title} className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100" />}
                     </td>
                     <td className="px-4 py-3 font-medium">{c.title}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.category}</span></td>
-                    <td className="px-4 py-3 text-gray-600">{c.client_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{c.event_date}</td>
-                    <td className="px-4 py-3 text-center">{c.visible ? <Eye className="w-4 h-4 text-green-500 mx-auto" /> : <EyeOff className="w-4 h-4 text-gray-400 mx-auto" />}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.category}</span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{c.service_type || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.client_name || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.event_date || '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      {c.visible ? <Eye className="w-4 h-4 text-green-500 mx-auto" /> : <EyeOff className="w-4 h-4 text-gray-400 mx-auto" />}
+                    </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-gray-100"><Pencil className="w-4 h-4 text-gray-600" /></button>
@@ -115,14 +165,13 @@ export default function CasesPage() {
                     </td>
                   </tr>
                 ))}
-                {cases.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">尚無案例資料</td></tr>}
+                {cases.length === 0 && <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400">尚無案例資料</td></tr>}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -132,26 +181,33 @@ export default function CasesPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">標題 *</label>
-                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                <label className="block text-sm font-medium mb-1">活動名稱 *</label>
+                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：2025 品牌教育啟動典禮" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">分類 *</label>
+                <label className="block text-sm font-medium mb-1">主辦方</label>
+                <input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：教育部" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">活動類型 *</label>
                 <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">描述</label>
-                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">客戶名稱</label>
-                <input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                <label className="block text-sm font-medium mb-1">服務項目</label>
+                <select value={form.service_type} onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
+                  <option value="">請選擇</option>
+                  {SERVICE_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">活動日期</label>
                 <input type="date" value={form.event_date} onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">描述</label>
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="活動簡介..." />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">圖片</label>
@@ -179,7 +235,6 @@ export default function CasesPage() {
         </div>
       )}
 
-      {/* Delete Confirm */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">

@@ -43,7 +43,7 @@ const CONTACT_INFO = [
 
 export default function ContactPage() {
   return (
-    <main className="bg-bg min-h-screen">
+    <main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[40vh] flex items-center justify-center pt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -60,7 +60,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      <section className="bg-white max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
           {/* Left: Contact Info */}
           <div className="lg:col-span-2">

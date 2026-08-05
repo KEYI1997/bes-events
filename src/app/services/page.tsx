@@ -50,7 +50,7 @@ const SERVICES = [
 
 export default function ServicesPage() {
   return (
-    <main className="bg-bg min-h-screen">
+    <main className="bg-white min-h-screen">
       {/* Hero Banner */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -63,7 +63,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 服務卡片 Grid */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      <section className="bg-white max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {SERVICES.map((service, i) => (
             <AnimateOnScroll key={service.title} delay={i * 80}>
@@ -96,6 +96,11 @@ export default function ServicesPage() {
           ))}
         </div>
       </section>
+
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
+      </div>
 
       {/* CTA */}
       <section className="bg-primary py-16">

@@ -121,3 +121,28 @@ h1, h2, h3, h4, h5, h6 {
   0% { transform: translateX(-50%); }
   100% { transform: translateX(0); }
 }
+
+/* ShowGirl 身高雙滑桿 */
+.showgirl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #AA7452;
+  border: 3px solid white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  cursor: grab;
+  pointer-events: all;
+}
+.showgirl-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #AA7452;
+  border: 3px solid white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  cursor: grab;
+  pointer-events: all;
+}
+.showgirl-range::-webkit-slider-runnable-track { background: transparent; }
+.showgirl-range::-moz-range-track { background: transparent; }

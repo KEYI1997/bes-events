@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="bg-bg min-h-screen">
+    <main className="bg-white min-h-screen">
 
       {/* ── Hero Banner ── */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
@@ -25,7 +25,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Our Story：左大標 × 右段落 ── */}
-      <section className="max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
+      <section className="bg-white max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
         <AnimateOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
             {/* 左欄：大標題 */}
@@ -67,8 +67,13 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-primary/20" />
       </div>
 
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
+      </div>
+
       {/* ── 我們的理念 ── */}
-      <section className="max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
+      <section className="bg-white max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
         <AnimateOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
             {/* 左欄：大標題 */}
@@ -121,8 +126,13 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-primary/20" />
       </div>
 
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
+      </div>
+
       {/* ── 數字亮點 ── */}
-      <section className="max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
+      <section className="bg-white max-w-6xl mx-auto px-6 md:px-16 py-24 md:py-32">
         <AnimateOnScroll>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-6 text-center">
             {[
@@ -139,6 +149,11 @@ export default function AboutPage() {
           </div>
         </AnimateOnScroll>
       </section>
+
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
+      </div>
 
       {/* ── CTA ── */}
       <section className="bg-primary py-20">

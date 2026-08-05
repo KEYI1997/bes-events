@@ -148,6 +148,11 @@ export default function BartendingPlans() {
 
       <div className="pb-16 md:pb-24" />
 
+      {/* 分隔線 */}
+      <div className="flex justify-center bg-white px-8">
+        <div className="w-full h-[2px] bg-gray-300"></div>
+      </div>
+
       {/* CTA */}
       <section className="bg-primary py-16">
         <div className="max-w-4xl mx-auto text-center px-4">

@@ -87,14 +87,6 @@ export default async function HomePage() {
     .eq("visible", true)
     .order("sort_order", { ascending: true });
 
-  // 取得案例預覽
-  const { data: cases } = await supabase
-    .from("cases")
-    .select("*")
-    .eq("visible", true)
-    .order("created_at", { ascending: false })
-    .limit(6);
-
   return (
     <>
       {/* Hero Section - 輪播主圖 */}
@@ -199,73 +191,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
-      {/* 案例預覽 */}
-      {cases && cases.length > 0 && (
-        <>
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <AnimateOnScroll>
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                  精選案例
-                </h2>
-                <p className="text-primary/70 text-lg">
-                  每一場活動都是品牌與觀眾的深度對話
-                </p>
-              </div>
-            </AnimateOnScroll>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cases.map((c, i) => (
-                <AnimateOnScroll key={c.id} delay={i * 100}>
-                  <div className="bg-gray-50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group border border-gray-200">
-                    <div className="aspect-video bg-primary/10 relative overflow-hidden">
-                      {c.image_url && (
-                        <img
-                          src={c.image_url}
-                          alt={c.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      )}
-                      <span className="absolute top-3 left-3 px-3 py-1 bg-cta text-white text-xs rounded-full">
-                        {c.category}
-                      </span>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="font-bold text-primary text-lg mb-2">
-                        {c.title}
-                      </h3>
-                      {c.client_name && (
-                        <p className="text-sm text-primary/60">
-                          {c.client_name}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </AnimateOnScroll>
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Link
-                href="/cases"
-                className="inline-flex items-center gap-2 px-8 py-3 bg-cta text-white font-semibold rounded-full hover:bg-cta-hover transition-colors"
-              >
-                查看所有案例 <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-        {/* 分隔線 */}
-        <div className="flex justify-center bg-white px-8">
-          <div className="w-full h-[2px] bg-gray-300"></div>
-        </div>
-        </>
-      )}
 
       {/* 客戶 Logo 跑馬燈 */}
       {clients && clients.length > 0 && (

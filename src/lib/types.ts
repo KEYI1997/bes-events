@@ -42,6 +42,8 @@ export interface Case {
   image_url: string;
   client_name: string;
   event_date: string;
+  service_type: string;
+  sort_order: number;
   visible: boolean;
   created_at: string;
 }

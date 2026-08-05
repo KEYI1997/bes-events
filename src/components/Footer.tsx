@@ -24,7 +24,7 @@ export default function Footer() {
                 { label: '燈光音響舞台', href: '/products/stage-lighting' },
                 { label: '專案企劃', href: '/products/event-planning' },
                 { label: '外派調酒', href: '/products/bartending' },
-                { label: 'Show Girl', href: '/showgirl' },
+                { label: 'Show Girl', href: '/services/showgirl' },
                 { label: '案例展示', href: '/cases' },
                 { label: '聯絡我們', href: '/contact' },
               ].map((link) => (

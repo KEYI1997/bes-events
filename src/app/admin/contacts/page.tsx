@@ -109,8 +109,11 @@ export default function ContactsPage() {
       ? products.find(p => p.name === productMatch[1].trim())
       : null;
 
+    // SHOW GIRL 詢問時，product_id 固定為 'showgirl'
+    const isShowGirl = contact.service_type === 'SHOW GIRL';
+
     setOrderForm({
-      product_id: matchedProduct?.id || '',
+      product_id: isShowGirl ? 'showgirl' : (matchedProduct?.id || ''),
       customer_name: contact.name,
       customer_phone: contact.phone,
       quantity: 1,
@@ -489,17 +492,25 @@ export default function ContactsPage() {
               <form onSubmit={handleConvert} className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">選擇產品 *</label>
-                  <select
-                    value={orderForm.product_id}
-                    onChange={e => setOrderForm(f => ({ ...f, product_id: e.target.value }))}
-                    required
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                  >
-                    <option value="">請選擇產品</option>
-                    {products.filter(p => p.visible).map(p => (
-                      <option key={p.id} value={p.id}>{p.name}（庫存：{p.stock}）</option>
-                    ))}
-                  </select>
+                  {convertContact.service_type === 'SHOW GIRL' ? (
+                    <input
+                      value="SHOW GIRL"
+                      readOnly
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 text-sm cursor-not-allowed"
+                    />
+                  ) : (
+                    <select
+                      value={orderForm.product_id}
+                      onChange={e => setOrderForm(f => ({ ...f, product_id: e.target.value }))}
+                      required
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                    >
+                      <option value="">請選擇產品</option>
+                      {products.filter(p => p.visible).map(p => (
+                        <option key={p.id} value={p.id}>{p.name}（庫存：{p.stock}）</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
