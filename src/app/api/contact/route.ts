@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       }
 
       await resend.emails.send({
-        from: "境曜活動通知 <onboarding@resend.dev>",
+        from: "境曜活動通知 <noreply@besevent.com>",
         to: notifyEmails,
         subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
         html: contactEmailHtml({ name, phone, email, service_type, event_date, event_end_date, description }),

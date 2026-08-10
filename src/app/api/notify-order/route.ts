@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "境曜活動通知 <onboarding@resend.dev>",
+      from: "境曜活動通知 <noreply@besevent.com>",
       to: notifyEmails,
       subject: `【新訂單】${customer_name}${product_name ? ` — ${product_name}` : ''}`,
       html: orderEmailHtml({
