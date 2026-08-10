@@ -29,6 +29,9 @@ export interface Order {
   event_name: string;
   note: string;
   status: '已預約' | '出借中' | '已歸還' | '已取消';
+  order_code?: string;        // 訂單碼，例如 BES-20260811-001
+  line_user_id?: string;      // LINE User ID（客戶綁定後填入）
+  line_display_name?: string; // LINE 顯示名稱
   created_at: string;
   // joined
   product?: Product;

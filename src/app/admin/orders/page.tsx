@@ -204,7 +204,16 @@ export default function OrdersPage() {
     if (editing) {
       await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: form }) });
     } else {
-      await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: form }) });
+      // 自動產生訂單碼：BES-YYYYMMDD-XXX
+      const today = new Date();
+      const dateStr = today.getFullYear().toString() +
+        String(today.getMonth() + 1).padStart(2, '0') +
+        String(today.getDate()).padStart(2, '0');
+      const todayOrders = orders.filter(o => o.order_code?.startsWith(`BES-${dateStr}`));
+      const seq = String(todayOrders.length + 1).padStart(3, '0');
+      const order_code = `BES-${dateStr}-${seq}`;
+
+      await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: { ...form, order_code } }) });
       // 新增訂單時發送 Email 通知（非阻塞，失敗不影響訂單建立）
       fetch('/api/notify-order', {
         method: 'POST',
@@ -370,6 +379,7 @@ export default function OrdersPage() {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
+                  <th className="px-4 py-3 text-left">訂單碼</th>
                   <th className="px-4 py-3 text-left">產品</th>
                   <th className="px-4 py-3 text-left cursor-pointer select-none hover:bg-gray-50" onClick={() => toggleSort('customer_name')}>
                     客戶 {sortField === 'customer_name' && (sortDir === 'asc' ? '↑' : '↓')}
@@ -382,6 +392,7 @@ export default function OrdersPage() {
                     歸還日期 {sortField === 'return_date' && (sortDir === 'asc' ? '↑' : '↓')}
                   </th>
                   <th className="px-4 py-3 text-left">活動名稱</th>
+                  <th className="px-4 py-3 text-center">LINE</th>
                   <th className="px-4 py-3 text-center">狀態</th>
                   <th className="px-4 py-3 text-center">操作</th>
                 </tr>
@@ -389,12 +400,24 @@ export default function OrdersPage() {
               <tbody>
                 {filteredOrders.map(o => (
                   <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      {o.order_code
+                        ? <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{o.order_code}</span>
+                        : <span className="text-gray-300 text-xs">—</span>
+                      }
+                    </td>
                     <td className="px-4 py-3 font-medium">{productMap[o.product_id]?.name || '未知產品'}</td>
                     <td className="px-4 py-3">{o.customer_name}</td>
                     <td className="px-4 py-3 text-center">{o.quantity}</td>
                     <td className="px-4 py-3">{o.borrow_date}</td>
                     <td className="px-4 py-3">{o.return_date}</td>
                     <td className="px-4 py-3 text-gray-500">{o.event_name || '-'}</td>
+                    <td className="px-4 py-3 text-center">
+                      {o.line_user_id
+                        ? <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">✓ 已綁定</span>
+                        : <span className="text-gray-300 text-xs">未綁定</span>
+                      }
+                    </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[o.status]}`}>{o.status}</span>
                     </td>
@@ -406,7 +429,7 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ))}
-                {filteredOrders.length === 0 && <tr><td colSpan={8} className="px-4 py-12 text-center text-gray-400">尚無訂單資料</td></tr>}
+                {filteredOrders.length === 0 && <tr><td colSpan={10} className="px-4 py-12 text-center text-gray-400">尚無訂單資料</td></tr>}
               </tbody>
             </table>
           </div>
