@@ -258,7 +258,7 @@ export default function NotificationsPage() {
       <div>
 
         {/* ── 變更密碼 ── */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-8">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden lg:sticky lg:top-6">
           <div className="flex items-center gap-3 px-6 py-4 border-b bg-gray-50">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#4A494715' }}>
               <Lock className="w-4 h-4" style={{ color: '#4A4947' }} />
