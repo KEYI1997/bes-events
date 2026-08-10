@@ -10,26 +10,12 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 function verifyAdmin(request: NextRequest) {
   const password = request.headers.get("x-admin-password");
-  const envPassword = process.env.ADMIN_PASSWORD;
-  console.log("Received password:", password);
-  console.log("Env password exists:", !!envPassword);
-  console.log("Match:", password === envPassword);
-  return password === envPassword;
+  return password === process.env.ADMIN_PASSWORD;
 }
 
 export async function POST(request: NextRequest) {
-  const password = request.headers.get("x-admin-password");
-  const envPassword = process.env.ADMIN_PASSWORD;
-  
-  if (password !== envPassword) {
-    return NextResponse.json({ 
-      error: "未授權",
-      debug: {
-        receivedLength: password?.length || 0,
-        envExists: !!envPassword,
-        envLength: envPassword?.length || 0
-      }
-    }, { status: 401 });
+  if (!verifyAdmin(request)) {
+    return NextResponse.json({ error: "未授權" }, { status: 401 });
   }
 
   if (!resend) {
@@ -99,9 +85,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, email_id: data?.id });
   } catch (err) {
     console.error("notify-order error:", err);
-    return NextResponse.json({ 
-      error: "系統錯誤", 
-      detail: err instanceof Error ? err.message : String(err)
-    }, { status: 500 });
+    return NextResponse.json({ error: "系統錯誤" }, { status: 500 });
   }
 }
