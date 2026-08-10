@@ -125,7 +125,10 @@ export default function NotificationsPage() {
         <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>通知設定</h1>
       </div>
 
-      <div className="max-w-2xl space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+      {/* ══ 左欄：收件信箱設定 ══ */}
+      <div className="space-y-5">
 
         {/* ── 目前收件信箱 ── */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -248,6 +251,11 @@ export default function NotificationsPage() {
             <li>• 修改後請務必點擊「儲存設定」才會生效</li>
           </ul>
         </div>
+
+      </div>{/* 左欄結束 */}
+
+      {/* ══ 右欄：變更密碼 ══ */}
+      <div>
 
         {/* ── 變更密碼 ── */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-8">
@@ -393,7 +401,9 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-      </div>
+      </div>{/* 右欄結束 */}
+
+    </div>{/* grid 結束 */}
     </div>
   );
 }

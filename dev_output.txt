@@ -1,0 +1,10 @@
+
+> bes-events@0.1.0 dev
+> next dev
+
+[1m[38;2;173;127;168m▲ Next.js 16.2.10[39m[22m (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.100:3000
+- Environments: .env.local
+[32m[1m✓[22m[39m Ready in 10.5s
+
