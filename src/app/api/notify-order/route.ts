@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, email_id: data?.id });
   } catch (err) {
     console.error("notify-order error:", err);
-    return NextResponse.json({ error: "系統錯誤" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "系統錯誤", 
+      detail: err instanceof Error ? err.message : String(err)
+    }, { status: 500 });
   }
 }
