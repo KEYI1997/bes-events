@@ -18,8 +18,18 @@ function verifyAdmin(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: "未授權" }, { status: 401 });
+  const password = request.headers.get("x-admin-password");
+  const envPassword = process.env.ADMIN_PASSWORD;
+  
+  if (password !== envPassword) {
+    return NextResponse.json({ 
+      error: "未授權",
+      debug: {
+        receivedLength: password?.length || 0,
+        envExists: !!envPassword,
+        envLength: envPassword?.length || 0
+      }
+    }, { status: 401 });
   }
 
   if (!resend) {
