@@ -27,6 +27,7 @@ const EMPTY_ORDER = {
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Record<string, boolean>>({}); // phone -> LINE已綁定
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
@@ -44,14 +45,23 @@ export default function OrdersPage() {
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
-    const [ordersRes, productsRes] = await Promise.all([
+    const [ordersRes, productsRes, customersRes] = await Promise.all([
       fetch('/api/admin?table=orders', { headers: getHeaders() }),
       fetch('/api/admin?table=products', { headers: getHeaders() }),
+      fetch('/api/admin?table=customers', { headers: getHeaders() }),
     ]);
     const ordersJson = await ordersRes.json();
     const productsJson = await productsRes.json();
+    const customersJson = await customersRes.json();
     const fetchedOrders: Order[] = ordersJson.data || [];
     setProducts(productsJson.data || []);
+
+    // 建立電話 -> LINE綁定 的 map
+    const customerMap: Record<string, boolean> = {};
+    (customersJson.data || []).forEach((c: { phone: string; line_user_id?: string }) => {
+      if (c.line_user_id) customerMap[c.phone] = true;
+    });
+    setCustomers(customerMap);
 
     // 自動更新訂單狀態
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -413,7 +423,7 @@ export default function OrdersPage() {
                     <td className="px-4 py-3">{o.return_date}</td>
                     <td className="px-4 py-3 text-gray-500">{o.event_name || '-'}</td>
                     <td className="px-4 py-3 text-center">
-                      {o.line_user_id
+                      {customers[o.customer_phone]
                         ? <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">✓ 已綁定</span>
                         : <span className="text-gray-300 text-xs">未綁定</span>
                       }

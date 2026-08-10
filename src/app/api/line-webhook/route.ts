@@ -39,6 +39,14 @@ async function getLineProfile(userId: string) {
   return res.json();
 }
 
+// 標準化電話號碼（去除空白、dash、+886 等）
+function normalizePhone(phone: string): string {
+  let p = phone.replace(/[\s\-\(\)]/g, '');
+  if (p.startsWith('+886')) p = '0' + p.slice(4);
+  if (p.startsWith('886')) p = '0' + p.slice(3);
+  return p;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-line-signature") || "";
@@ -52,52 +60,72 @@ export async function POST(request: NextRequest) {
   const events = data.events || [];
 
   for (const event of events) {
+    // 處理加入好友事件
+    if (event.type === "follow") {
+      const replyToken = event.replyToken;
+      await replyMessage(replyToken, [
+        {
+          type: "text",
+          text: "您好！歡迎加入境曜有限公司 🎉\n\n請傳送您的手機號碼，讓我們為您綁定帳號，方便接收訂單通知。\n\n例如：0912345678",
+        },
+      ]);
+      continue;
+    }
+
     // 只處理文字訊息
     if (event.type !== "message" || event.message?.type !== "text") continue;
 
     const userId = event.source?.userId;
     const replyToken = event.replyToken;
-    const text = event.message.text.trim().toUpperCase();
+    const text = event.message.text.trim();
 
-    // 判斷是否為訂單碼格式：BES-YYYYMMDD-XXX
-    const orderCodePattern = /^BES-\d{8}-\d{3}$/;
-
-    if (!orderCodePattern.test(text)) {
-      // 不是訂單碼，回覆提示
+    // 判斷是否為電話號碼格式
+    const phonePattern = /^[\d\s\-\+\(\)]{8,15}$/;
+    if (!phonePattern.test(text)) {
       await replyMessage(replyToken, [
         {
           type: "text",
-          text: "您好！請輸入您的訂單碼（格式：BES-YYYYMMDD-XXX）來綁定您的 LINE 帳號，以便接收訂單通知。\n\n例如：BES-20260811-001",
+          text: "請傳送您的手機號碼來綁定帳號。\n\n例如：0912345678\n\n如有其他問題請直接留言，我們會盡快回覆您。",
         },
       ]);
       continue;
     }
 
-    // 查詢訂單
+    const phone = normalizePhone(text);
     const supabase = getServiceClient();
-    const { data: order, error } = await supabase
-      .from("orders")
-      .select("id, customer_name, order_code, line_user_id")
-      .eq("order_code", text)
+
+    // 檢查是否已有此 LINE 帳號綁定
+    const { data: existingByLine } = await supabase
+      .from("customers")
+      .select("*")
+      .eq("line_user_id", userId)
       .single();
 
-    if (error || !order) {
-      // 找不到訂單
+    if (existingByLine) {
       await replyMessage(replyToken, [
         {
           type: "text",
-          text: `找不到訂單碼「${text}」，請確認後再試。\n\n如有疑問請聯繫我們。`,
+          text: `您的 LINE 帳號已綁定電話 ${existingByLine.phone}。\n\n如需更換，請傳送新的手機號碼。`,
         },
       ]);
       continue;
     }
 
-    if (order.line_user_id && order.line_user_id !== userId) {
-      // 已被其他帳號綁定
+    // 在 orders 和 contacts 裡找這個電話
+    const [ordersRes, contactsRes] = await Promise.all([
+      supabase.from("orders").select("id, customer_name").eq("customer_phone", phone).limit(1),
+      supabase.from("contacts").select("id, name").eq("phone", phone).limit(1),
+    ]);
+
+    const orderMatch = ordersRes.data?.[0];
+    const contactMatch = contactsRes.data?.[0];
+    const customerName = orderMatch?.customer_name || contactMatch?.name || null;
+
+    if (!orderMatch && !contactMatch) {
       await replyMessage(replyToken, [
         {
           type: "text",
-          text: `此訂單碼已被綁定，請確認是否為您的訂單。\n\n如有疑問請聯繫我們。`,
+          text: `找不到電話號碼「${phone}」的記錄。\n\n請確認電話號碼是否正確，或聯繫我們確認。\n📞 0912-727-596`,
         },
       ]);
       continue;
@@ -106,21 +134,42 @@ export async function POST(request: NextRequest) {
     // 取得 LINE 用戶資料
     const profile = await getLineProfile(userId);
     const displayName = profile?.displayName || "客戶";
+    const pictureUrl = profile?.pictureUrl || null;
 
-    // 更新訂單的 LINE 資訊
-    await supabase
-      .from("orders")
-      .update({
+    // 檢查此電話是否已有記錄
+    const { data: existingByPhone } = await supabase
+      .from("customers")
+      .select("*")
+      .eq("phone", phone)
+      .single();
+
+    if (existingByPhone) {
+      // 更新已有記錄
+      await supabase
+        .from("customers")
+        .update({
+          line_user_id: userId,
+          line_display_name: displayName,
+          line_picture_url: pictureUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("phone", phone);
+    } else {
+      // 新增記錄
+      await supabase.from("customers").insert({
+        phone,
+        name: customerName,
         line_user_id: userId,
         line_display_name: displayName,
-      })
-      .eq("id", order.id);
+        line_picture_url: pictureUrl,
+      });
+    }
 
-    // 回覆成功訊息
+    const nameText = customerName ? `您好，${customerName}！\n` : "";
     await replyMessage(replyToken, [
       {
         type: "text",
-        text: `✅ 綁定成功！\n\n您好，${order.customer_name}！\n您的訂單（${text}）已成功綁定 LINE 帳號。\n\n之後訂單的狀態更新將會透過此管道通知您。`,
+        text: `✅ 綁定成功！\n\n${nameText}您的 LINE 帳號已成功綁定，之後訂單狀態更新將透過此管道通知您。\n\n感謝您的支持！`,
       },
     ]);
   }
@@ -128,7 +177,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ status: "ok" });
 }
 
-// LINE Webhook 驗證用（GET 請求）
+// LINE Webhook 驗證用
 export async function GET() {
   return NextResponse.json({ status: "LINE Webhook is running" });
 }

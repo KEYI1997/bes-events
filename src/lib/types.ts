@@ -106,6 +106,17 @@ export interface FAQ {
   created_at: string;
 }
 
+export interface Customer {
+  id: string;
+  phone: string;
+  name?: string;
+  line_user_id?: string;
+  line_display_name?: string;
+  line_picture_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SiteContent {
   id: string;
   key: string;
