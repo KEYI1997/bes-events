@@ -1,8 +1,8 @@
 # 境曜有限公司網站 - 部署筆記
 
 ## 網站資訊
-- **前臺網址**: https://bes-events.vercel.app
-- **後臺網址**: https://bes-events.vercel.app/admin
+- **前臺網址**: https://besevent.com
+- **後臺網址**: https://besevent.com/admin
 - **專案名稱**: bes-events
 - **框架**: Next.js
 - **部署平台**: Vercel (透過 GitHub 自動部署)

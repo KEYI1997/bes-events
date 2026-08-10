@@ -109,7 +109,7 @@ export function contactEmailHtml(data: {
 
         <!-- CTA 按鈕 -->
         <tr><td style="padding:0 40px 36px;text-align:center;">
-          <a href="https://bes-events.vercel.app/admin/contacts"
+          <a href="https://besevent.com/admin/contacts"
              style="display:inline-block;padding:13px 36px;background:${CTA};color:${WHITE};text-decoration:none;border-radius:50px;font-size:14px;font-weight:600;letter-spacing:0.5px;">
             前往後台查看詢問單
           </a>
@@ -177,7 +177,7 @@ export function orderEmailHtml(data: {
 
         <!-- CTA 按鈕 -->
         <tr><td style="padding:0 40px 36px;text-align:center;">
-          <a href="https://bes-events.vercel.app/admin/orders"
+          <a href="https://besevent.com/admin/orders"
              style="display:inline-block;padding:13px 36px;background:${CTA};color:${WHITE};text-decoration:none;border-radius:50px;font-size:14px;font-weight:600;letter-spacing:0.5px;">
             前往後台查看訂單
           </a>
