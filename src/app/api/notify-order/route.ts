@@ -10,7 +10,11 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 function verifyAdmin(request: NextRequest) {
   const password = request.headers.get("x-admin-password");
-  return password === process.env.ADMIN_PASSWORD;
+  const envPassword = process.env.ADMIN_PASSWORD;
+  console.log("Received password:", password);
+  console.log("Env password exists:", !!envPassword);
+  console.log("Match:", password === envPassword);
+  return password === envPassword;
 }
 
 export async function POST(request: NextRequest) {

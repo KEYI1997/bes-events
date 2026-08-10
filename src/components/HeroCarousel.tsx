@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 
 const SLIDES = [
   { src: '/images/hero/hero-1.png', alt: '境曜活動 1' },
@@ -27,30 +27,35 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, [next]);
 
-  // 觸控滑動
+  // 觸控左右滑動切換輪播圖（非上下捲動）
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
-
   const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
-
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 75) next();
     if (touchEnd - touchStart > 75) prev();
   };
 
+  // 向下箭頭：跳到下一個 data-snap 區塊（服務項目）
+  const scrollToNext = () => {
+    const snaps = Array.from(document.querySelectorAll<HTMLElement>('[data-snap]'));
+    const second = snaps[1];
+    if (second) second.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <section
+      data-snap
       className="relative h-screen w-full"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 內縮的圓角容器 */}
+      {/* 背景圖片輪播 */}
       <div className="relative w-full h-full overflow-hidden">
-        {/* 背景圖片輪播 */}
         {SLIDES.map((slide, index) => (
           <div
             key={slide.src}
@@ -66,10 +71,10 @@ export default function HeroCarousel() {
           </div>
         ))}
 
-        {/* 暗色覆蓋層 — 讓文字更清晰 */}
+        {/* 暗色覆蓋層 */}
         <div className="absolute inset-0 bg-black/50" />
 
-        {/* 文字內容 — 置中 */}
+        {/* 文字內容 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-6 md:px-12">
             <div className="max-w-3xl mx-auto">
@@ -90,10 +95,8 @@ export default function HeroCarousel() {
                   href="/contact"
                   className="group relative inline-flex items-center px-6 py-3 text-sm font-semibold rounded-lg border-2 border-cta transition-all duration-300 ease-in-out bg-cta text-white hover:bg-white hover:text-cta overflow-hidden"
                 >
-                  {/* 左箭頭 - 初始顯示，hover 隱藏 */}
                   <ArrowRight size={14} className="mr-2 transition-all duration-300 ease-in-out opacity-100 translate-x-0 group-hover:opacity-0 group-hover:-translate-x-4" />
                   <span>免費諮詢</span>
-                  {/* 右箭頭 - 初始隱藏，hover 顯示，方向反轉 */}
                   <ArrowRight size={14} className="ml-2 rotate-180 transition-all duration-300 ease-in-out opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0" />
                 </Link>
                 <Link
@@ -107,7 +110,7 @@ export default function HeroCarousel() {
           </div>
         </div>
 
-        {/* 底部指示點 */}
+        {/* 底部輪播指示點 */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {SLIDES.map((_, index) => (
             <button
@@ -120,6 +123,15 @@ export default function HeroCarousel() {
             />
           ))}
         </div>
+
+        {/* 向下提示箭頭 */}
+        <button
+          onClick={scrollToNext}
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 text-white/70 hover:text-white transition-colors animate-bounce"
+          aria-label="向下捲動至服務項目"
+        >
+          <ChevronDown size={36} strokeWidth={1.5} />
+        </button>
       </div>
     </section>
   );
