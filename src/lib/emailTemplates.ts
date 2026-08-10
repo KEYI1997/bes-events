@@ -141,12 +141,11 @@ export function orderEmailHtml(data: {
     infoRow('客戶姓名', data.customer_name, false),
     infoRow('聯絡電話', data.customer_phone, true),
     ...(data.product_name ? [infoRow('租借商品', data.product_name, false)] : []),
-    ...(data.quantity     ? [infoRow('數量',     `${data.quantity} 件`, true)] : []),
-    ...(data.borrow_date  ? [infoRow('借出日期', data.borrow_date,  false)] : []),
-    ...(data.return_date  ? [infoRow('歸還日期', data.return_date,  true)]  : []),
-    ...(data.event_name   ? [infoRow('活動名稱', data.event_name,   false)] : []),
-    ...(data.status       ? [infoRow('訂單狀態', data.status,       true)]  : []),
-    ...(data.note         ? [infoRow('備註',     data.note.replace(/\n/g,'<br>'), false)] : []),
+    ...(data.borrow_date  ? [infoRow('借出日期', data.borrow_date,  true)] : []),
+    ...(data.return_date  ? [infoRow('歸還日期', data.return_date,  false)]  : []),
+    ...(data.event_name   ? [infoRow('活動名稱', data.event_name,   true)] : []),
+    ...(data.status       ? [infoRow('訂單狀態', data.status,       false)]  : []),
+    ...(data.note         ? [infoRow('備註',     data.note.replace(/\n/g,'<br>'), true)] : []),
   ].join('');
 
   return `<!DOCTYPE html>
