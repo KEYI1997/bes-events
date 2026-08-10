@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Plus, Trash2, Save, CheckCircle, Bell } from 'lucide-react';
+import { Mail, Plus, Trash2, Save, CheckCircle, Bell, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function NotificationsPage() {
   const [emails, setEmails] = useState<string[]>([]);
@@ -10,6 +10,17 @@ export default function NotificationsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  // 密碼變更相關 state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSaved, setPwdSaved] = useState(false);
+  const [pwdError, setPwdError] = useState('');
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -236,6 +247,150 @@ export default function NotificationsPage() {
             <li>• 後台新增訂單時，會自動寄送「新訂單通知」</li>
             <li>• 修改後請務必點擊「儲存設定」才會生效</li>
           </ul>
+        </div>
+
+        {/* ── 變更密碼 ── */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-8">
+          <div className="flex items-center gap-3 px-6 py-4 border-b bg-gray-50">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#4A494715' }}>
+              <Lock className="w-4 h-4" style={{ color: '#4A4947' }} />
+            </div>
+            <div>
+              <p className="font-semibold text-sm" style={{ color: '#4A4947' }}>變更後台密碼</p>
+              <p className="text-xs text-gray-400">修改登入後台所使用的密碼</p>
+            </div>
+          </div>
+          <div className="px-6 py-5 space-y-4">
+            {/* 目前密碼 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">目前密碼</label>
+              <div className="relative">
+                <input
+                  type={showCurrentPwd ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={e => { setCurrentPassword(e.target.value); setPwdError(''); }}
+                  placeholder="請輸入目前的密碼"
+                  className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                  style={{ '--tw-ring-color': '#4A494740' } as React.CSSProperties}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPwd(!showCurrentPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showCurrentPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* 新密碼 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">新密碼</label>
+              <div className="relative">
+                <input
+                  type={showNewPwd ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => { setNewPassword(e.target.value); setPwdError(''); }}
+                  placeholder="請輸入新密碼（至少 6 個字元）"
+                  className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                  style={{ '--tw-ring-color': '#4A494740' } as React.CSSProperties}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPwd(!showNewPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showNewPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* 確認新密碼 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">確認新密碼</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPwd ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); setPwdError(''); }}
+                  placeholder="請再次輸入新密碼"
+                  className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                  style={{ '--tw-ring-color': '#4A494740' } as React.CSSProperties}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPwd(!showConfirmPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {pwdError && (
+              <p className="text-red-500 text-sm flex items-center gap-1">
+                ⚠️ {pwdError}
+              </p>
+            )}
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={async () => {
+                  // 驗證
+                  if (!currentPassword) { setPwdError('請輸入目前密碼'); return; }
+                  if (!newPassword) { setPwdError('請輸入新密碼'); return; }
+                  if (newPassword.length < 6) { setPwdError('新密碼至少需要 6 個字元'); return; }
+                  if (newPassword !== confirmPassword) { setPwdError('兩次輸入的新密碼不一致'); return; }
+                  
+                  const storedPwd = localStorage.getItem('admin_password') || '';
+                  if (currentPassword !== storedPwd) { setPwdError('目前密碼不正確'); return; }
+
+                  setPwdSaving(true);
+                  setPwdError('');
+
+                  try {
+                    // 呼叫 API 更新密碼
+                    const res = await fetch('/api/admin/change-password', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'x-admin-password': storedPwd },
+                      body: JSON.stringify({ currentPassword, newPassword }),
+                    });
+                    const json = await res.json();
+
+                    if (!res.ok) {
+                      setPwdError(json.error || '密碼變更失敗');
+                      setPwdSaving(false);
+                      return;
+                    }
+
+                    // 更新 localStorage
+                    localStorage.setItem('admin_password', newPassword);
+                    
+                    // 清空表單
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setPwdSaved(true);
+                    setTimeout(() => setPwdSaved(false), 3000);
+                  } catch (err) {
+                    setPwdError('密碼變更失敗，請稍後再試');
+                    console.error(err);
+                  }
+                  setPwdSaving(false);
+                }}
+                disabled={pwdSaving}
+                className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+                style={{ backgroundColor: '#4A4947' }}
+              >
+                {pwdSaving ? '變更中...' : <><Lock className="w-4 h-4" /> 變更密碼</>}
+              </button>
+              {pwdSaved && (
+                <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                  <CheckCircle className="w-4 h-4" /> 密碼已成功變更
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
       </div>
