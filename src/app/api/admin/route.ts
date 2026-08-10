@@ -4,7 +4,7 @@ import { getServiceClient } from "@/lib/supabase";
 // 簡易密碼驗證（header: x-admin-password）
 function verifyAdmin(request: NextRequest) {
   const password = request.headers.get("x-admin-password");
-  return password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+  return password === process.env.ADMIN_PASSWORD;
 }
 
 // GET /api/admin?table=xxx

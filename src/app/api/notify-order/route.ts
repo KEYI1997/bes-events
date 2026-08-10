@@ -10,7 +10,7 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 function verifyAdmin(request: NextRequest) {
   const password = request.headers.get("x-admin-password");
-  return password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+  return password === process.env.ADMIN_PASSWORD;
 }
 
 export async function POST(request: NextRequest) {
