@@ -19,7 +19,7 @@ function verifySignature(body: string, signature: string): boolean {
 // 回覆 LINE 訊息
 async function replyMessage(replyToken: string, messages: object[]) {
   if (!LINE_CHANNEL_ACCESS_TOKEN) return;
-  await fetch("https://api.line.me/v2/bot/message/reply", {
+  const response = await fetch("https://api.line.me/v2/bot/message/reply", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -27,6 +27,9 @@ async function replyMessage(replyToken: string, messages: object[]) {
     },
     body: JSON.stringify({ replyToken, messages }),
   });
+  if (!response.ok) {
+    console.error("LINE reply error:", response.status, await response.text());
+  }
 }
 
 // 取得 LINE 用戶資料
@@ -61,6 +64,237 @@ function parseAdminPhones(value?: string | null): string[] {
   return [...new Set(rawPhones.map(phone => normalizePhone(String(phone))).filter(Boolean))];
 }
 
+type LineOrder = {
+  id: string;
+  order_code?: string | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  quantity?: number | null;
+  borrow_date?: string | null;
+  return_date?: string | null;
+  event_name?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  products?: { name?: string | null } | Array<{ name?: string | null }> | null;
+};
+
+function isOrderStatusCommand(text: string): boolean {
+  const command = text.trim().toLowerCase();
+  return [
+    "目前訂單狀態",
+    "我的訂單",
+    "訂單狀態",
+    "查詢訂單",
+    "order_status",
+    "action=order_status",
+  ].includes(command);
+}
+
+function getCustomerOrderStatus(order: LineOrder) {
+  if (order.status === "已取消" || order.status === "已解除") {
+    return { label: "已解除", textColor: "#6B7280", backgroundColor: "#F1F3F5" };
+  }
+
+  const todayInTaipei = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
+  if (order.status === "已歸還" || order.status === "已完成" || (order.return_date && order.return_date < todayInTaipei)) {
+    return { label: "已完成", textColor: "#237A3B", backgroundColor: "#E9F7EE" };
+  }
+  return { label: "接案中", textColor: "#A35D16", backgroundColor: "#FFF2E2" };
+}
+
+function formatOrderDate(value?: string | null) {
+  if (!value) return "尚未設定";
+  return value.replace(/-/g, "/");
+}
+
+function getProductName(order: LineOrder) {
+  if (Array.isArray(order.products)) return order.products[0]?.name || "活動服務";
+  return order.products?.name || "活動服務";
+}
+
+function buildOrderCard(order: LineOrder, index: number) {
+  const status = getCustomerOrderStatus(order);
+  const title = order.event_name || getProductName(order);
+  const dateRange = order.borrow_date === order.return_date
+    ? formatOrderDate(order.borrow_date)
+    : `${formatOrderDate(order.borrow_date)}－${formatOrderDate(order.return_date)}`;
+
+  return {
+    type: "bubble",
+    size: "kilo",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#4A4947",
+      paddingAll: "18px",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          alignItems: "center",
+          contents: [
+            {
+              type: "text",
+              text: index === 0 ? "最新訂單" : "近期訂單",
+              color: "#FFFFFF",
+              size: "xs",
+              weight: "bold",
+              flex: 1,
+            },
+            {
+              type: "text",
+              text: order.order_code || `訂單 ${index + 1}`,
+              color: "#FFFFFFAA",
+              size: "xxs",
+              align: "end",
+              flex: 3,
+            },
+          ],
+        },
+        {
+          type: "text",
+          text: title,
+          color: "#FFFFFF",
+          size: "lg",
+          weight: "bold",
+          wrap: true,
+          margin: "md",
+          maxLines: 2,
+        },
+      ],
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "18px",
+      spacing: "md",
+      contents: [
+        {
+          type: "box",
+          layout: "horizontal",
+          alignItems: "center",
+          contents: [
+            { type: "text", text: "目前狀態", color: "#8A8A8A", size: "sm", flex: 2 },
+            {
+              type: "box",
+              layout: "vertical",
+              backgroundColor: status.backgroundColor,
+              cornerRadius: "12px",
+              paddingAll: "6px",
+              flex: 2,
+              contents: [
+                {
+                  type: "text",
+                  text: status.label,
+                  color: status.textColor,
+                  size: "sm",
+                  weight: "bold",
+                  align: "center",
+                },
+              ],
+            },
+          ],
+        },
+        { type: "separator", color: "#EEEEEE" },
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            { type: "text", text: "服務項目", color: "#8A8A8A", size: "sm", flex: 2 },
+            { type: "text", text: getProductName(order), color: "#4A4947", size: "sm", wrap: true, align: "end", flex: 4 },
+          ],
+        },
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            { type: "text", text: "服務日期", color: "#8A8A8A", size: "sm", flex: 2 },
+            { type: "text", text: dateRange, color: "#4A4947", size: "sm", wrap: true, align: "end", flex: 4 },
+          ],
+        },
+        {
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            { type: "text", text: "數量", color: "#8A8A8A", size: "sm", flex: 2 },
+            { type: "text", text: String(order.quantity || 1), color: "#4A4947", size: "sm", align: "end", flex: 4 },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function getPhoneVariants(phone: string) {
+  const normalized = normalizePhone(phone);
+  const variants = new Set([normalized, phone]);
+  if (/^09\d{8}$/.test(normalized)) {
+    variants.add(`${normalized.slice(0, 4)}-${normalized.slice(4, 7)}-${normalized.slice(7)}`);
+    variants.add(`${normalized.slice(0, 4)}-${normalized.slice(4)}`);
+    variants.add(`${normalized.slice(0, 4)} ${normalized.slice(4, 7)} ${normalized.slice(7)}`);
+    variants.add(`+886${normalized.slice(1)}`);
+    variants.add(`886${normalized.slice(1)}`);
+  }
+  return [...variants];
+}
+
+async function replyRecentOrders(replyToken: string, userId?: string) {
+  if (!userId) {
+    await replyMessage(replyToken, [{ type: "text", text: "無法取得您的 LINE 帳號資訊，請稍後再試。" }]);
+    return;
+  }
+
+  const supabase = getServiceClient();
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("phone, name")
+    .eq("line_user_id", userId)
+    .maybeSingle();
+
+  if (!customer?.phone) {
+    await replyMessage(replyToken, [
+      {
+        type: "text",
+        text: "尚未完成手機綁定。\n\n請直接傳送您填寫表單或訂單時使用的手機號碼，例如：0912345678",
+      },
+    ]);
+    return;
+  }
+
+  const { data: orders, error } = await supabase
+    .from("orders")
+    .select("id, order_code, customer_name, customer_phone, quantity, borrow_date, return_date, event_name, status, created_at, products(name)")
+    .in("customer_phone", getPhoneVariants(customer.phone))
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error("LINE order status query error:", error.message);
+    await replyMessage(replyToken, [{ type: "text", text: "訂單資料暫時無法讀取，請稍後再試或直接聯繫我們。" }]);
+    return;
+  }
+
+  const recentOrders = (orders || []) as LineOrder[];
+  if (recentOrders.length === 0) {
+    await replyMessage(replyToken, [
+      {
+        type: "text",
+        text: `${customer.name ? `${customer.name} 您好，` : ""}目前查不到此手機號碼的訂單。\n\n若您剛完成表單，請稍候工作人員建立訂單後再查詢。`,
+      },
+    ]);
+    return;
+  }
+
+  const cards = recentOrders.map((order, index) => buildOrderCard(order, index));
+  await replyMessage(replyToken, [
+    {
+      type: "flex",
+      altText: `近期訂單狀況（共 ${recentOrders.length} 筆）`,
+      contents: cards.length === 1 ? cards[0] : { type: "carousel", contents: cards },
+    },
+  ]);
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-line-signature") || "";
@@ -86,12 +320,25 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    // 只處理文字訊息
-    if (event.type !== "message" || event.message?.type !== "text") continue;
+    // 支援 Rich Menu 的文字訊息與 postback 指令
+    const isTextMessage = event.type === "message" && event.message?.type === "text";
+    const isPostback = event.type === "postback";
+    if (!isTextMessage && !isPostback) continue;
 
     const userId = event.source?.userId;
     const replyToken = event.replyToken;
-    const text = event.message.text.trim();
+    const text = isTextMessage
+      ? event.message.text.trim()
+      : String(event.postback?.data || "").trim();
+
+    // ── 查詢近期訂單狀態 ──
+    if (isOrderStatusCommand(text)) {
+      await replyRecentOrders(replyToken, userId);
+      continue;
+    }
+
+    // 其他 postback 不進入電話綁定流程
+    if (!isTextMessage) continue;
 
     // ── 管理員認證：「管理者：電話號碼」──
     const adminPattern = /^管理者[：:]\s*(.+)$/;
@@ -203,9 +450,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 在 orders 和 contacts 裡找這個電話
+    const phoneVariants = getPhoneVariants(phone);
     const [ordersRes, contactsRes] = await Promise.all([
-      supabase.from("orders").select("id, customer_name").eq("customer_phone", phone).limit(1),
-      supabase.from("contacts").select("id, name").eq("phone", phone).limit(1),
+      supabase.from("orders").select("id, customer_name").in("customer_phone", phoneVariants).limit(1),
+      supabase.from("contacts").select("id, name").in("phone", phoneVariants).limit(1),
     ]);
 
     const orderMatch = ordersRes.data?.[0];

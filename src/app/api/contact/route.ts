@@ -8,6 +8,13 @@ export const dynamic = "force-dynamic";
 const resendApiKey = (process.env.RESEND_API_KEY || '').replace(/[\uFEFF\u200B]/g, '').trim();
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
+function normalizePhone(phone: string) {
+  let normalized = phone.replace(/[\s\-()]/g, '');
+  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
+  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
+  return normalized;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -20,10 +27,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedPhone = normalizePhone(phone);
+
     // 寫入 Supabase
     const { error } = await supabase.from("contacts").insert({
       name,
-      phone,
+      phone: normalizedPhone,
       email: email || null,
       service_type: service_type || null,
       description: description || null,
@@ -53,7 +62,7 @@ export async function POST(request: Request) {
         from: "境曜活動通知 <noreply@besevent.com>",
         to: notifyEmails,
         subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
-        html: contactEmailHtml({ name, phone, email, service_type, event_date, event_end_date, description }),
+        html: contactEmailHtml({ name, phone: normalizedPhone, email, service_type, event_date, event_end_date, description }),
       });
     }
 

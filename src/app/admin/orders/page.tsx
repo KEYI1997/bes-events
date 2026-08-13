@@ -12,6 +12,13 @@ const STATUS_COLORS: Record<string, string> = {
   '已取消': 'bg-gray-100 text-gray-500',
 };
 
+function normalizeCustomerPhone(phone: string) {
+  let normalized = phone.replace(/[\s\-()]/g, '');
+  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
+  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
+  return normalized;
+}
+
 const EMPTY_ORDER = {
   product_id: '',
   customer_name: '',
@@ -95,7 +102,10 @@ export default function OrdersPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void fetchData(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // 取得產品名稱 map
   const productMap = useMemo(() => {
@@ -211,8 +221,12 @@ export default function OrdersPage() {
     if (!validateStock()) return;
 
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
+    const normalizedForm = {
+      ...form,
+      customer_phone: normalizeCustomerPhone(form.customer_phone),
+    };
     if (editing) {
-      await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: form }) });
+      await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: normalizedForm }) });
     } else {
       // 自動產生訂單碼：BES-YYYYMMDD-XXX
       const today = new Date();
@@ -223,12 +237,12 @@ export default function OrdersPage() {
       const seq = String(todayOrders.length + 1).padStart(3, '0');
       const order_code = `BES-${dateStr}-${seq}`;
 
-      await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: { ...form, order_code } }) });
+      await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: { ...normalizedForm, order_code } }) });
       // 新增訂單時發送 Email 通知（非阻塞，失敗不影響訂單建立）
       fetch('/api/notify-order', {
         method: 'POST',
         headers,
-        body: JSON.stringify(form),
+        body: JSON.stringify(normalizedForm),
       }).catch(err => console.error('notify-order failed:', err));
     }
     setShowModal(false);
@@ -271,9 +285,10 @@ export default function OrdersPage() {
   // 即時檢查庫存（當表單改變時）
   useEffect(() => {
     if (showModal && form.product_id && form.borrow_date && form.return_date) {
-      validateStock();
+      const timer = window.setTimeout(() => { validateStock(); }, 0);
+      return () => window.clearTimeout(timer);
     }
-  }, [form.product_id, form.borrow_date, form.return_date, form.quantity]);
+  }, [showModal, form.product_id, form.borrow_date, form.return_date, form.quantity]);
 
   return (
     <div>
