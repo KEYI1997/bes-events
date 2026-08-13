@@ -130,7 +130,7 @@ INSERT INTO site_content (key, value) VALUES
   ('hero_subtitle', '境曜有限公司（Bright Events Services），專注於各類型活動整合與現場執行'),
   ('company_phone', '0912-727-596'),
   ('company_email', 'Jingyaoactivities@gmail.com'),
-  ('company_line', '@648ubibg'),
+  ('company_line', '@040kolkv'),
   ('notification_email', 'Jingyaoactivities@gmail.com'),
   ('admin_line_phone', '0911247541');
 

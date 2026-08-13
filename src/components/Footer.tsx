@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, Building2 } from 'lucide-react';
 import { FACEBOOK_URL, LINE_URL } from '@/lib/siteLinks';
 
 export default function Footer() {
@@ -64,8 +64,15 @@ export default function Footer() {
                 <Mail size={16} /> Jingyaoactivities@gmail.com
               </a>
               <a href={LINE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[16px] text-white/70 hover:text-cta transition-colors">
-                <MapPin size={16} /> LINE：@648ubibg
+                <MessageCircle size={16} /> LINE：@040kolkv
               </a>
+              <p className="flex items-start gap-2 text-[16px] text-white/70">
+                <Building2 size={16} className="mt-1 flex-shrink-0" /> 統編：60373507
+              </p>
+              <p className="flex items-start gap-2 text-[16px] text-white/70">
+                <MapPin size={16} className="mt-1 flex-shrink-0" />
+                <span>地址：104 臺北市中山區民權東路2段92巷6之1號</span>
+              </p>
             </div>
             {/* 社群 */}
             <div className="flex gap-5 mt-6 items-center">
@@ -85,7 +92,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 py-6">
         <p className="text-center text-sm text-white/50">
-          Copyright © 2024 境曜有限公司 All Rights Reserved.
+          © 2026 by KEYI MARKETING Co., Ltd.
         </p>
       </div>
     </footer>

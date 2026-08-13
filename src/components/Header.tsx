@@ -253,7 +253,7 @@ export default function Header() {
             <div className="flex flex-col sm:flex-row gap-6 text-sm text-primary/70">
               <a href="tel:0912727596" className="hover:text-cta transition-colors">📞 0912-727-596</a>
               <a href="mailto:Jingyaoactivities@gmail.com" className="hover:text-cta transition-colors">✉️ Jingyaoactivities@gmail.com</a>
-              <a href={LINE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-cta transition-colors">💬 LINE：@648ubibg</a>
+              <a href={LINE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-cta transition-colors">💬 LINE：@040kolkv</a>
             </div>
           </div>
         </div>

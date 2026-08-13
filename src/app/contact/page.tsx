@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { Phone, Mail, MessageCircle, MapPin, Clock } from 'lucide-react';
+import { Phone, Mail, MessageCircle, MapPin, Clock, Building2 } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import ContactFormInline from '@/components/ContactFormInline';
 import { LINE_URL } from '@/lib/siteLinks';
@@ -25,13 +25,19 @@ const CONTACT_INFO = [
   {
     icon: MessageCircle,
     label: 'LINE',
-    value: 'LINE 官方帳號',
+    value: '@040kolkv',
     href: LINE_URL,
+  },
+  {
+    icon: Building2,
+    label: '統編',
+    value: '60373507',
+    href: null,
   },
   {
     icon: MapPin,
     label: '地址',
-    value: '臺北市中山區民權東路2段92巷6之1號',
+    value: '104 臺北市中山區民權東路2段92巷6之1號',
     href: null,
   },
   {
