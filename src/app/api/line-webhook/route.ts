@@ -79,6 +79,64 @@ export async function POST(request: NextRequest) {
     const replyToken = event.replyToken;
     const text = event.message.text.trim();
 
+    // ── 管理員認證：「管理者：電話號碼」──
+    const adminPattern = /^管理者[：:]\s*(.+)$/;
+    const adminMatch = text.match(adminPattern);
+    if (adminMatch) {
+      const inputPhone = normalizePhone(adminMatch[1].trim());
+      const supabase = getServiceClient();
+
+      // 從 site_content 取得設定的管理員電話
+      const { data: adminPhoneSetting } = await supabase
+        .from("site_content")
+        .select("value")
+        .eq("key", "admin_line_phone")
+        .single();
+
+      const adminPhone = adminPhoneSetting?.value
+        ? normalizePhone(adminPhoneSetting.value)
+        : normalizePhone("0911247541"); // 預設管理員電話
+
+      if (inputPhone === adminPhone) {
+        // 取得 LINE 用戶資料
+        const profile = await getLineProfile(userId);
+        const displayName = profile?.displayName || "管理員";
+
+        // 存管理員 LINE User ID 到 site_content
+        const { data: existing } = await supabase
+          .from("site_content")
+          .select("id")
+          .eq("key", "admin_line_user_id")
+          .single();
+
+        if (existing) {
+          await supabase
+            .from("site_content")
+            .update({ value: userId, updated_at: new Date().toISOString() })
+            .eq("key", "admin_line_user_id");
+        } else {
+          await supabase
+            .from("site_content")
+            .insert({ key: "admin_line_user_id", value: userId });
+        }
+
+        await replyMessage(replyToken, [
+          {
+            type: "text",
+            text: `✅ 管理員身份認證成功！\n\n${displayName}，您的 LINE 帳號已設定為管理員。\n\n之後有新訂單或詢問單，系統將主動通知您。`,
+          },
+        ]);
+      } else {
+        await replyMessage(replyToken, [
+          {
+            type: "text",
+            text: "❌ 認證失敗，電話號碼不符合。",
+          },
+        ]);
+      }
+      continue;
+    }
+
     // 判斷是否為電話號碼格式
     const phonePattern = /^[\d\s\-\+\(\)]{8,15}$/;
     if (!phonePattern.test(text)) {
