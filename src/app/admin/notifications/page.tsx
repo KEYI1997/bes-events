@@ -3,6 +3,29 @@
 import { useState, useEffect } from 'react';
 import { Mail, Plus, Trash2, Save, CheckCircle, Bell, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 
+const DEFAULT_ADMIN_PHONE = '0911247541';
+
+function normalizePhone(phone: string) {
+  let normalized = phone.replace(/[\s\-()]/g, '');
+  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
+  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
+  return normalized;
+}
+
+function parseAdminPhones(value?: string): string[] {
+  if (!value) return [DEFAULT_ADMIN_PHONE];
+
+  let rawPhones: string[];
+  try {
+    const parsed = JSON.parse(value);
+    rawPhones = Array.isArray(parsed) ? parsed : [value];
+  } catch {
+    rawPhones = value.split(/[,;\n]/);
+  }
+
+  return [...new Set(rawPhones.map(phone => normalizePhone(String(phone))).filter(phone => /^09\d{8}$/.test(phone)))];
+}
+
 export default function NotificationsPage() {
   const [emails, setEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState('');
@@ -12,7 +35,8 @@ export default function NotificationsPage() {
   const [error, setError] = useState('');
 
   // LINE 管理員電話相關 state
-  const [adminPhone, setAdminPhone] = useState('');
+  const [adminPhones, setAdminPhones] = useState<string[]>([]);
+  const [newAdminPhone, setNewAdminPhone] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
   const [phoneSaved, setPhoneSaved] = useState(false);
   const [phoneError, setPhoneError] = useState('');
@@ -45,7 +69,7 @@ export default function NotificationsPage() {
           setEmails(emailSetting.value.split(',').map((e: string) => e.trim()).filter(Boolean));
         }
         const adminPhoneSetting = items.find((item: { key: string; value: string }) => item.key === 'admin_line_phone');
-        setAdminPhone(adminPhoneSetting?.value || '0911247541');
+        setAdminPhones(parseAdminPhones(adminPhoneSetting?.value));
       } catch (err) {
         console.error(err);
       } finally {
@@ -134,19 +158,11 @@ export default function NotificationsPage() {
     setSaving(false);
   };
 
-  const handleSaveAdminPhone = async () => {
-    let normalized = adminPhone.replace(/[\s\-()]/g, '');
-    if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
-    if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
-
-    if (!/^09\d{8}$/.test(normalized)) {
-      setPhoneError('請輸入有效的台灣手機號碼，例如 0912345678');
-      return;
-    }
-
+  const saveAdminPhones = async (nextPhones: string[]) => {
     setPhoneSaving(true);
     setPhoneError('');
     const adminPwd = localStorage.getItem('admin_password') || '';
+    const value = JSON.stringify(nextPhones);
 
     try {
       const res = await fetch('/api/admin?table=site_content', {
@@ -156,8 +172,7 @@ export default function NotificationsPage() {
 
       if (!res.ok) {
         setPhoneError(`讀取設定失敗：${json.error || res.status}`);
-        setPhoneSaving(false);
-        return;
+        return false;
       }
 
       const items: { key: string; id: string }[] = json.data || [];
@@ -169,7 +184,7 @@ export default function NotificationsPage() {
             body: JSON.stringify({
               table: 'site_content',
               id: existing.id,
-              record: { value: normalized, updated_at: new Date().toISOString() },
+              record: { value, updated_at: new Date().toISOString() },
             }),
           })
         : await fetch('/api/admin', {
@@ -177,25 +192,50 @@ export default function NotificationsPage() {
             headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               table: 'site_content',
-              record: { key: 'admin_line_phone', value: normalized },
+              record: { key: 'admin_line_phone', value },
             }),
           });
       const saveJson = await saveRes.json();
 
       if (!saveRes.ok) {
         setPhoneError(`儲存失敗：${saveJson.error || saveRes.status}`);
-        setPhoneSaving(false);
-        return;
+        return false;
       }
 
-      setAdminPhone(normalized);
+      setAdminPhones(nextPhones);
       setPhoneSaved(true);
       setTimeout(() => setPhoneSaved(false), 3000);
+      return true;
     } catch (err) {
       setPhoneError('儲存失敗，請稍後再試');
       console.error(err);
+      return false;
+    } finally {
+      setPhoneSaving(false);
     }
-    setPhoneSaving(false);
+  };
+
+  const handleAddAdminPhone = async () => {
+    const normalized = normalizePhone(newAdminPhone);
+    if (!/^09\d{8}$/.test(normalized)) {
+      setPhoneError('請輸入有效的台灣手機號碼，例如 0912345678');
+      return;
+    }
+    if (adminPhones.includes(normalized)) {
+      setPhoneError('此管理人員電話已經新增');
+      return;
+    }
+
+    const savedSuccessfully = await saveAdminPhones([...adminPhones, normalized]);
+    if (savedSuccessfully) setNewAdminPhone('');
+  };
+
+  const handleRemoveAdminPhone = async (phone: string) => {
+    if (adminPhones.length <= 1) {
+      setPhoneError('至少需要保留一位管理人員');
+      return;
+    }
+    await saveAdminPhones(adminPhones.filter(item => item !== phone));
   };
 
   return (
@@ -344,42 +384,83 @@ export default function NotificationsPage() {
               <Phone className="w-4 h-4" style={{ color: '#06C755' }} />
             </div>
             <div>
-              <p className="font-semibold text-sm" style={{ color: '#4A4947' }}>LINE 管理員電話</p>
-              <p className="text-xs text-gray-400">用於在 LINE 官方帳號認證管理員身分</p>
+              <p className="font-semibold text-sm" style={{ color: '#4A4947' }}>LINE 管理人員</p>
+              <p className="text-xs text-gray-400">目前共 {adminPhones.length} 位，可新增多位管理人員</p>
             </div>
           </div>
-          <div className="px-6 py-5 space-y-3">
+          <div className="px-6 py-5 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">手機號碼</label>
-              <input
-                type="tel"
-                inputMode="tel"
-                value={adminPhone}
-                onChange={e => { setAdminPhone(e.target.value); setPhoneError(''); setPhoneSaved(false); }}
-                placeholder="例如：0912345678"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
-                style={{ '--tw-ring-color': '#06C75540' } as React.CSSProperties}
-              />
-            </div>
-            <p className="text-xs text-gray-400">
-              儲存後，請在 LINE 傳送「管理者：手機號碼」完成管理員認證。
-            </p>
-            {phoneError && <p className="text-red-500 text-sm">⚠️ {phoneError}</p>}
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                onClick={handleSaveAdminPhone}
-                disabled={phoneSaving || loading}
-                className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
-                style={{ backgroundColor: '#06C755' }}
-              >
-                {phoneSaving ? '儲存中...' : <><Save className="w-4 h-4" /> 儲存電話</>}
-              </button>
-              {phoneSaved && (
-                <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
-                  <CheckCircle className="w-4 h-4" /> 已成功儲存
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-700">已新增的管理人員</p>
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                  共 {adminPhones.length} 位
                 </span>
+              </div>
+              {loading ? (
+                <div className="py-6 text-center text-sm text-gray-400">載入中...</div>
+              ) : adminPhones.length === 0 ? (
+                <div className="py-6 text-center text-sm text-gray-400 border border-dashed rounded-lg">尚未新增管理人員</div>
+              ) : (
+                <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
+                  {adminPhones.map((phone, index) => (
+                    <li key={phone} className="flex items-center justify-between px-4 py-3 bg-white">
+                      <div className="flex items-center gap-3">
+                        <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold bg-green-50 text-green-700">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700">{phone}</p>
+                          <p className="text-xs text-green-600">已新增</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAdminPhone(phone)}
+                        disabled={phoneSaving || adminPhones.length <= 1}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 border border-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={adminPhones.length <= 1 ? '至少需要保留一位管理人員' : '刪除此管理人員'}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> 刪除
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">新增手機號碼</label>
+              <div className="flex gap-2">
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={newAdminPhone}
+                  onChange={e => { setNewAdminPhone(e.target.value); setPhoneError(''); setPhoneSaved(false); }}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleAddAdminPhone(); } }}
+                  placeholder="例如：0912345678"
+                  className="flex-1 min-w-0 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                  style={{ '--tw-ring-color': '#06C75540' } as React.CSSProperties}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddAdminPhone}
+                  disabled={phoneSaving || loading}
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-white rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+                  style={{ backgroundColor: '#06C755' }}
+                >
+                  {phoneSaving ? '儲存中...' : <><Plus className="w-4 h-4" /> 新增</>}
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              新增後，該人員需在 LINE 傳送「管理者：手機號碼」完成管理員認證。
+            </p>
+            {phoneError && <p className="text-red-500 text-sm">⚠️ {phoneError}</p>}
+            {phoneSaved && (
+              <p className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                <CheckCircle className="w-4 h-4" /> 管理人員清單已更新
+              </p>
+            )}
           </div>
         </div>
 

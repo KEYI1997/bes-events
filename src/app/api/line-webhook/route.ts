@@ -47,6 +47,20 @@ function normalizePhone(phone: string): string {
   return p;
 }
 
+function parseAdminPhones(value?: string | null): string[] {
+  if (!value) return [normalizePhone("0911247541")];
+
+  let rawPhones: string[];
+  try {
+    const parsed = JSON.parse(value);
+    rawPhones = Array.isArray(parsed) ? parsed : [value];
+  } catch {
+    rawPhones = value.split(/[,;\n]/);
+  }
+
+  return [...new Set(rawPhones.map(phone => normalizePhone(String(phone))).filter(Boolean))];
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-line-signature") || "";
@@ -86,39 +100,58 @@ export async function POST(request: NextRequest) {
       const inputPhone = normalizePhone(adminMatch[1].trim());
       const supabase = getServiceClient();
 
-      // 從 site_content 取得設定的管理員電話
+      // 從 site_content 取得設定的管理員電話清單（相容既有單一電話格式）
       const { data: adminPhoneSetting } = await supabase
         .from("site_content")
         .select("value")
         .eq("key", "admin_line_phone")
         .single();
 
-      const adminPhone = adminPhoneSetting?.value
-        ? normalizePhone(adminPhoneSetting.value)
-        : normalizePhone("0911247541"); // 預設管理員電話
+      const adminPhones = parseAdminPhones(adminPhoneSetting?.value);
 
-      if (inputPhone === adminPhone) {
+      if (adminPhones.includes(inputPhone)) {
         // 取得 LINE 用戶資料
         const profile = await getLineProfile(userId);
         const displayName = profile?.displayName || "管理員";
 
-        // 存管理員 LINE User ID 到 site_content
-        const { data: existing } = await supabase
+        // 儲存多位管理員的 LINE 綁定資料
+        const { data: adminUsersSetting } = await supabase
           .from("site_content")
-          .select("id")
-          .eq("key", "admin_line_user_id")
+          .select("value")
+          .eq("key", "admin_line_users")
           .single();
 
-        if (existing) {
-          await supabase
-            .from("site_content")
-            .update({ value: userId, updated_at: new Date().toISOString() })
-            .eq("key", "admin_line_user_id");
-        } else {
-          await supabase
-            .from("site_content")
-            .insert({ key: "admin_line_user_id", value: userId });
+        let adminUsers: Array<{ phone: string; lineUserId: string; displayName: string }> = [];
+        try {
+          const parsed = JSON.parse(adminUsersSetting?.value || "[]");
+          if (Array.isArray(parsed)) adminUsers = parsed;
+        } catch {
+          adminUsers = [];
         }
+
+        const updatedAdminUsers = [
+          ...adminUsers.filter(admin => admin.phone !== inputPhone && admin.lineUserId !== userId),
+          { phone: inputPhone, lineUserId: userId, displayName },
+        ];
+
+        await supabase.from("site_content").upsert(
+          {
+            key: "admin_line_users",
+            value: JSON.stringify(updatedAdminUsers),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "key" }
+        );
+
+        // 保留舊欄位，讓既有通知程式仍可取得最近認證的管理員
+        await supabase.from("site_content").upsert(
+          {
+            key: "admin_line_user_id",
+            value: userId,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "key" }
+        );
 
         await replyMessage(replyToken, [
           {

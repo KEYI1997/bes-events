@@ -132,7 +132,7 @@ INSERT INTO site_content (key, value) VALUES
   ('company_email', 'Jingyaoactivities@gmail.com'),
   ('company_line', '@040kolkv'),
   ('notification_email', 'Jingyaoactivities@gmail.com'),
-  ('admin_line_phone', '0911247541');
+  ('admin_line_phone', '["0911247541"]');
 
 -- ============================================
 -- Storage Bucket（需在 Supabase Dashboard 建立）
