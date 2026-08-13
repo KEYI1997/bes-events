@@ -81,6 +81,7 @@ type LineOrder = {
 function isOrderStatusCommand(text: string): boolean {
   const command = text.trim().toLowerCase();
   return [
+    "目前訂單",
     "目前訂單狀態",
     "我的訂單",
     "訂單狀態",
@@ -437,13 +438,13 @@ export async function POST(request: NextRequest) {
       .from("customers")
       .select("*")
       .eq("line_user_id", userId)
-      .single();
+      .maybeSingle();
 
-    if (existingByLine) {
+    if (existingByLine && normalizePhone(existingByLine.phone || "") === phone) {
       await replyMessage(replyToken, [
         {
           type: "text",
-          text: `您的 LINE 帳號已綁定電話 ${existingByLine.phone}。\n\n如需更換，請傳送新的手機號碼。`,
+          text: `您的 LINE 帳號已綁定電話 ${existingByLine.phone}。\n\n可直接點選「目前訂單」查看近期訂單狀態；如需更換，請傳送新的手機號碼。`,
         },
       ]);
       continue;
@@ -479,12 +480,25 @@ export async function POST(request: NextRequest) {
     const { data: existingByPhone } = await supabase
       .from("customers")
       .select("*")
-      .eq("phone", phone)
-      .single();
+      .in("phone", phoneVariants)
+      .limit(1)
+      .maybeSingle();
 
-    if (existingByPhone) {
-      // 更新已有記錄
-      await supabase
+    let bindingError: { message: string } | null = null;
+    if (existingByLine && existingByPhone && existingByLine.id !== existingByPhone.id) {
+      // 新電話已有客戶紀錄：先解除舊紀錄，再把 LINE 資料移到新紀錄。
+      const { error: detachError } = await supabase
+        .from("customers")
+        .update({
+          line_user_id: null,
+          line_display_name: null,
+          line_picture_url: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingByLine.id);
+      bindingError = detachError;
+      if (!bindingError) {
+        const { error: updateError } = await supabase
         .from("customers")
         .update({
           name: existingByPhone.name || customerName,
@@ -493,23 +507,76 @@ export async function POST(request: NextRequest) {
           line_picture_url: pictureUrl,
           updated_at: new Date().toISOString(),
         })
-        .eq("phone", phone);
+        .eq("id", existingByPhone.id);
+        bindingError = updateError;
+      }
+      if (bindingError) {
+        // 移轉失敗時盡量還原舊綁定，避免客戶失去查詢能力。
+        await supabase
+          .from("customers")
+          .update({
+            line_user_id: userId,
+            line_display_name: existingByLine.line_display_name,
+            line_picture_url: existingByLine.line_picture_url,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingByLine.id);
+      }
+    } else if (existingByLine) {
+      // 已綁定的 LINE 帳號更換成通過核對的新電話。
+      const { error } = await supabase
+        .from("customers")
+        .update({
+          phone,
+          name: existingByLine.name || customerName,
+          line_display_name: displayName,
+          line_picture_url: pictureUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingByLine.id);
+      bindingError = error;
+    } else if (existingByPhone) {
+      // 新 LINE 帳號綁定到已有的電話紀錄。
+      const { error } = await supabase
+        .from("customers")
+        .update({
+          name: existingByPhone.name || customerName,
+          line_user_id: userId,
+          line_display_name: displayName,
+          line_picture_url: pictureUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingByPhone.id);
+      bindingError = error;
     } else {
       // 新增記錄
-      await supabase.from("customers").insert({
+      const { error } = await supabase.from("customers").insert({
         phone,
         name: customerName,
         line_user_id: userId,
         line_display_name: displayName,
         line_picture_url: pictureUrl,
       });
+      bindingError = error;
+    }
+
+    if (bindingError) {
+      console.error("LINE customer binding error:", bindingError.message);
+      await replyMessage(replyToken, [
+        {
+          type: "text",
+          text: "電話綁定時發生問題，請稍後再試；若仍無法綁定，請直接留言由工作人員協助。",
+        },
+      ]);
+      continue;
     }
 
     const nameText = customerName ? `您好，${customerName}！\n` : "";
+    const bindingAction = existingByLine ? "換綁" : "綁定";
     await replyMessage(replyToken, [
       {
         type: "text",
-        text: `✅ 綁定成功！\n\n${nameText}您的 LINE 帳號已成功綁定，之後訂單狀態更新將透過此管道通知您。\n\n感謝您的支持！`,
+        text: `✅ 電話${bindingAction}成功！\n\n${nameText}目前綁定電話為 ${phone}。現在可直接點選「目前訂單」查看近期訂單狀態。`,
       },
     ]);
   }

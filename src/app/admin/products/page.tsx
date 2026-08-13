@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon } from 'lucide-react';
+import { PRODUCT_CATEGORIES } from '@/lib/services';
 
 interface ProductData {
   id: string;
@@ -23,7 +24,7 @@ interface ProductData {
   created_at: string;
 }
 
-const CATEGORIES = ['啟動儀式', '燈光音響舞台', '外派調酒', 'Show Girl'] as const;
+const CATEGORIES = PRODUCT_CATEGORIES;
 
 // 取得展示圖片（兼容新舊schema + 逗號分隔）
 function getDisplayImage(p: ProductData): string {
@@ -69,6 +70,8 @@ export default function ProductsPage() {
     setLoading(false);
   };
 
+  // 管理員憑證只存在瀏覽器，頁面掛載後載入一次。
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, []);
 
   const openCreate = () => {

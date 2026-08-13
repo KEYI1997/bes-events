@@ -1,8 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Send, CheckCircle, X } from 'lucide-react';
-
-const SERVICE_TYPES = ['啟動儀式', '燈光音響舞台', '專案企劃', '外派調酒', 'Show Girl', '其他'];
+import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -177,7 +176,7 @@ export default function ContactModal({ isOpen, onClose, productName }: ContactMo
                     className={inputClass('service_type')}
                   >
                     <option value="">請選擇</option>
-                    {SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    {CONTACT_SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>

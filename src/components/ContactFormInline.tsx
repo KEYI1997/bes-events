@@ -1,8 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
-
-const SERVICE_TYPES = ['啟動儀式', '燈光音響舞台', '專案企劃', '外派調酒', 'Show Girl', '其他'];
+import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date'] as const;
 
@@ -135,7 +134,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
             className={inputClass('service_type')}
           >
             <option value="">請選擇服務類型</option>
-            {SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            {CONTACT_SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>

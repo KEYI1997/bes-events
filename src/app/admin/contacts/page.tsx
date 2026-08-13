@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, Filter } from 'lucide-react';
 import type { Contact, Product } from '@/lib/types';
+import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -11,6 +12,7 @@ export default function ContactsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [detail, setDetail] = useState<Contact | null>(null);
   const [convertContact, setConvertContact] = useState<Contact | null>(null);
+  const [selectedServiceType, setSelectedServiceType] = useState('其他');
   const [staffNoteEdit, setStaffNoteEdit] = useState<{ id: string; note: string } | null>(null);
   
   // 篩選狀態
@@ -31,6 +33,15 @@ export default function ContactsPage() {
   });
   const [converting, setConverting] = useState(false);
   const [convertSuccess, setConvertSuccess] = useState(false);
+  const [convertError, setConvertError] = useState('');
+
+  const selectedService = getServiceDefinition(selectedServiceType);
+  const availableProducts = products.filter(product =>
+    product.visible && (
+      selectedService.productCategories.length === 0 ||
+      selectedService.productCategories.includes(product.category)
+    )
+  );
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -46,6 +57,8 @@ export default function ContactsPage() {
     setLoading(false);
   };
 
+  // 管理員憑證只存在瀏覽器，頁面掛載後載入一次。
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, []);
 
   const markAsRead = async (id: string) => {
@@ -104,16 +117,25 @@ export default function ContactsPage() {
     setDetail(null);
     setConvertContact(contact);
     setConvertSuccess(false);
+    setConvertError('');
+    const service = getServiceDefinition(contact.service_type);
+    setSelectedServiceType(service.label);
     const productMatch = (contact.description || '').match(/【詢問商品】(.+)/);
     const matchedProduct = productMatch
       ? products.find(p => p.name === productMatch[1].trim())
       : null;
-
-    // SHOW GIRL 詢問時，product_id 固定為 'showgirl'
-    const isShowGirl = contact.service_type === 'SHOW GIRL';
+    const serviceProducts = products.filter(product =>
+      product.visible && (
+        service.productCategories.length === 0 ||
+        service.productCategories.includes(product.category)
+      )
+    );
+    const matchedServiceProduct = matchedProduct && serviceProducts.some(product => product.id === matchedProduct.id)
+      ? matchedProduct
+      : null;
 
     setOrderForm({
-      product_id: isShowGirl ? 'showgirl' : (matchedProduct?.id || ''),
+      product_id: matchedServiceProduct?.id || (serviceProducts.length === 1 ? serviceProducts[0].id : ''),
       customer_name: contact.name,
       customer_phone: contact.phone,
       quantity: 1,
@@ -127,13 +149,28 @@ export default function ContactsPage() {
 
   const handleConvert = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderForm.product_id || !orderForm.borrow_date || !orderForm.return_date) return;
+    setConvertError('');
+    if (!orderForm.product_id || !orderForm.borrow_date || !orderForm.return_date) {
+      setConvertError('請選擇服務方案並填寫完整日期。');
+      return;
+    }
     setConverting(true);
     try {
+      const now = new Date();
+      const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      const timePart = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}${String(now.getMilliseconds()).padStart(3, '0')}`;
+      const normalizedPhone = orderForm.customer_phone.replace(/[\s\-()]/g, '').replace(/^\+886/, '0').replace(/^886/, '0');
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { ...getHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table: 'orders', record: orderForm }),
+        body: JSON.stringify({
+          table: 'orders',
+          record: {
+            ...orderForm,
+            customer_phone: normalizedPhone,
+            order_code: `BES-${datePart}-${timePart}`,
+          },
+        }),
       });
       if (res.ok) {
         setConvertSuccess(true);
@@ -141,9 +178,13 @@ export default function ContactsPage() {
           await markAsConverted(convertContact.id);
         }
         fetchData();
+      } else {
+        const result = await res.json().catch(() => null);
+        setConvertError(result?.error || '訂單建立失敗，請稍後再試。');
       }
     } catch (err) {
       console.error(err);
+      setConvertError('網路連線失敗，請稍後再試。');
     }
     setConverting(false);
   };
@@ -491,25 +532,54 @@ export default function ContactsPage() {
             ) : (
               <form onSubmit={handleConvert} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">選擇產品 *</label>
-                  {convertContact.service_type === 'SHOW GIRL' ? (
-                    <input
-                      value="SHOW GIRL"
-                      readOnly
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-700 text-sm cursor-not-allowed"
-                    />
-                  ) : (
-                    <select
-                      value={orderForm.product_id}
-                      onChange={e => setOrderForm(f => ({ ...f, product_id: e.target.value }))}
-                      required
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                    >
-                      <option value="">請選擇產品</option>
-                      {products.filter(p => p.visible).map(p => (
-                        <option key={p.id} value={p.id}>{p.name}（庫存：{p.stock}）</option>
-                      ))}
-                    </select>
+                  <label className="block text-sm font-medium mb-1">服務大項 *</label>
+                  <select
+                    value={selectedServiceType}
+                    onChange={e => {
+                      const service = getServiceDefinition(e.target.value);
+                      const nextProducts = products.filter(product =>
+                        product.visible && (
+                          service.productCategories.length === 0 ||
+                          service.productCategories.includes(product.category)
+                        )
+                      );
+                      setSelectedServiceType(service.label);
+                      setOrderForm(form => ({
+                        ...form,
+                        product_id: nextProducts.length === 1 ? nextProducts[0].id : '',
+                      }));
+                      setConvertError('');
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                  >
+                    {SERVICE_DEFINITIONS.map(service => (
+                      <option key={service.key} value={service.label}>{service.label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">原諮詢大項：{convertContact.service_type || '未填寫'}，需要時可在此調整。</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">服務方案／產品 *</label>
+                  <select
+                    value={orderForm.product_id}
+                    onChange={e => setOrderForm(f => ({ ...f, product_id: e.target.value }))}
+                    required
+                    disabled={availableProducts.length === 0}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:text-gray-400"
+                  >
+                    <option value="">{availableProducts.length === 0 ? '此大項尚未建立方案' : '請選擇服務方案'}</option>
+                    {availableProducts.map(product => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}（可用數量：{product.stock ?? 0}）
+                      </option>
+                    ))}
+                  </select>
+                  {availableProducts.length === 0 && (
+                    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                      目前「{selectedService.label}」沒有可用方案，系統不會改用啟動儀式代替。
+                      <a href="/admin/products" className="ml-1 font-medium underline">前往產品管理新增</a>
+                    </div>
                   )}
                 </div>
 
@@ -535,7 +605,7 @@ export default function ContactsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">數量</label>
+                    <label className="block text-sm font-medium mb-1">{selectedService.quantityLabel}</label>
                     <input
                       type="number"
                       min={1}
@@ -545,7 +615,7 @@ export default function ContactsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">活動名稱</label>
+                    <label className="block text-sm font-medium mb-1">{selectedService.eventNameLabel}</label>
                     <input
                       value={orderForm.event_name}
                       onChange={e => setOrderForm(f => ({ ...f, event_name: e.target.value }))}
@@ -557,7 +627,7 @@ export default function ContactsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">借用日期 *</label>
+                    <label className="block text-sm font-medium mb-1">{selectedService.startDateLabel} *</label>
                     <input
                       type="date"
                       value={orderForm.borrow_date}
@@ -567,7 +637,7 @@ export default function ContactsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">歸還日期 *</label>
+                    <label className="block text-sm font-medium mb-1">{selectedService.endDateLabel} *</label>
                     <input
                       type="date"
                       value={orderForm.return_date}
@@ -584,15 +654,22 @@ export default function ContactsPage() {
                     value={orderForm.note}
                     onChange={e => setOrderForm(f => ({ ...f, note: e.target.value }))}
                     rows={3}
+                    placeholder={selectedService.notePlaceholder}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm"
                   />
                 </div>
+
+                {convertError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {convertError}
+                  </div>
+                )}
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={() => setConvertContact(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">取消</button>
                   <button
                     type="submit"
-                    disabled={converting}
+                    disabled={converting || availableProducts.length === 0 || !orderForm.product_id}
                     className="flex items-center gap-2 px-5 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
                     style={{ backgroundColor: '#22c55e' }}
                   >

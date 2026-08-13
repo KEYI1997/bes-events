@@ -8,7 +8,7 @@ CREATE TABLE products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  category TEXT NOT NULL CHECK (category IN ('啟動儀式', '燈光音響舞台', '外派調酒', 'Show Girl')),
+  category TEXT NOT NULL CHECK (category IN ('AI互動道具', '專案企劃', '啟動儀式', '活動特效', '燈光音響舞台', '外派調酒', 'Show Girl')),
   description TEXT,
   image_url TEXT,
   price_note TEXT,
