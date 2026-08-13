@@ -22,7 +22,6 @@ export default function Footer() {
             <nav className="space-y-2">
               {[
                 { label: '啟動儀式', href: '/products/opening-ceremony' },
-                { label: '燈光音響舞台', href: '/products/stage-lighting' },
                 { label: '專案企劃', href: '/products/event-planning' },
                 { label: '外派調酒', href: '/products/bartending' },
                 { label: 'Show Girl', href: '/services/showgirl' },

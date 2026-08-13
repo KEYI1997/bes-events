@@ -14,7 +14,6 @@ const NAV_ITEMS = [
       { label: '活動策劃統包', href: '/services/event-package' },
       { label: '啟動儀式', href: '/services/opening-ceremony' },
       { label: '活動特效', href: '/services/special-effects' },
-      { label: '燈光音響舞台', href: '/services/stage-lighting' },
       { label: '外派調酒', href: '/services/bartending' },
       { label: 'SHOW GIRL', href: '/services/showgirl' },
     ],
