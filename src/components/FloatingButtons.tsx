@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Phone, MessageCircle, ArrowUp } from 'lucide-react';
+import { LINE_URL } from '@/lib/siteLinks';
 
 export default function FloatingButtons() {
   const [showTop, setShowTop] = useState(false);
@@ -23,7 +24,7 @@ export default function FloatingButtons() {
         </button>
       )}
       <a
-        href="https://line.me/ti/p/~@648ubibg"
+        href={LINE_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="w-12 h-12 bg-[#06C755] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#05b04c] transition-all"

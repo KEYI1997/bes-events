@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Phone, Mail, MessageCircle, MapPin, Clock } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import ContactFormInline from '@/components/ContactFormInline';
+import { LINE_URL } from '@/lib/siteLinks';
 
 export const metadata: Metadata = {
   title: '聯絡我們 | 境曜有限公司 BES Events',
@@ -24,8 +25,8 @@ const CONTACT_INFO = [
   {
     icon: MessageCircle,
     label: 'LINE',
-    value: '@bes-events',
-    href: 'https://line.me/ti/p/@bes-events',
+    value: 'LINE 官方帳號',
+    href: LINE_URL,
   },
   {
     icon: MapPin,

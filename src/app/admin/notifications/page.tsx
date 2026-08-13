@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Plus, Trash2, Save, CheckCircle, Bell, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Plus, Trash2, Save, CheckCircle, Bell, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 
 export default function NotificationsPage() {
   const [emails, setEmails] = useState<string[]>([]);
@@ -10,6 +10,12 @@ export default function NotificationsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  // LINE 管理員電話相關 state
+  const [adminPhone, setAdminPhone] = useState('');
+  const [phoneSaving, setPhoneSaving] = useState(false);
+  const [phoneSaved, setPhoneSaved] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
   // 密碼變更相關 state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -22,24 +28,34 @@ export default function NotificationsPage() {
   const [pwdSaved, setPwdSaved] = useState(false);
   const [pwdError, setPwdError] = useState('');
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  useEffect(() => {
+    let cancelled = false;
 
-  const fetchEmails = async () => {
-    try {
-      const res = await fetch('/api/admin?table=site_content', { headers: getHeaders() });
-      const json = await res.json();
-      const items = json.data || [];
-      const emailSetting = items.find((item: { key: string; value: string }) => item.key === 'notification_email');
-      if (emailSetting?.value) {
-        setEmails(emailSetting.value.split(',').map((e: string) => e.trim()).filter(Boolean));
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/admin?table=site_content', {
+          headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' },
+        });
+        const json = await res.json();
+        if (cancelled) return;
+
+        const items = json.data || [];
+        const emailSetting = items.find((item: { key: string; value: string }) => item.key === 'notification_email');
+        if (emailSetting?.value) {
+          setEmails(emailSetting.value.split(',').map((e: string) => e.trim()).filter(Boolean));
+        }
+        const adminPhoneSetting = items.find((item: { key: string; value: string }) => item.key === 'admin_line_phone');
+        setAdminPhone(adminPhoneSetting?.value || '0911247541');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
-  };
+    };
 
-  useEffect(() => { fetchEmails(); }, []);
+    void loadSettings();
+    return () => { cancelled = true; };
+  }, []);
 
   const addEmail = () => {
     const trimmed = newEmail.trim().toLowerCase();
@@ -116,6 +132,70 @@ export default function NotificationsPage() {
       console.error(err);
     }
     setSaving(false);
+  };
+
+  const handleSaveAdminPhone = async () => {
+    let normalized = adminPhone.replace(/[\s\-()]/g, '');
+    if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
+    if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
+
+    if (!/^09\d{8}$/.test(normalized)) {
+      setPhoneError('請輸入有效的台灣手機號碼，例如 0912345678');
+      return;
+    }
+
+    setPhoneSaving(true);
+    setPhoneError('');
+    const adminPwd = localStorage.getItem('admin_password') || '';
+
+    try {
+      const res = await fetch('/api/admin?table=site_content', {
+        headers: { 'x-admin-password': adminPwd },
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        setPhoneError(`讀取設定失敗：${json.error || res.status}`);
+        setPhoneSaving(false);
+        return;
+      }
+
+      const items: { key: string; id: string }[] = json.data || [];
+      const existing = items.find(item => item.key === 'admin_line_phone');
+      const saveRes = existing
+        ? await fetch('/api/admin', {
+            method: 'PUT',
+            headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              table: 'site_content',
+              id: existing.id,
+              record: { value: normalized, updated_at: new Date().toISOString() },
+            }),
+          })
+        : await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              table: 'site_content',
+              record: { key: 'admin_line_phone', value: normalized },
+            }),
+          });
+      const saveJson = await saveRes.json();
+
+      if (!saveRes.ok) {
+        setPhoneError(`儲存失敗：${saveJson.error || saveRes.status}`);
+        setPhoneSaving(false);
+        return;
+      }
+
+      setAdminPhone(normalized);
+      setPhoneSaved(true);
+      setTimeout(() => setPhoneSaved(false), 3000);
+    } catch (err) {
+      setPhoneError('儲存失敗，請稍後再試');
+      console.error(err);
+    }
+    setPhoneSaving(false);
   };
 
   return (
@@ -254,11 +334,57 @@ export default function NotificationsPage() {
 
       </div>{/* 左欄結束 */}
 
-      {/* ══ 右欄：變更密碼 ══ */}
-      <div>
+      {/* ══ 右欄：管理員設定 ══ */}
+      <div className="space-y-5">
+
+        {/* ── LINE 管理員電話 ── */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 border-b bg-gray-50">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#06C75515' }}>
+              <Phone className="w-4 h-4" style={{ color: '#06C755' }} />
+            </div>
+            <div>
+              <p className="font-semibold text-sm" style={{ color: '#4A4947' }}>LINE 管理員電話</p>
+              <p className="text-xs text-gray-400">用於在 LINE 官方帳號認證管理員身分</p>
+            </div>
+          </div>
+          <div className="px-6 py-5 space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">手機號碼</label>
+              <input
+                type="tel"
+                inputMode="tel"
+                value={adminPhone}
+                onChange={e => { setAdminPhone(e.target.value); setPhoneError(''); setPhoneSaved(false); }}
+                placeholder="例如：0912345678"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                style={{ '--tw-ring-color': '#06C75540' } as React.CSSProperties}
+              />
+            </div>
+            <p className="text-xs text-gray-400">
+              儲存後，請在 LINE 傳送「管理者：手機號碼」完成管理員認證。
+            </p>
+            {phoneError && <p className="text-red-500 text-sm">⚠️ {phoneError}</p>}
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                onClick={handleSaveAdminPhone}
+                disabled={phoneSaving || loading}
+                className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+                style={{ backgroundColor: '#06C755' }}
+              >
+                {phoneSaving ? '儲存中...' : <><Save className="w-4 h-4" /> 儲存電話</>}
+              </button>
+              {phoneSaved && (
+                <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                  <CheckCircle className="w-4 h-4" /> 已成功儲存
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* ── 變更密碼 ── */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden lg:sticky lg:top-6">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b bg-gray-50">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#4A494715' }}>
               <Lock className="w-4 h-4" style={{ color: '#4A4947' }} />
