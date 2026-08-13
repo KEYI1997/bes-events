@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Package, Camera, Users, Building2,
   MessageSquare, HelpCircle, LayoutDashboard,
-  LogOut, Lock, Menu, X, CalendarDays, Bell
+  LogOut, Lock, Menu, X, CalendarDays, Bell, ContactRound
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -15,14 +15,14 @@ const NAV_ITEMS = [
   { href: '/admin/orders', label: '訂單 / 行事曆', icon: CalendarDays },
   { href: '/admin/cases', label: '案例管理', icon: Camera },
   { href: '/admin/showgirls', label: 'Show Girl', icon: Users },
-  { href: '/admin/clients', label: '客戶管理', icon: Building2 },
+  { href: '/admin/customers', label: 'LINE 客戶管理', icon: ContactRound },
+  { href: '/admin/clients', label: '合作客戶 Logo', icon: Building2 },
   { href: '/admin/contacts', label: '諮詢紀錄', icon: MessageSquare },
   { href: '/admin/faqs', label: 'FAQ 管理', icon: HelpCircle },
   { href: '/admin/notifications', label: '通知設定', icon: Bell },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [inputPassword, setInputPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const saved = localStorage.getItem('admin_password');
     if (saved) {
-      setPassword(saved);
-      setIsLoggedIn(true);
+      const timer = window.setTimeout(() => setIsLoggedIn(true), 0);
+      return () => window.clearTimeout(timer);
     }
   }, []);
 
@@ -41,7 +41,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     e.preventDefault();
     if (inputPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       localStorage.setItem('admin_password', inputPassword);
-      setPassword(inputPassword);
       setIsLoggedIn(true);
       setError('');
     } else {
@@ -51,7 +50,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = () => {
     localStorage.removeItem('admin_password');
-    setPassword('');
     setIsLoggedIn(false);
     setInputPassword('');
   };

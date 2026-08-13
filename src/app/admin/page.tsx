@@ -11,7 +11,7 @@ const TABLES = [
   { table: 'products', label: '產品', icon: Package, color: '#4A4947' },
   { table: 'cases', label: '案例', icon: Camera, color: '#4A4947' },
   { table: 'contacts', label: '諮詢', icon: MessageSquare, color: '#4A4947' },
-  { table: 'clients', label: '客戶', icon: Building2, color: '#4A4947' },
+  { table: 'clients', label: '合作客戶', icon: Building2, color: '#4A4947' },
 ];
 
 export default function AdminDashboard() {

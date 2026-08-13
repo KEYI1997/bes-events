@@ -239,6 +239,7 @@ export async function POST(request: NextRequest) {
       await supabase
         .from("customers")
         .update({
+          name: existingByPhone.name || customerName,
           line_user_id: userId,
           line_display_name: displayName,
           line_picture_url: pictureUrl,

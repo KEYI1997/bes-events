@@ -26,7 +26,22 @@ export default function ClientsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadClients = async () => {
+      const res = await fetch('/api/admin?table=clients', {
+        headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' },
+      });
+      const json = await res.json();
+      if (cancelled) return;
+      setClients(json.data || []);
+      setLoading(false);
+    };
+
+    void loadClients();
+    return () => { cancelled = true; };
+  }, []);
 
   const openCreate = () => { setEditing(null); setForm(EMPTY_CLIENT); setShowModal(true); };
   const openEdit = (c: Client) => {
@@ -70,9 +85,9 @@ export default function ClientsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>客戶管理</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>合作客戶 Logo</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" style={{ backgroundColor: '#AA7452' }}>
-          <Plus className="w-4 h-4" /> 新增客戶
+          <Plus className="w-4 h-4" /> 新增合作客戶
         </button>
       </div>
 
@@ -108,7 +123,7 @@ export default function ClientsPage() {
                     </td>
                   </tr>
                 ))}
-                {clients.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">尚無客戶資料</td></tr>}
+                {clients.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">尚無合作客戶 Logo</td></tr>}
               </tbody>
             </table>
           </div>
@@ -120,7 +135,7 @@ export default function ClientsPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>{editing ? '編輯客戶' : '新增客戶'}</h2>
+              <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>{editing ? '編輯合作客戶' : '新增合作客戶'}</h2>
               <button onClick={() => setShowModal(false)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
