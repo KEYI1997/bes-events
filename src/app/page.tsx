@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Sparkles,
-  Music,
+  Bot,
   CalendarCheck,
   Wine,
   Users,
@@ -20,6 +20,12 @@ import { supabase } from "@/lib/supabase";
 
 const SERVICES = [
   {
+    icon: Bot,
+    title: "AI 互動道具",
+    desc: "結合 AI 技術的創新互動道具，打造沉浸式活動體驗。",
+    href: "/services/ai-interactive-props",
+  },
+  {
     icon: CalendarCheck,
     title: "活動策劃統包",
     desc: "從企劃到執行，提供一站式活動統包服務，讓您省心省力。",
@@ -36,12 +42,6 @@ const SERVICES = [
     title: "活動特效",
     desc: "專業活動特效服務，為現場營造震撼視覺效果。",
     href: "/services/special-effects",
-  },
-  {
-    icon: Music,
-    title: "燈光音響舞台",
-    desc: "專業燈光音響設備租賃與搭建，打造完美視聽體驗。",
-    href: "/services/stage-lighting",
   },
   {
     icon: Wine,
@@ -97,7 +97,7 @@ export default async function HomePage() {
       <HeroCarousel />
 
       {/* ── Section 2：服務項目 ── */}
-      <section data-snap className="py-20 bg-white">
+      <section data-snap="true" className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 md:px-16">
           <AnimateOnScroll>
             <div className="text-center mb-12">
@@ -116,7 +116,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── Section 3：案例展示 + 客戶一覽（同一區塊） ── */}
-      <section data-snap className="bg-white overflow-hidden">
+      <section data-snap="true" className="bg-white overflow-hidden">
 
         {/* 分隔線 */}
         <div className="flex justify-center px-8">
@@ -238,7 +238,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── Section 4：聯絡我們 ── */}
-      <section data-snap className="py-20 bg-white">
+      <section data-snap="true" className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
             <h2 className="text-3xl md:text-4xl font-bold text-primary text-center mb-10">聯絡我們</h2>

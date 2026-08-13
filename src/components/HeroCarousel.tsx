@@ -41,14 +41,14 @@ export default function HeroCarousel() {
 
   // 向下箭頭：跳到下一個 data-snap 區塊（服務項目）
   const scrollToNext = () => {
-    const snaps = Array.from(document.querySelectorAll<HTMLElement>('[data-snap]'));
+    const snaps = Array.from(document.querySelectorAll<HTMLElement>('[data-snap="true"]'));
     const second = snaps[1];
     if (second) second.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
     <section
-      data-snap
+      data-snap="true"
       className="relative h-screen w-full"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}

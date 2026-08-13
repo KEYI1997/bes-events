@@ -10,28 +10,28 @@ import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 
 const CATEGORY_MAP: Record<string, string> = {
+  'ai-interactive-props': 'AI 互動道具',
   'event-package': '活動策劃統包',
   'opening-ceremony': '啟動儀式',
   'special-effects': '活動特效',
-  'stage-lighting': '燈光音響舞台',
   'bartending': '外派調酒',
   'showgirl': 'SHOW GIRL',
 };
 
 const CATEGORY_DESC: Record<string, string> = {
+  'ai-interactive-props': '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗，讓每位賓客成為活動的主角。',
   'event-package': '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
   'opening-ceremony': '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。',
   'special-effects': '專業活動特效服務，為現場營造震撼視覺效果。',
-  'stage-lighting': '專業燈光音響與舞台設備租賃與搭建，打造完美視聽體驗。',
   'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
   'showgirl': '專業活動人員派遣，提供展場接待、活動協助等服務。',
 };
 
 const DB_CATEGORY_MAP: Record<string, string> = {
+  'ai-interactive-props': 'AI互動道具',
   'event-package': '專案企劃',
   'opening-ceremony': '啟動儀式',
   'special-effects': '活動特效',
-  'stage-lighting': '燈光音響舞台',
   'bartending': '外派調酒',
   'showgirl': 'Show Girl',
 };

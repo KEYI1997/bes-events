@@ -7,6 +7,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SERVICES = [
   {
+    title: 'AI 互動道具',
+    desc: '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗。透過 AI 人臉辨識、手勢互動、即時生成等技術，讓每位賓客都能成為活動的主角。',
+    image: '/images/services/AI互動道具.png',
+    href: '/services/ai-interactive-props',
+  },
+  {
     title: '活動策劃統包',
     desc: '從企劃到執行，提供一站式活動統包服務，讓您省心省力。我們整合所有環節，包含場地規劃、流程設計、人員調度、設備安排，確保活動順利進行。',
     image: '/images/services/活動策劃統包.png',
@@ -23,12 +29,6 @@ const SERVICES = [
     desc: '專業活動特效服務，為現場營造震撼視覺效果。提供乾冰、泡泡、彩帶、煙火等多種特效選擇，讓活動氛圍更加精彩動人。',
     image: '/images/services/活動特效.png',
     href: '/services/special-effects',
-  },
-  {
-    title: '燈光音響舞台',
-    desc: '專業燈光音響設備租賃與搭建，打造完美視聽體驗。從小型會議到大型演唱會規格，我們都能提供最適合的解決方案。',
-    image: '/images/services/燈光音響舞台.png',
-    href: '/services/stage-lighting',
   },
   {
     title: '外派調酒',

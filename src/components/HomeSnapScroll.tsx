@@ -13,7 +13,7 @@ export default function HomeSnapScroll() {
 
   useEffect(() => {
     const getSections = () =>
-      Array.from(document.querySelectorAll<HTMLElement>('[data-snap]'));
+      Array.from(document.querySelectorAll<HTMLElement>('[data-snap="true"]'));
 
     /** 找目前視窗最接近頂端的 section index */
     const getActiveIndex = (sections: HTMLElement[]) => {
