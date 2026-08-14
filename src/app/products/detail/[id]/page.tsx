@@ -19,15 +19,17 @@ interface ProductDetail {
 }
 
 function parseDescription(desc: string) {
-  const service = desc.match(/【服務內容】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const features = desc.match(/【效果特色】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const sizeImg = desc.match(/【尺寸圖】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
-  return { service, notice, youtube, sizeImg };
+  return { service, features, notice, occasions, youtube, sizeImg };
 }
 
 function parseLines(text: string): string[] {
-  return text.split('\n').map(l => l.replace(/^\d+[\.\、\s]*/, '').trim()).filter(Boolean);
+  return text.split('\n').map(l => l.replace(/^(?:\*|•|-|\d+[\.、])\s*/, '').trim()).filter(Boolean);
 }
 
 export default function ProductDetailPage() {
@@ -54,8 +56,12 @@ export default function ProductDetailPage() {
 
   const images = product.image_url ? product.image_url.split(',').filter(Boolean) : [];
   const parsed = parseDescription(product.description || '');
-  const serviceLines = parseLines(parsed.service);
-  const noticeLines = parseLines(parsed.notice);
+  const detailSections = [
+    { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue' },
+    { title: '效果特色', lines: parseLines(parsed.features), tone: 'green' },
+    { title: '注意事項', lines: parseLines(parsed.notice), tone: 'orange' },
+    { title: '適用場合', lines: parseLines(parsed.occasions), tone: 'purple' },
+  ].filter(section => section.lines.length > 0);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F9F7F0' }}>
@@ -183,42 +189,31 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* ===== 底部區域：服務內容(48.9%) + 注意事項(48.9%) 間距32px ===== */}
-      {(serviceLines.length > 0 || noticeLines.length > 0) && (
+      {/* ===== 產品說明：依資料顯示效果介紹、特色、注意事項與適用場合 ===== */}
+      {detailSections.length > 0 && (
         <section className="max-w-[1504px] mx-auto px-12 pt-8">
-          <div className="flex flex-col md:flex-row gap-8">
-            {serviceLines.length > 0 && (
-              <div className="w-full md:w-1/2 bg-white rounded-2xl p-6 md:p-8 shadow-sm">
-                <h2 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ color: '#4A4947' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" className="w-5 h-5" fill="#AA7452"><path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM625 177L497 305c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L591 143c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
-                  服務內容
-                </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {detailSections.map(section => (
+              <div key={section.title} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
+                <h2 className="text-lg font-bold mb-5" style={{ color: '#4A4947' }}>{section.title}</h2>
                 <div className="space-y-3">
-                  {serviceLines.map((line, idx) => (
-                    <div key={idx} className="flex gap-3 items-start">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: '#AA7452' }}>{idx + 1}</span>
+                  {section.lines.map((line, idx) => (
+                    <div key={`${section.title}-${idx}`} className="flex gap-3 items-start">
+                      <span
+                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                        style={{
+                          backgroundColor: section.tone === 'orange' ? '#AA745220' : '#AA7452',
+                          color: section.tone === 'orange' ? '#AA7452' : '#FFFFFF',
+                        }}
+                      >
+                        {idx + 1}
+                      </span>
                       <p className="text-gray-700 text-sm leading-relaxed">{line}</p>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-            {noticeLines.length > 0 && (
-              <div className="w-full md:w-1/2 bg-white rounded-2xl p-6 md:p-8 shadow-sm">
-                <h2 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ color: '#4A4947' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5" fill="#AA7452"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c-13.3 0-24 10.7-24 24l0 112c0 13.3 10.7 24 24 24s24-10.7 24-24l0-112c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
-                  注意事項
-                </h2>
-                <div className="space-y-3">
-                  {noticeLines.map((line, idx) => (
-                    <div key={idx} className="flex gap-3 items-start">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{idx + 1}</span>
-                      <p className="text-gray-700 text-sm leading-relaxed">{line}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         </section>
       )}

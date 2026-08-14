@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, GripVertical, Search } from 'lucide-react';
 import { PRODUCT_CATEGORIES } from '@/lib/services';
 
 interface ProductData {
@@ -36,14 +36,16 @@ function getDisplayImage(p: ProductData): string {
 // 從 description 解析服務內容、注意事項、YouTube、AI圖檔
 function parseProduct(p: ProductData) {
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '' };
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '' };
   }
   const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
-  const service = desc.match(/【服務內容】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const features = desc.match(/【效果特色】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), notice, youtube, ai_file };
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file };
 }
 
 export default function ProductsPage() {
@@ -54,19 +56,24 @@ export default function ProductsPage() {
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [form, setForm] = useState({
     name: '', category: '啟動儀式', price_note: '',
-    service_content: '', notice: '', youtube_url: '',
+    service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
     image_url: '', size_image_url: '', ai_file_url: '',
     stock: 1, visible: true,
   });
   const [uploading, setUploading] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=products', { headers: getHeaders() });
     const json = await res.json();
-    setProducts(json.data || []);
+    const loaded = (json.data || []) as ProductData[];
+    setProducts(loaded.sort((a, b) => a.category.localeCompare(b.category, 'zh-Hant') || (a.sort_order ?? 0) - (b.sort_order ?? 0)));
     setLoading(false);
   };
 
@@ -76,7 +83,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_note: '', service_content: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
+    setForm({ name: '', category: '啟動儀式', price_note: '', service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
     setShowModal(true);
   };
 
@@ -91,6 +98,8 @@ export default function ProductsPage() {
       category: p.category,
       price_note: p.price_note || '',
       service_content: parsed.service,
+      features: parsed.features,
+      occasions: parsed.occasions,
       notice: parsed.notice,
       youtube_url: parsed.youtube || p.youtube_url || '',
       image_url: getDisplayImage(p),
@@ -152,8 +161,10 @@ export default function ProductsPage() {
     const adminPwd = localStorage.getItem('admin_password') || '';
     // 組合為舊schema格式存入（兼容）
     const description = [
-      form.service_content ? `【服務內容】\n${form.service_content}` : '',
+      form.service_content ? `${form.category === '活動特效' ? '【效果介紹】' : '【服務內容】'}\n${form.service_content}` : '',
+      form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
+      form.occasions ? `【適用場合】\n${form.occasions}` : '',
       form.youtube_url ? `【YouTube】\n${form.youtube_url}` : '',
       form.size_image_url ? `【尺寸圖】\n${form.size_image_url}` : '',
       form.ai_file_url ? `【AI圖檔】\n${form.ai_file_url}` : '',
@@ -184,7 +195,9 @@ export default function ProductsPage() {
         }
       } else {
         record.slug = form.name.replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
-        record.sort_order = 0;
+        record.sort_order = products
+          .filter(product => product.category === form.category)
+          .reduce((max, product) => Math.max(max, product.sort_order ?? 0), 0) + 1;
         const res = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
@@ -202,7 +215,49 @@ export default function ProductsPage() {
     }
     setShowModal(false);
     fetchData();
-    fetchData();
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch = !query || product.name.toLowerCase().includes(query);
+    return matchesCategory && matchesSearch;
+  });
+
+  const canDrag = categoryFilter !== 'all' && !searchTerm.trim() && !savingOrder;
+
+  const handleDrop = async (targetId: string) => {
+    if (!draggingId || !canDrag || draggingId === targetId) return;
+    const categoryProducts = products
+      .filter(product => product.category === categoryFilter)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    const fromIndex = categoryProducts.findIndex(product => product.id === draggingId);
+    const toIndex = categoryProducts.findIndex(product => product.id === targetId);
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const reordered = [...categoryProducts];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    const orderMap = new Map(reordered.map((product, index) => [product.id, index + 1]));
+    setProducts(current => current.map(product => (
+      orderMap.has(product.id) ? { ...product, sort_order: orderMap.get(product.id)! } : product
+    )));
+    setDraggingId(null);
+    setSavingOrder(true);
+
+    try {
+      const responses = await Promise.all(reordered.map((product, index) => fetch('/api/admin', {
+        method: 'PUT',
+        headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'products', id: product.id, record: { sort_order: index + 1 } }),
+      })));
+      if (responses.some(response => !response.ok)) throw new Error('排序儲存失敗');
+    } catch {
+      alert('排序儲存失敗，已重新載入原順序。');
+      await fetchData();
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -221,6 +276,45 @@ export default function ProductsPage() {
         </button>
       </div>
 
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <label htmlFor="product-category-filter" className="text-sm font-medium text-gray-600 whitespace-nowrap">產品大項</label>
+            <select
+              id="product-category-filter"
+              value={categoryFilter}
+              onChange={event => setCategoryFilter(event.target.value)}
+              className="min-w-48 px-3 py-2 border rounded-lg bg-white text-sm focus:outline-none focus:ring-2"
+            >
+              <option value="all">全部產品（{products.length}）</option>
+              {CATEGORIES.map(category => (
+                <option key={category} value={category}>
+                  {category}（{products.filter(product => product.category === category).length}）
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={event => setSearchTerm(event.target.value)}
+              placeholder="搜尋產品名稱"
+              className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+            />
+          </div>
+          <p className="text-xs text-gray-500 lg:ml-auto">
+            {savingOrder
+              ? '正在儲存前臺排列順序…'
+              : categoryFilter === 'all'
+                ? '選擇一個產品大項後，即可拖曳調整前臺順序。'
+                : searchTerm.trim()
+                  ? '清除搜尋文字後即可拖曳排序。'
+                  : `可拖曳「${categoryFilter}」品項調整前臺順序。`}
+          </p>
+        </div>
+      </div>
+
       {loading ? (
         <div className="text-center py-12 text-gray-500">載入中...</div>
       ) : (
@@ -229,6 +323,7 @@ export default function ProductsPage() {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
+                  <th className="w-12 px-2 py-3 text-center">排序</th>
                   <th className="px-4 py-3 text-left">展示圖片</th>
                   <th className="px-4 py-3 text-left">名稱</th>
                   <th className="px-4 py-3 text-left">分類</th>
@@ -238,8 +333,20 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => (
-                  <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
+                {filteredProducts.map(p => (
+                  <tr
+                    key={p.id}
+                    draggable={canDrag}
+                    onDragStart={() => canDrag && setDraggingId(p.id)}
+                    onDragOver={event => canDrag && event.preventDefault()}
+                    onDrop={() => handleDrop(p.id)}
+                    onDragEnd={() => setDraggingId(null)}
+                    className={`border-b last:border-0 hover:bg-gray-50 transition ${canDrag ? 'cursor-grab active:cursor-grabbing' : ''} ${draggingId === p.id ? 'opacity-40' : ''}`}
+                  >
+                    <td className="px-2 py-3 text-center">
+                      <GripVertical className={`w-5 h-5 mx-auto ${canDrag ? 'text-[#AA7452]' : 'text-gray-300'}`} aria-hidden="true" />
+                      <span className="text-[10px] text-gray-400">{p.sort_order ?? 0}</span>
+                    </td>
                     <td className="px-4 py-3">
                       {getDisplayImage(p) ? (
                         <img src={getDisplayImage(p)} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />
@@ -263,7 +370,7 @@ export default function ProductsPage() {
                     </td>
                   </tr>
                 ))}
-                {products.length === 0 && <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-400">尚無產品資料</td></tr>}
+                {filteredProducts.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">沒有符合條件的產品資料</td></tr>}
               </tbody>
             </table>
           </div>
@@ -300,14 +407,26 @@ export default function ProductsPage() {
                 </div>
                 {parsed.service && (
                   <div>
-                    <h3 className="text-sm font-bold mb-2" style={{ color: '#4A4947' }}>服務內容</h3>
+                    <h3 className="text-sm font-bold mb-2" style={{ color: '#4A4947' }}>{showDetail.category === '活動特效' ? '效果介紹' : '服務內容'}</h3>
                     <div className="bg-blue-50 rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">{parsed.service}</div>
+                  </div>
+                )}
+                {parsed.features && (
+                  <div>
+                    <h3 className="text-sm font-bold mb-2" style={{ color: '#4A4947' }}>效果特色</h3>
+                    <div className="bg-emerald-50 rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">{parsed.features}</div>
                   </div>
                 )}
                 {parsed.notice && (
                   <div>
                     <h3 className="text-sm font-bold mb-2" style={{ color: '#4A4947' }}>注意事項</h3>
                     <div className="bg-orange-50 rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">{parsed.notice}</div>
+                  </div>
+                )}
+                {parsed.occasions && (
+                  <div>
+                    <h3 className="text-sm font-bold mb-2" style={{ color: '#4A4947' }}>適用場合</h3>
+                    <div className="bg-violet-50 rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">{parsed.occasions}</div>
                   </div>
                 )}
                 {(parsed.youtube || showDetail.youtube_url) && (
@@ -361,15 +480,29 @@ export default function ProductsPage() {
 
               {/* 服務內容 */}
               <div>
-                <label className="block text-sm font-medium mb-1">服務內容</label>
-                <textarea value={form.service_content} onChange={e => setForm(f => ({ ...f, service_content: e.target.value }))} rows={4} placeholder="每行一項" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                <label className="block text-sm font-medium mb-1">{form.category === '活動特效' ? '效果介紹' : '服務內容'}</label>
+                <textarea value={form.service_content} onChange={e => setForm(f => ({ ...f, service_content: e.target.value }))} rows={4} placeholder={form.category === '活動特效' ? '說明產品效果與使用情境' : '每行一項'} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
+
+              {form.category === '活動特效' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">效果特色</label>
+                  <textarea value={form.features} onChange={e => setForm(f => ({ ...f, features: e.target.value }))} rows={4} placeholder="每行一項特色" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                </div>
+              )}
 
               {/* 注意事項 */}
               <div>
                 <label className="block text-sm font-medium mb-1">注意事項</label>
                 <textarea value={form.notice} onChange={e => setForm(f => ({ ...f, notice: e.target.value }))} rows={4} placeholder="每行一項" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
+
+              {form.category === '活動特效' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">適用場合</label>
+                  <textarea value={form.occasions} onChange={e => setForm(f => ({ ...f, occasions: e.target.value }))} rows={4} placeholder="每行一個場合" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                </div>
+              )}
 
               {/* YouTube 連結 */}
               <div>

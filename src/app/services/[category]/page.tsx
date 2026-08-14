@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ShieldCheck, SlidersHorizontal, Sparkles } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingPlans from '@/components/BartendingPlans';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
@@ -22,7 +21,7 @@ const CATEGORY_DESC: Record<string, string> = {
   'ai-interactive-props': '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗，讓每位賓客成為活動的主角。',
   'event-package': '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
   'opening-ceremony': '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。',
-  'special-effects': '專業活動特效服務，為現場營造震撼視覺效果。',
+  'special-effects': '從夢幻泡泡、低煙雲霧到彩帶、火花與 CO₂ 氣柱，依活動節奏打造安全、精準且有記憶點的現場效果。',
   'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
   'showgirl': '專業活動人員派遣，提供展場接待、活動協助等服務。',
 };
@@ -84,6 +83,25 @@ export default async function ServiceCategoryPage({ params }: Props) {
           <AnimateOnScroll><h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{categoryName}</h1><p className="text-white/80 text-lg max-w-2xl mx-auto">{CATEGORY_DESC[category]}</p></AnimateOnScroll>
         </div>
       </section>
+      {category === 'special-effects' && (
+        <section className="bg-[#F9F7F0] border-b border-primary/10">
+          <div className="max-w-6xl mx-auto px-4 py-10 md:py-14 grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { icon: Sparkles, title: '效果精準設計', text: '依流程、音樂節點與場地條件規劃施放時機，讓活動高潮更有張力。' },
+              { icon: ShieldCheck, title: '安全專業操作', text: '進場前評估電力、淨空與安全距離，必要設備由專業人員現場控施。' },
+              { icon: SlidersHorizontal, title: '彈性組合配置', text: '可依場地大小與預算搭配泡泡、煙霧、彩帶、火花及 CO₂ 系列設備。' },
+            ].map(item => (
+              <AnimateOnScroll key={item.title}>
+                <div className="h-full bg-white rounded-2xl p-6 shadow-sm border border-primary/10">
+                  <item.icon className="w-8 h-8 text-cta mb-4" />
+                  <h2 className="text-lg font-bold text-primary mb-2">{item.title}</h2>
+                  <p className="text-sm text-primary/70 leading-relaxed">{item.text}</p>
+                </div>
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="bg-white max-w-7xl mx-auto px-4 py-16 md:py-24">
         {products && products.length > 0 ? (
           <ServiceProductGrid products={products as Product[]} />
