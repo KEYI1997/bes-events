@@ -4,6 +4,7 @@ export interface Product {
   id: string;
   name: string;
   category: 'AI互動道具' | '專案企劃' | '啟動儀式' | '活動特效' | '燈光音響舞台' | '外派調酒' | 'Show Girl';
+  description?: string;
   service_content: string;
   notice: string;
   image_url?: string;

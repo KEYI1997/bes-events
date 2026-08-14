@@ -22,7 +22,7 @@ const CATEGORY_DESC: Record<string, string> = {
   'event-package': '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
   'opening-ceremony': '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。',
   'special-effects': '從夢幻泡泡、低煙雲霧到彩帶、火花與 CO₂ 氣柱，依活動節奏打造安全、精準且有記憶點的現場效果。',
-  'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
+  'bartending': '從 50 杯到 400 杯的行動酒吧方案，包含專業調酒、客製酒單、吧台器具與場地規劃。',
   'showgirl': '專業活動人員派遣，提供展場接待、活動協助等服務。',
 };
 
@@ -54,7 +54,10 @@ export default async function ServiceCategoryPage({ params }: Props) {
     redirect('/services/showgirl');
   }
 
-  // 外派調酒：由 BartendingPlans client 元件處理
+  const dbCategory = DB_CATEGORY_MAP[category] || categoryName;
+  const { data: products } = await supabase.from('products').select('*').eq('category', dbCategory).eq('visible', true).order('sort_order', { ascending: true });
+
+  // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
       <main className="bg-white min-h-screen">
@@ -67,13 +70,10 @@ export default async function ServiceCategoryPage({ params }: Props) {
             </AnimateOnScroll>
           </div>
         </section>
-        <BartendingPlans />
+        <BartendingPlans products={(products || []) as Product[]} />
       </main>
     );
   }
-
-  const dbCategory = DB_CATEGORY_MAP[category] || categoryName;
-  const { data: products } = await supabase.from('products').select('*').eq('category', dbCategory).eq('visible', true).order('sort_order', { ascending: true });
 
   return (
     <main className="bg-white min-h-screen">

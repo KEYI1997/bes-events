@@ -3,157 +3,183 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MessageCircle, ClipboardList } from 'lucide-react';
+import { Check, ClipboardList, GlassWater, MessageCircle, ShieldCheck } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingOrderModal from '@/components/BartendingOrderModal';
+import { Product } from '@/lib/types';
 
-const plans = [
-  {
-    name: '小型聚會方案',
-    badge: '輕鬆入門',
-    desc: '適合私人小聚、家庭派對、節日慶祝等小規模場合。讓專業調酒師到府服務，不用出門也能享受精品調酒體驗，輕鬆辦一場難忘的家庭聚會。',
-    highlights: [
-      '建議人數：10 ~ 30 人',
-      '服務時長：最少 2 小時',
-      '計費方式：以時數計費',
-      '單人調酒師服務',
-      '附基本吧台器具，場地免佈置',
-    ],
-    imgClass: 'object-cover object-center',
-    textSide: 'left' as const,
-  },
-  {
-    name: '迎賓雞尾酒方案',
-    badge: '入門首選',
-    desc: '適合婚宴、發表會、企業晚宴等需要優雅開場的場合。調酒師現場調製精選迎賓雞尾酒，以色香味俱全的飲品化解賓客入場的拘謹氛圍。',
-    highlights: [
-      '建議人數：50 ~ 200 人',
-      '服務時長：依場地時程安排',
-      '計費方式：以杯數計費',
-      '提供精選迎賓雞尾酒酒單',
-      '可依活動主題客製化酒款顏色',
-    ],
-    imgClass: 'object-cover object-center scale-x-[-1]',
-    textSide: 'right' as const,
-  },
-  {
-    name: '派對暢飲方案',
-    badge: '人氣熱門',
-    desc: '適合生日派對、同學會、公司尾牙、私人聚會等歡樂場合。專業調酒師進駐現場，無限供應派對調酒，讓整晚嗨到停不下來。',
-    highlights: [
-      '建議人數：20 ~ 100 人',
-      '服務時長：最少 2 小時，以小時計費',
-      '計費方式：無限暢飲，以時數計費',
-      '雙人調酒師搭配，供酒流暢不斷線',
-      '超過 100 人建議加派人手',
-    ],
-    imgClass: 'object-cover object-bottom',
-    textSide: 'left' as const,
-  },
-  {
-    name: '主題客製化方案',
-    badge: '品牌首選',
-    desc: '適合品牌發表、展覽、記者會、廠商招待會等需要凸顯品牌形象的場合。依活動主題量身打造專屬酒單，調酒師現場互動表演，為活動帶來獨特亮點。',
-    highlights: [
-      '建議人數：不限',
-      '服務時長：依活動需求規劃',
-      '計費方式：杯數或時數，依需求報價',
-      '全客製化主題酒單設計',
-      '可搭配花式調酒表演，炒熱現場氣氛',
-    ],
-    imgClass: 'object-cover object-center',
-    textSide: 'right' as const,
-  },
-];
+const PLAN_DETAIL_LABELS = ['方案杯數', '建議人數', '原價', '優惠價', '現場加點估價'];
 
-export default function BartendingPlans() {
+function parseSection(description: string, title: string) {
+  const match = description.match(new RegExp(`【${title}】\\n?([\\s\\S]*?)(?=\\n*【|$)`));
+  return (match?.[1] || '')
+    .split('\n')
+    .map(line => line.replace(/^(?:\*|•|-)\s*/, '').trim())
+    .filter(Boolean);
+}
+
+function getPlanValue(lines: string[], label: string) {
+  const line = lines.find(item => item.startsWith(`${label}：`) || item.startsWith(`${label}:`));
+  return line?.replace(new RegExp(`^${label}[：:]\\s*`), '') || '';
+}
+
+export default function BartendingPlans({ products }: { products: Product[] }) {
   const [orderPlan, setOrderPlan] = useState<string | null>(null);
+  const firstDescription = products[0]?.description || products[0]?.service_content || '';
+  const firstServiceLines = parseSection(firstDescription, '服務內容');
+  const includedServices = firstServiceLines.filter(line => (
+    !PLAN_DETAIL_LABELS.some(label => line.startsWith(`${label}：`) || line.startsWith(`${label}:`))
+  ));
+  const notices = parseSection(firstDescription, '注意事項');
 
   return (
     <>
-      {/* 方案標題 */}
-      <section className="max-w-7xl mx-auto px-4 pt-16 pb-8 md:pt-24 md:pb-10">
-        <AnimateOnScroll>
-          <h2 className="text-2xl md:text-3xl font-bold text-primary text-center mb-3">服務方案</h2>
-          <p className="text-primary/60 text-center">依照您的活動規模與需求，選擇最適合的調酒方案</p>
-        </AnimateOnScroll>
-      </section>
+      <section className="bg-[#F9F7F0] py-14 md:py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <AnimateOnScroll>
+            <div className="text-center mb-10">
+              <p className="text-cta font-semibold tracking-[0.24em] text-sm mb-3">MOBILE BAR SERVICE</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">境曜行動酒吧方案</h2>
+              <p className="text-primary/60">專業調酒 × 質感服務 × 客製體驗</p>
+            </div>
+          </AnimateOnScroll>
 
-      {/* Banner 包裝容器 */}
-      <div className="px-6 md:px-16 space-y-0">
-        {plans.map((plan, index) => {
-          const isLeft = plan.textSide === 'left';
-          const gradientClass = isLeft
-            ? 'bg-gradient-to-r from-black/75 via-black/40 to-transparent'
-            : 'bg-gradient-to-l from-black/75 via-black/40 to-transparent';
-          const isFirst = index === 0;
-          const isLast = index === plans.length - 1;
-
-          return (
-            <AnimateOnScroll key={plan.name} delay={index * 100}>
-              <div className={`relative w-full h-[300px] md:h-[360px] overflow-hidden border-t-2 border-white ${isLast ? 'border-b-2' : ''}`}>
+          <div className="grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-8 items-start">
+            <AnimateOnScroll direction="left">
+              <div className="bg-primary rounded-3xl p-3 shadow-xl">
                 <Image
-                  src="/images/services/bartending.png"
-                  alt={plan.name}
-                  fill
-                  className={plan.imgClass}
+                  src="/images/services/bartending-plans-2026.jpg"
+                  alt="境曜行動酒吧方案價目表"
+                  width={1054}
+                  height={1473}
+                  priority
+                  className="w-full h-auto rounded-2xl"
                 />
-                <div className={`absolute inset-0 ${gradientClass}`} />
+              </div>
+            </AnimateOnScroll>
 
-                {/* 文字區 */}
-                {isLeft ? (
-                  <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-16 max-w-2xl">
-                    <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plan.name}</h3>
-                    <div className="bg-black/50 px-5 py-4 space-y-1.5 mb-5">
-                      {plan.highlights.map((item, i) => (
-                        <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
-                      ))}
+            <div>
+              <AnimateOnScroll direction="right">
+                <div className="bg-white rounded-3xl p-7 md:p-9 shadow-sm border border-primary/10 mb-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-11 h-11 rounded-full bg-cta/10 flex items-center justify-center">
+                      <GlassWater className="w-6 h-6 text-cta" />
                     </div>
                     <div>
+                      <h3 className="text-xl font-bold text-primary">服務包含</h3>
+                      <p className="text-sm text-primary/50">每個方案皆包含完整行動酒吧服務</p>
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {includedServices.map(item => (
+                      <div key={item} className="flex items-start gap-2.5 bg-[#F9F7F0] rounded-xl p-3.5">
+                        <Check className="w-4 h-4 text-cta mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-primary/75 leading-relaxed">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </AnimateOnScroll>
+
+              <AnimateOnScroll direction="right" delay={100}>
+                <div className="bg-primary rounded-3xl p-7 md:p-9 text-white">
+                  <h3 className="text-2xl font-bold mb-3">如何選擇方案？</h3>
+                  <p className="text-white/70 leading-relaxed mb-5">
+                    可先依預估飲用人數選擇杯數，我們會再依活動時間、場地與酒單需求確認最適合的配置。
+                  </p>
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {['婚宴迎賓', '企業活動', '品牌發表', '尾牙春酒', '私人派對'].map(tag => (
+                      <span key={tag} className="px-3 py-1.5 rounded-full bg-white/10 text-white/80">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </AnimateOnScroll>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <AnimateOnScroll>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">選擇您的調酒方案</h2>
+            <p className="text-primary/60">優惠價與現場加點估價依圖示方案，最終以活動需求確認為準</p>
+          </div>
+        </AnimateOnScroll>
+
+        {products.length > 0 ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product, index) => {
+              const description = product.description || product.service_content || '';
+              const serviceLines = parseSection(description, '服務內容');
+              const [planLabel, cupLabel = ''] = product.name.split('｜');
+              const people = getPlanValue(serviceLines, '建議人數');
+              const originalPrice = getPlanValue(serviceLines, '原價');
+              const salePrice = getPlanValue(serviceLines, '優惠價') || product.price_note;
+              const extraCup = getPlanValue(serviceLines, '現場加點估價');
+
+              return (
+                <AnimateOnScroll key={product.id} delay={index * 70}>
+                  <article className="h-full bg-white rounded-2xl border border-primary/10 shadow-sm overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                    <div className="bg-primary px-6 py-5 text-white flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-cta text-sm font-semibold tracking-wider">{planLabel}</p>
+                        <h3 className="text-2xl font-bold mt-1">{cupLabel || product.name}</h3>
+                      </div>
+                      <GlassWater className="w-9 h-9 text-white/35" />
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <p className="text-sm text-primary/55 mb-1">建議人數</p>
+                      <p className="text-lg font-bold text-primary mb-5">{people || '依活動需求評估'}</p>
+
+                      <div className="border-t border-primary/10 pt-5 mb-5">
+                        {originalPrice && <p className="text-sm text-primary/40 line-through">原價 {originalPrice}</p>}
+                        <p className="text-3xl font-bold text-cta mt-1">{salePrice || '歡迎詢價'}</p>
+                        {extraCup && <p className="text-sm text-primary/55 mt-2">現場加點：{extraCup}</p>}
+                      </div>
+
                       <button
-                        onClick={() => setOrderPlan(plan.name)}
-                        className="inline-flex items-center gap-2 bg-cta text-white px-7 py-3 rounded-full font-semibold text-base hover:bg-cta-hover transition-colors shadow-lg"
+                        type="button"
+                        onClick={() => setOrderPlan(product.name)}
+                        className="mt-auto inline-flex items-center justify-center gap-2 bg-cta text-white px-5 py-3 rounded-full font-semibold hover:bg-cta-hover transition-colors"
                       >
                         <ClipboardList size={18} />
                         建立訂單
                       </button>
                     </div>
+                  </article>
+                </AnimateOnScroll>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-14 bg-[#F9F7F0] rounded-2xl text-primary/55">
+            方案整理中，歡迎先與我們聯繫。
+          </div>
+        )}
+      </section>
+
+      {notices.length > 0 && (
+        <section className="bg-[#F9F7F0] border-y border-primary/10">
+          <div className="max-w-5xl mx-auto px-4 py-14 md:py-20">
+            <AnimateOnScroll>
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <ShieldCheck className="w-7 h-7 text-cta" />
+                <h2 className="text-2xl md:text-3xl font-bold text-primary">加購服務與注意事項</h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3">
+                {notices.map(item => (
+                  <div key={item} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-primary/10">
+                    <Check className="w-4 h-4 text-cta mt-1 flex-shrink-0" />
+                    <p className="text-sm text-primary/70 leading-relaxed">{item}</p>
                   </div>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col justify-center items-end px-10 md:px-16">
-                    <div className="max-w-2xl text-right">
-                      <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow">{plan.name}</h3>
-                      <div className="bg-black/50 px-5 py-4 space-y-1.5 mb-5">
-                        {plan.highlights.map((item, i) => (
-                          <p key={item} className="text-white/90 text-base">{i + 1}.{item}</p>
-                        ))}
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() => setOrderPlan(plan.name)}
-                          className="inline-flex items-center gap-2 bg-cta text-white px-7 py-3 rounded-full font-semibold text-base hover:bg-cta-hover transition-colors shadow-lg"
-                        >
-                          <ClipboardList size={18} />
-                          建立訂單
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </AnimateOnScroll>
-          );
-        })}
-      </div>
+          </div>
+        </section>
+      )}
 
-      <div className="pb-16 md:pb-24" />
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
-      {/* CTA */}
       <section className="bg-primary py-16">
         <div className="max-w-4xl mx-auto text-center px-4">
           <AnimateOnScroll>
@@ -166,13 +192,7 @@ export default function BartendingPlans() {
         </div>
       </section>
 
-      {/* 訂單 Modal */}
-      {orderPlan && (
-        <BartendingOrderModal
-          planName={orderPlan}
-          onClose={() => setOrderPlan(null)}
-        />
-      )}
+      {orderPlan && <BartendingOrderModal planName={orderPlan} onClose={() => setOrderPlan(null)} />}
     </>
   );
 }
