@@ -453,7 +453,7 @@ export default function NotificationsPage() {
               </div>
             </div>
             <p className="text-xs text-gray-400">
-              新增後，該人員需在 LINE 傳送「管理者：手機號碼」完成管理員認證。
+              新增後，該人員需在 LINE 傳送「管理者：手機號碼」完成認證，之後會同時收到新訂單 LINE 通知。
             </p>
             {phoneError && <p className="text-red-500 text-sm">⚠️ {phoneError}</p>}
             {phoneSaved && (

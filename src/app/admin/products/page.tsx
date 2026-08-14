@@ -24,7 +24,7 @@ interface ProductData {
   created_at: string;
 }
 
-const CATEGORIES = PRODUCT_CATEGORIES;
+const CATEGORIES = PRODUCT_CATEGORIES.filter(category => category !== '燈光音響舞台');
 
 // 取得展示圖片（兼容新舊schema + 逗號分隔）
 function getDisplayImage(p: ProductData): string {
@@ -345,7 +345,6 @@ export default function ProductsPage() {
                   >
                     <td className="px-2 py-3 text-center">
                       <GripVertical className={`w-5 h-5 mx-auto ${canDrag ? 'text-[#AA7452]' : 'text-gray-300'}`} aria-hidden="true" />
-                      <span className="text-[10px] text-gray-400">{p.sort_order ?? 0}</span>
                     </td>
                     <td className="px-4 py-3">
                       {getDisplayImage(p) ? (

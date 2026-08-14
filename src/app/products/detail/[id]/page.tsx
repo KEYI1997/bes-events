@@ -57,10 +57,10 @@ export default function ProductDetailPage() {
   const images = product.image_url ? product.image_url.split(',').filter(Boolean) : [];
   const parsed = parseDescription(product.description || '');
   const detailSections = [
-    { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue' },
-    { title: '效果特色', lines: parseLines(parsed.features), tone: 'green' },
-    { title: '注意事項', lines: parseLines(parsed.notice), tone: 'orange' },
-    { title: '適用場合', lines: parseLines(parsed.occasions), tone: 'purple' },
+    { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
+    { title: '效果特色', lines: parseLines(parsed.features), tone: 'green', numbered: true },
+    { title: '注意事項', lines: parseLines(parsed.notice), tone: 'orange', numbered: true },
+    { title: '適用場合', lines: parseLines(parsed.occasions), tone: 'purple', numbered: true },
   ].filter(section => section.lines.length > 0);
 
   return (
@@ -196,22 +196,26 @@ export default function ProductDetailPage() {
             {detailSections.map(section => (
               <div key={section.title} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
                 <h2 className="text-lg font-bold mb-5" style={{ color: '#4A4947' }}>{section.title}</h2>
-                <div className="space-y-3">
-                  {section.lines.map((line, idx) => (
-                    <div key={`${section.title}-${idx}`} className="flex gap-3 items-start">
-                      <span
-                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                        style={{
-                          backgroundColor: section.tone === 'orange' ? '#AA745220' : '#AA7452',
-                          color: section.tone === 'orange' ? '#AA7452' : '#FFFFFF',
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <p className="text-gray-700 text-sm leading-relaxed">{line}</p>
-                    </div>
-                  ))}
-                </div>
+                {section.numbered ? (
+                  <div className="space-y-3">
+                    {section.lines.map((line, idx) => (
+                      <div key={`${section.title}-${idx}`} className="flex gap-3 items-start">
+                        <span
+                          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                          style={{
+                            backgroundColor: section.tone === 'orange' ? '#AA745220' : '#AA7452',
+                            color: section.tone === 'orange' ? '#AA7452' : '#FFFFFF',
+                          }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <p className="text-gray-700 text-sm leading-relaxed">{line}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{section.lines.join('\n')}</p>
+                )}
               </div>
             ))}
           </div>

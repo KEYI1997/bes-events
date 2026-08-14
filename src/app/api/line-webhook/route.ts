@@ -404,7 +404,7 @@ export async function POST(request: NextRequest) {
         await replyMessage(replyToken, [
           {
             type: "text",
-            text: `✅ 管理員身份認證成功！\n\n${displayName}，您的 LINE 帳號已設定為管理員。\n\n之後有新訂單或詢問單，系統將主動通知您。`,
+            text: `✅ 管理員身份認證成功！\n\n${displayName}，您的 LINE 帳號已設定為管理員。\n\n之後有新訂單時，系統將主動通知您。`,
           },
         ]);
       } else {
