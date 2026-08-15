@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { Resend } from "resend";
 import { contactEmailHtml } from "@/lib/emailTemplates";
+import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
     }
 
     // 發送品牌通知信
+    let emailStatus: 'completed' | 'failed' | 'not_configured' = resend ? 'completed' : 'not_configured';
     if (resend) {
       // 取得通知收件人
       let notifyEmails: string[] = ["Jingyaoactivities@gmail.com"];
@@ -58,15 +60,43 @@ export async function POST(request: Request) {
         notifyEmails = setting.value.split(",").map((e: string) => e.trim()).filter(Boolean);
       }
 
-      await resend.emails.send({
-        from: "境曜活動通知 <noreply@besevent.com>",
-        to: notifyEmails,
-        subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
-        html: contactEmailHtml({ name, phone: normalizedPhone, email, service_type, event_date, event_end_date, description }),
-      });
+      try {
+        const { error: emailError } = await resend.emails.send({
+          from: "境曜活動通知 <noreply@besevent.com>",
+          to: notifyEmails,
+          subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
+          html: contactEmailHtml({ name, phone: normalizedPhone, email, service_type, event_date, event_end_date, description }),
+        });
+        if (emailError) {
+          emailStatus = 'failed';
+          console.error('Contact email error:', emailError);
+        }
+      } catch (emailError) {
+        emailStatus = 'failed';
+        console.error('Contact email error:', emailError);
+      }
     }
 
-    return NextResponse.json({ success: true });
+    const lineMessage = [
+      '💬 新詢問單通知',
+      `姓名：${name}`,
+      `電話：${normalizedPhone}`,
+      email ? `Email：${email}` : '',
+      service_type ? `服務：${service_type}` : '',
+      event_date ? `活動日期：${event_date}` : '',
+      event_end_date ? `結束日期：${event_end_date}` : '',
+      description ? `需求：${String(description).slice(0, 2500)}` : '',
+      '請至官網後臺查看完整詢問紀錄。',
+    ].filter(Boolean).join('\n');
+    const lineResult = await pushAdminLineNotification(lineMessage);
+
+    return NextResponse.json({
+      success: true,
+      email_status: emailStatus,
+      line_sent: lineResult.sent,
+      line_failed: lineResult.failed,
+      line_status: lineResult.status,
+    });
   } catch (err) {
     console.error("Contact API error:", err);
     return NextResponse.json({ error: "提交失敗" }, { status: 500 });

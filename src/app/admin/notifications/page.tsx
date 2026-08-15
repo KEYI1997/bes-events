@@ -366,8 +366,8 @@ export default function NotificationsPage() {
           <p className="text-sm text-blue-800 font-semibold mb-2">💡 說明</p>
           <ul className="text-sm text-blue-700 space-y-1.5">
             <li>• 可設定多個收件信箱，每個信箱都會同時收到通知</li>
-            <li>• 客戶送出諮詢表單時，會自動寄送「新詢問單通知」</li>
-            <li>• 後台新增訂單時，會自動寄送「新訂單通知」</li>
+            <li>• 客戶送出諮詢表單時，會同時發送 Email 與管理者 LINE 通知</li>
+            <li>• 後臺新增訂單時，會同時發送 Email 與管理者 LINE 通知</li>
             <li>• 修改後請務必點擊「儲存設定」才會生效</li>
           </ul>
         </div>
