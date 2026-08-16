@@ -5,8 +5,10 @@ import { supabase } from '@/lib/supabase';
 import { Case } from '@/lib/types';
 import CasesGrid from './CasesGrid';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
-  title: '精選案例 | 境曜有限公司 BES Events',
+  title: '活動案例',
   description: '境曜有限公司活動案例展示，包含記者會、尾牙、家庭日、典禮、市集、展覽等各類型活動。',
 };
 
@@ -25,7 +27,7 @@ export default async function CasesPage() {
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              精選案例
+              活動案例
             </h1>
             <p className="text-white/80 text-lg max-w-2xl mx-auto">
               每一場活動都是獨一無二的創意實現

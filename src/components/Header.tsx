@@ -19,7 +19,7 @@ const NAV_ITEMS = [
     ],
   },
   {
-    label: '活動類型',
+    label: '活動案例',
     href: '/cases',
     children: [
       { label: '開幕典禮', href: '/cases' },
