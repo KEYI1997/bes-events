@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import WaIcon from '@awesome.me/webawesome/dist/react/icon/index.js';
+import { GripVertical } from 'lucide-react';
 
 type SortableTableRowProps = {
   id: string;
@@ -63,16 +63,15 @@ export function SortableTableRow({
           className={`mx-auto flex h-9 w-9 touch-none items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#AA7452]/40 ${
             disabled
               ? 'cursor-not-allowed text-gray-300'
-              : 'cursor-grab text-[#AA7452] hover:scale-110 hover:bg-[#AA7452]/10 active:cursor-grabbing active:scale-95 active:bg-[#AA7452]/15'
+              : 'text-[#AA7452] hover:scale-110 hover:bg-[#AA7452]/10 active:scale-95 active:bg-[#AA7452]/15'
           }`}
+          style={{
+            cursor: disabled
+              ? 'not-allowed'
+              : "url('/icons/hand-light-cursor.svg') 16 4, grab",
+          }}
         >
-          <WaIcon
-            name="hand"
-            variant="light"
-            src="/icons/hand-light.svg"
-            label={label}
-            style={{ fontSize: '1.2rem' }}
-          />
+          <GripVertical className="h-5 w-5" aria-hidden="true" />
         </button>
       </td>
       {children}
