@@ -1,6 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import ShowGirlGallery from '@/components/ShowGirlGallery';
 import ShowGirlInquiryForm from '@/components/ShowGirlInquiryForm';
@@ -95,26 +93,6 @@ export default function ShowGirlPage() {
         </div>
       </section>
 
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
-      {/* CTA */}
-      <section className="bg-primary py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">需要活動人員支援？</h2>
-            <p className="text-white/80 mb-8">歡迎聯繫我們，依據活動需求推薦最適合的人選</p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-cta text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-cta-hover transition-colors"
-            >
-              <MessageCircle size={20} />立即諮詢
-            </Link>
-          </AnimateOnScroll>
-        </div>
-      </section>
     </main>
   );
 }

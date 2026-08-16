@@ -1,7 +1,5 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 
 export const metadata: Metadata = {
@@ -148,28 +146,6 @@ export default function AboutPage() {
             ))}
           </div>
         </AnimateOnScroll>
-      </section>
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
-      {/* ── CTA ── */}
-      <section className="bg-primary py-20">
-        <div className="max-w-4xl mx-auto text-center px-6">
-          <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">讓我們為您打造完美活動</h2>
-            <p className="text-white/70 mb-10 text-lg">無論規模大小，我們都能提供最專業的活動服務</p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-cta text-white px-10 py-4 rounded-full font-semibold text-lg hover:bg-cta-hover transition-colors"
-            >
-              <MessageCircle size={20} />
-              立即諮詢
-            </Link>
-          </AnimateOnScroll>
-        </div>
       </section>
 
     </main>

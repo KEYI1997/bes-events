@@ -97,28 +97,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
-      </div>
-
-      {/* CTA */}
-      <section className="bg-primary py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">找不到想要的服務？</h2>
-            <p className="text-white/75 mb-8 text-lg">告訴我們您的需求，我們為您量身打造專屬方案</p>
-            <Link
-              href="/contact"
-              className="group relative inline-flex items-center px-8 py-4 text-base font-semibold rounded-full border-2 border-cta bg-cta text-white hover:bg-white hover:text-cta transition-all duration-300"
-            >
-              <ArrowRight size={16} className="mr-2 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-4" />
-              立即諮詢
-              <ArrowRight size={16} className="ml-2 rotate-180 opacity-0 translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
-            </Link>
-          </AnimateOnScroll>
-        </div>
-      </section>
     </main>
   );
 }
