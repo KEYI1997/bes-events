@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Phone, Mail, MapPin, MessageCircle, Building2 } from 'lucide-react';
 import { FACEBOOK_URL, LINE_URL } from '@/lib/siteLinks';
+import { SERVICE_NAV_LINKS } from '@/lib/navigation';
 
 export default function Footer() {
   return (
@@ -20,17 +21,11 @@ export default function Footer() {
           <div>
             <h3 className="text-[20px] font-bold mb-4">服務項目</h3>
             <nav className="space-y-2">
-              {[
-                { label: '啟動儀式', href: '/products/opening-ceremony' },
-                { label: '專案企劃', href: '/products/event-planning' },
-                { label: '外派調酒', href: '/products/bartending' },
-                { label: 'Show Girl', href: '/services/showgirl' },
-                { label: '案例展示', href: '/cases' },
-                { label: '聯絡我們', href: '/contact' },
-              ].map((link) => (
+              {SERVICE_NAV_LINKS.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
+                  prefetch={true}
                   className="block text-[16px] text-white/70 hover:text-cta transition-colors"
                 >
                   {link.label}

@@ -5,18 +5,13 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { LINE_URL } from '@/lib/siteLinks';
+import { SERVICE_NAV_LINKS } from '@/lib/navigation';
 
 const NAV_ITEMS = [
   {
     label: '服務項目',
     href: '/services',
-    children: [
-      { label: '活動策劃統包', href: '/services/event-package' },
-      { label: '啟動儀式', href: '/services/opening-ceremony' },
-      { label: '活動特效', href: '/services/special-effects' },
-      { label: '外派調酒', href: '/services/bartending' },
-      { label: 'SHOW GIRL', href: '/services/showgirl' },
-    ],
+    children: SERVICE_NAV_LINKS,
   },
   {
     label: '活動案例',
