@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, Search } from 'lucide-react';
 import {
   closestCenter,
@@ -81,6 +81,8 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [savingOrder, setSavingOrder] = useState(false);
+  const orderSaveQueue = useRef<Promise<void>>(Promise.resolve());
+  const orderSaveVersion = useRef(0);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -247,7 +249,7 @@ export default function ProductsPage() {
       a.category.localeCompare(b.category, 'zh-Hant') || (a.sort_order ?? 0) - (b.sort_order ?? 0)
     ));
 
-  const canDrag = categoryFilter !== 'all' && !searchTerm.trim() && !savingOrder;
+  const canDrag = categoryFilter !== 'all' && !searchTerm.trim();
 
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     if (!canDrag || !over || active.id === over.id) return;
@@ -264,19 +266,28 @@ export default function ProductsPage() {
       orderMap.has(product.id) ? { ...product, sort_order: orderMap.get(product.id)! } : product
     )));
     setSavingOrder(true);
+    const saveVersion = ++orderSaveVersion.current;
+    const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
 
-    try {
+    const saveTask = orderSaveQueue.current.then(async () => {
       const responses = await Promise.all(reordered.map((product, index) => fetch('/api/admin', {
         method: 'PUT',
-        headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ table: 'products', id: product.id, record: { sort_order: index + 1 } }),
       })));
       if (responses.some(response => !response.ok)) throw new Error('排序儲存失敗');
+    });
+    orderSaveQueue.current = saveTask.catch(() => undefined);
+
+    try {
+      await saveTask;
     } catch {
-      alert('排序儲存失敗，已重新載入原順序。');
-      await fetchData();
+      if (saveVersion === orderSaveVersion.current) {
+        alert('排序儲存失敗，已重新載入原順序。');
+        await fetchData();
+      }
     } finally {
-      setSavingOrder(false);
+      if (saveVersion === orderSaveVersion.current) setSavingOrder(false);
     }
   };
 
@@ -325,7 +336,7 @@ export default function ProductsPage() {
           </div>
           <p className="text-xs text-gray-500 lg:ml-auto">
             {savingOrder
-              ? '正在儲存前臺排列順序…'
+              ? '正在背景儲存前臺順序，仍可繼續拖曳。'
               : categoryFilter === 'all'
                 ? '選擇一個產品大項後，即可拖曳調整前臺順序。'
                 : searchTerm.trim()
