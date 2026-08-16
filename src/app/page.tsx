@@ -87,6 +87,7 @@ export default async function HomePage() {
     .select("*")
     .eq("visible", true)
     .order("sort_order", { ascending: true });
+  const managedClients = (clients || []).filter(client => client.logo_url?.trim());
 
   return (
     <>
@@ -173,67 +174,18 @@ export default async function HomePage() {
               </div>
             </AnimateOnScroll>
           </div>
-          <div className="relative w-full overflow-hidden">
-            <div className="flex items-center gap-12 w-max animate-scroll-clients">
-              {[
-                { name: "今周刊", file: "今周刊.jpg" },
-                { name: "燦坤", file: "燦坤.jpg" },
-                { name: "嘉義縣文化基金會", file: "嘉義縣文化基金會.jpg" },
-                { name: "新竹市文化局", file: "新竹市文化局.jpg" },
-                { name: "新竹市政府", file: "新竹市政府.jpg" },
-                { name: "台大PM校友會", file: "台大PM校友會.jpg" },
-                { name: "星宇航空", file: "星宇航空.png" },
-                { name: "今周刊", file: "今周刊.jpg" },
-                { name: "燦坤", file: "燦坤.jpg" },
-                { name: "嘉義縣文化基金會", file: "嘉義縣文化基金會.jpg" },
-                { name: "新竹市文化局", file: "新竹市文化局.jpg" },
-                { name: "新竹市政府", file: "新竹市政府.jpg" },
-                { name: "台大PM校友會", file: "台大PM校友會.jpg" },
-                { name: "星宇航空", file: "星宇航空.png" },
-              ].map((client, i) => (
-                <div key={i} className="flex-shrink-0 w-[240px] h-[120px] flex items-center justify-center">
-                  <img src={`/images/clients/${client.file}`} alt={client.name} className="max-w-full max-h-full object-contain" />
-                </div>
-              ))}
+          {managedClients.length > 0 && (
+            <div className="relative w-full overflow-hidden">
+              <div className="flex items-center gap-12 w-max animate-scroll-clients">
+                {[...managedClients, ...managedClients].map((client, i) => (
+                  <div key={`${client.id}-${i}`} className="flex-shrink-0 w-[240px] h-[120px] flex items-center justify-center">
+                    <img src={client.logo_url} alt={client.name} className="max-w-full max-h-full object-contain" />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* 客戶 Logo 跑馬燈（來自 Supabase） */}
-        {clients && clients.length > 0 && (
-          <>
-            <div className="flex justify-center px-8">
-              <div className="w-full h-[2px] bg-gray-300"></div>
-            </div>
-            <div className="py-16 overflow-hidden">
-              <div className="max-w-7xl mx-auto px-4">
-                <AnimateOnScroll>
-                  <h2 className="text-2xl md:text-3xl font-bold text-primary text-center mb-12">
-                    合作客戶
-                  </h2>
-                </AnimateOnScroll>
-              </div>
-              <div className="relative">
-                <div className="flex animate-marquee">
-                  {[...clients, ...clients].map((client, i) => (
-                    <div
-                      key={`${client.id}-${i}`}
-                      className="flex-shrink-0 mx-8 w-32 h-20 flex items-center justify-center grayscale hover:grayscale-0 transition-all"
-                    >
-                      {client.logo_url && (
-                        <img
-                          src={client.logo_url}
-                          alt={client.name}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
 
       </section>
 
