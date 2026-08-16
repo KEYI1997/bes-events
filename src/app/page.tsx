@@ -18,6 +18,8 @@ import ServiceTabs from "@/components/ServiceTabs";
 import HomeSnapScroll from "@/components/HomeSnapScroll";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 const SERVICES = [
   {
     icon: Bot,
