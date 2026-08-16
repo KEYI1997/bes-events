@@ -1,8 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, GripVertical, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, Search } from 'lucide-react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { PRODUCT_CATEGORIES } from '@/lib/services';
+import { SortableTableRow } from '@/components/admin/SortableTableRow';
 
 interface ProductData {
   id: string;
@@ -64,8 +80,11 @@ export default function ProductsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -217,32 +236,33 @@ export default function ProductsPage() {
     fetchData();
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    const query = searchTerm.trim().toLowerCase();
-    const matchesSearch = !query || product.name.toLowerCase().includes(query);
-    return matchesCategory && matchesSearch;
-  });
+  const filteredProducts = products
+    .filter(product => {
+      const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch = !query || product.name.toLowerCase().includes(query);
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => (
+      a.category.localeCompare(b.category, 'zh-Hant') || (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    ));
 
   const canDrag = categoryFilter !== 'all' && !searchTerm.trim() && !savingOrder;
 
-  const handleDrop = async (targetId: string) => {
-    if (!draggingId || !canDrag || draggingId === targetId) return;
+  const handleDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!canDrag || !over || active.id === over.id) return;
     const categoryProducts = products
       .filter(product => product.category === categoryFilter)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    const fromIndex = categoryProducts.findIndex(product => product.id === draggingId);
-    const toIndex = categoryProducts.findIndex(product => product.id === targetId);
+    const fromIndex = categoryProducts.findIndex(product => product.id === active.id);
+    const toIndex = categoryProducts.findIndex(product => product.id === over.id);
     if (fromIndex < 0 || toIndex < 0) return;
 
-    const reordered = [...categoryProducts];
-    const [moved] = reordered.splice(fromIndex, 1);
-    reordered.splice(toIndex, 0, moved);
+    const reordered = arrayMove(categoryProducts, fromIndex, toIndex);
     const orderMap = new Map(reordered.map((product, index) => [product.id, index + 1]));
     setProducts(current => current.map(product => (
       orderMap.has(product.id) ? { ...product, sort_order: orderMap.get(product.id)! } : product
     )));
-    setDraggingId(null);
     setSavingOrder(true);
 
     try {
@@ -332,20 +352,17 @@ export default function ProductsPage() {
                   <th className="px-4 py-3 text-center">操作</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredProducts.map(p => (
-                  <tr
-                    key={p.id}
-                    draggable={canDrag}
-                    onDragStart={() => canDrag && setDraggingId(p.id)}
-                    onDragOver={event => canDrag && event.preventDefault()}
-                    onDrop={() => handleDrop(p.id)}
-                    onDragEnd={() => setDraggingId(null)}
-                    className={`border-b last:border-0 hover:bg-gray-50 transition ${canDrag ? 'cursor-grab active:cursor-grabbing' : ''} ${draggingId === p.id ? 'opacity-40' : ''}`}
-                  >
-                    <td className="px-2 py-3 text-center">
-                      <GripVertical className={`w-5 h-5 mx-auto ${canDrag ? 'text-[#AA7452]' : 'text-gray-300'}`} aria-hidden="true" />
-                    </td>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={filteredProducts.map(product => product.id)} strategy={verticalListSortingStrategy}>
+                  <tbody>
+                    {filteredProducts.map(p => (
+                      <SortableTableRow
+                        key={p.id}
+                        id={p.id}
+                        disabled={!canDrag}
+                        className="border-b last:border-0 hover:bg-gray-50"
+                        label={`拖曳調整 ${p.name} 的順序`}
+                      >
                     <td className="px-4 py-3">
                       {getDisplayImage(p) ? (
                         <img src={getDisplayImage(p)} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />
@@ -367,10 +384,12 @@ export default function ProductsPage() {
                         <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>
                     </td>
-                  </tr>
-                ))}
-                {filteredProducts.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">沒有符合條件的產品資料</td></tr>}
-              </tbody>
+                      </SortableTableRow>
+                    ))}
+                    {filteredProducts.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">沒有符合條件的產品資料</td></tr>}
+                  </tbody>
+                </SortableContext>
+              </DndContext>
             </table>
           </div>
         </div>

@@ -1,7 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff } from 'lucide-react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableTableRow } from '@/components/admin/SortableTableRow';
 import type { Case } from '@/lib/types';
 
 const CATEGORIES = ['開幕典禮', '記者會', '新品發表會', '展覽攤位', '政府活動', '春酒尾牙', '典禮節慶'] as const;
@@ -20,9 +36,11 @@ export default function CasesPage() {
   const [form, setForm] = useState(EMPTY_CASE);
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const dragIndex = useRef<number | null>(null);
-  const dragOverIndex = useRef<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -34,6 +52,8 @@ export default function CasesPage() {
     setLoading(false);
   };
 
+  // 管理員憑證只存在瀏覽器，頁面掛載後載入一次。
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, []);
 
   const openCreate = () => {
@@ -81,33 +101,41 @@ export default function CasesPage() {
     fetchData();
   };
 
-  const handleDragStart = (index: number) => { dragIndex.current = index; };
-  const handleDragOver = (e: React.DragEvent, index: number) => { e.preventDefault(); dragOverIndex.current = index; };
+  const handleDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id || savingOrder) return;
+    const from = cases.findIndex(item => item.id === active.id);
+    const to = cases.findIndex(item => item.id === over.id);
+    if (from < 0 || to < 0) return;
 
-  const handleDrop = async () => {
-    const from = dragIndex.current;
-    const to = dragOverIndex.current;
-    if (from === null || to === null || from === to) return;
-    const reordered = [...cases];
-    const [moved] = reordered.splice(from, 1);
-    reordered.splice(to, 0, moved);
+    const reordered = arrayMove(cases, from, to);
     const updated = reordered.map((c, i) => ({ ...c, sort_order: i + 1 }));
     setCases(updated);
+    setSavingOrder(true);
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
-    await Promise.all(updated.map(c =>
-      fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: c.id, record: { sort_order: c.sort_order } }) })
-    ));
-    dragIndex.current = null;
-    dragOverIndex.current = null;
+
+    try {
+      const responses = await Promise.all(updated.map(c =>
+        fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: c.id, record: { sort_order: c.sort_order } }) })
+      ));
+      if (responses.some(response => !response.ok)) throw new Error('排序儲存失敗');
+    } catch {
+      alert('排序儲存失敗，已重新載入原順序。');
+      await fetchData();
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>案例管理</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" style={{ backgroundColor: '#AA7452' }}>
-          <Plus className="w-4 h-4" /> 新增案例
-        </button>
+        <div className="flex items-center gap-4">
+          <span className="hidden text-xs text-gray-500 sm:inline">{savingOrder ? '正在儲存排列順序…' : '按住手掌即可拖曳排序'}</span>
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" style={{ backgroundColor: '#AA7452' }}>
+            <Plus className="w-4 h-4" /> 新增案例
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -129,21 +157,18 @@ export default function CasesPage() {
                   <th className="px-4 py-3 text-center text-gray-500 font-medium">操作</th>
                 </tr>
               </thead>
-              <tbody onDragOver={e => e.preventDefault()}>
-                {cases.map((c, index) => (
-                  <tr
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={cases.map(item => item.id)} strategy={verticalListSortingStrategy}>
+                  <tbody>
+                {cases.map(c => (
+                  <SortableTableRow
                     key={c.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={e => handleDragOver(e, index)}
-                    onDrop={handleDrop}
-                    className="border-b last:border-0 hover:bg-gray-50 transition-colors"
+                    id={c.id}
+                    disabled={savingOrder}
+                    className="border-b last:border-0 hover:bg-gray-50"
+                    handleCellClassName="px-4 py-3"
+                    label={`拖曳調整 ${c.title} 的順序`}
                   >
-                    <td className="px-4 py-3">
-                      <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 flex justify-center">
-                        <GripVertical className="w-4 h-4" />
-                      </div>
-                    </td>
                     <td className="px-4 py-3">
                       {c.image_url ? <img src={c.image_url} alt={c.title} className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100" />}
                     </td>
@@ -163,10 +188,12 @@ export default function CasesPage() {
                         <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>
                     </td>
-                  </tr>
+                  </SortableTableRow>
                 ))}
                 {cases.length === 0 && <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400">尚無案例資料</td></tr>}
-              </tbody>
+                  </tbody>
+                </SortableContext>
+              </DndContext>
             </table>
           </div>
         </div>
