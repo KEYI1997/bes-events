@@ -79,6 +79,15 @@ type LineOrder = {
   products?: { name?: string | null } | Array<{ name?: string | null }> | null;
 };
 
+type LineInquiry = {
+  id: string;
+  service_type?: string | null;
+  event_date?: string | null;
+  event_end_date?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+};
+
 function isOrderStatusCommand(text: string): boolean {
   const command = text.replace(/\s+/g, '').toLowerCase();
   if ([
@@ -120,7 +129,7 @@ function getCustomerOrderStatus(order: LineOrder) {
   if (order.status === "已歸還" || order.status === "已完成" || (order.return_date && order.return_date < todayInTaipei)) {
     return { label: "已完成", textColor: "#237A3B", backgroundColor: "#E9F7EE" };
   }
-  return { label: "接案中", textColor: "#A35D16", backgroundColor: "#FFF2E2" };
+  return { label: "已接案執行中", textColor: "#A35D16", backgroundColor: "#FFF2E2" };
 }
 
 function formatOrderDate(value?: string | null) {
@@ -246,6 +255,73 @@ function buildOrderCard(order: LineOrder, index: number) {
   };
 }
 
+function buildInquiryCard(inquiry: LineInquiry, index: number) {
+  const replied = inquiry.status === 'replied';
+  const status = replied
+    ? { label: '已回覆・未成立訂單', textColor: '#6B7280', backgroundColor: '#F1F3F5' }
+    : { label: '訂單/諮詢確認中', textColor: '#9A6700', backgroundColor: '#FFF7D6' };
+  const dateRange = inquiry.event_date === inquiry.event_end_date || !inquiry.event_end_date
+    ? formatOrderDate(inquiry.event_date)
+    : `${formatOrderDate(inquiry.event_date)}－${formatOrderDate(inquiry.event_end_date)}`;
+
+  return {
+    type: 'bubble',
+    size: 'kilo',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#6B625C',
+      paddingAll: '18px',
+      contents: [
+        { type: 'text', text: index === 0 ? '最新需求' : '近期需求', color: '#FFFFFF', size: 'xs', weight: 'bold' },
+        { type: 'text', text: inquiry.service_type || '活動服務諮詢', color: '#FFFFFF', size: 'lg', weight: 'bold', wrap: true, margin: 'md', maxLines: 2 },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      paddingAll: '18px',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'box',
+          layout: 'horizontal',
+          alignItems: 'center',
+          contents: [
+            { type: 'text', text: '目前狀態', color: '#8A8A8A', size: 'sm', flex: 2 },
+            {
+              type: 'box',
+              layout: 'vertical',
+              backgroundColor: status.backgroundColor,
+              cornerRadius: '12px',
+              paddingAll: '6px',
+              flex: 3,
+              contents: [{ type: 'text', text: status.label, color: status.textColor, size: 'xs', weight: 'bold', align: 'center', wrap: true }],
+            },
+          ],
+        },
+        { type: 'separator', color: '#EEEEEE' },
+        {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            { type: 'text', text: '服務項目', color: '#8A8A8A', size: 'sm', flex: 2 },
+            { type: 'text', text: inquiry.service_type || '活動服務', color: '#4A4947', size: 'sm', wrap: true, align: 'end', flex: 4 },
+          ],
+        },
+        {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            { type: 'text', text: '活動日期', color: '#8A8A8A', size: 'sm', flex: 2 },
+            { type: 'text', text: dateRange, color: '#4A4947', size: 'sm', wrap: true, align: 'end', flex: 4 },
+          ],
+        },
+      ],
+    },
+  };
+}
+
 function getPhoneVariants(phone: string) {
   const normalized = normalizePhone(phone);
   const variants = new Set([normalized, phone]);
@@ -310,12 +386,23 @@ async function replyRecentOrders(replyToken: string, userId?: string) {
     return;
   }
 
-  const { data: orders, error } = await supabase
-    .from("orders")
-    .select("id, order_code, customer_name, customer_phone, quantity, borrow_date, return_date, event_name, status, created_at, products(name)")
-    .in("customer_phone", getPhoneVariants(customer.phone))
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const phoneVariants = getPhoneVariants(customer.phone);
+  const [ordersResult, inquiriesResult] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id, order_code, customer_name, customer_phone, quantity, borrow_date, return_date, event_name, status, created_at, products(name)")
+      .in("customer_phone", phoneVariants)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("contacts")
+      .select("id, service_type, event_date, event_end_date, status, created_at")
+      .in("phone", phoneVariants)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  const { data: orders, error } = ordersResult;
 
   if (error) {
     console.error("LINE order status query error:", error.message);
@@ -323,8 +410,21 @@ async function replyRecentOrders(replyToken: string, userId?: string) {
     return;
   }
 
+  if (inquiriesResult.error) {
+    console.error("LINE inquiry status query error:", inquiriesResult.error.message);
+  }
+
   const recentOrders = (orders || []) as LineOrder[];
-  if (recentOrders.length === 0) {
+  const recentInquiries = ((inquiriesResult.data || []) as LineInquiry[])
+    .filter(inquiry => inquiry.status !== 'converted');
+  const timeline = [
+    ...recentOrders.map(order => ({ kind: 'order' as const, createdAt: order.created_at || '', data: order })),
+    ...recentInquiries.map(inquiry => ({ kind: 'inquiry' as const, createdAt: inquiry.created_at || '', data: inquiry })),
+  ]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 10);
+
+  if (timeline.length === 0) {
     await replyMessage(replyToken, [
       {
         type: "text",
@@ -334,11 +434,13 @@ async function replyRecentOrders(replyToken: string, userId?: string) {
     return;
   }
 
-  const cards = recentOrders.map((order, index) => buildOrderCard(order, index));
+  const cards = timeline.map((item, index) => item.kind === 'order'
+    ? buildOrderCard(item.data, index)
+    : buildInquiryCard(item.data, index));
   await replyMessage(replyToken, [
     {
       type: "flex",
-      altText: `近期訂單狀況（共 ${recentOrders.length} 筆）`,
+      altText: `近期訂單與諮詢狀況（共 ${timeline.length} 筆）`,
       contents: cards.length === 1 ? cards[0] : { type: "carousel", contents: cards },
     },
   ]);

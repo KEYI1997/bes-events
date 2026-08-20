@@ -39,6 +39,8 @@ export async function POST(request: Request) {
       description: description || null,
       event_end_date: event_end_date || null,
       event_date: event_date || null,
+      status: "pending",
+      read: false,
     });
 
     if (error) {

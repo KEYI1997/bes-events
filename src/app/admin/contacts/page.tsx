@@ -70,7 +70,7 @@ export default function ContactsPage() {
     fetchData();
   };
 
-  // 標記為已回覆
+  // 標記為已回覆且不成立訂單
   const markAsReplied = async (id: string) => {
     await fetch('/api/admin', {
       method: 'PUT',
@@ -203,12 +203,9 @@ export default function ContactsPage() {
       return <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">已轉訂單</span>;
     }
     if (contact.status === 'replied') {
-      return <span className="px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-600">已回覆</span>;
+      return <span className="px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-600">已回覆・未成立訂單</span>;
     }
-    if (!contact.read) {
-      return <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-600">未讀</span>;
-    }
-    return <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">已讀</span>;
+    return <span className="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700">訂單/諮詢確認中</span>;
   };
 
   // 篩選後的資料
@@ -249,7 +246,7 @@ export default function ContactsPage() {
         </div>
         <div className="flex gap-2 text-xs">
           <span className="px-2 py-1 rounded bg-green-50 text-green-700">淺綠 = 已轉訂單</span>
-          <span className="px-2 py-1 rounded bg-gray-100 text-gray-600">淺灰 = 已回覆</span>
+          <span className="px-2 py-1 rounded bg-gray-100 text-gray-600">淺灰 = 已回覆・未成立訂單</span>
         </div>
       </div>
 
@@ -278,7 +275,7 @@ export default function ContactsPage() {
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
               }`}
             >
-              待處理
+              訂單/諮詢確認中
             </button>
             <button
               onClick={() => setFilterStatus('replied')}
@@ -288,7 +285,7 @@ export default function ContactsPage() {
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
               }`}
             >
-              已回覆
+              已回覆・未成立訂單
             </button>
             <button
               onClick={() => setFilterStatus('converted')}
@@ -485,7 +482,7 @@ export default function ContactsPage() {
                     onClick={() => { markAsReplied(detail.id); setDetail({ ...detail, status: 'replied' }); }}
                     className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 transition"
                   >
-                    <MessageSquare className="w-4 h-4" /> 標記已回覆
+                    <MessageSquare className="w-4 h-4" /> 已回覆・未成立訂單
                   </button>
                 )}
               </div>
