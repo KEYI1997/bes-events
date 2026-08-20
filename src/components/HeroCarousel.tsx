@@ -49,7 +49,7 @@ export default function HeroCarousel() {
   return (
     <section
       data-snap="true"
-      className="relative h-screen w-full"
+      className="relative h-screen w-full border-b-2 border-gray-300"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
