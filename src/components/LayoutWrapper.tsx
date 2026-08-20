@@ -17,6 +17,7 @@ export function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
+  const isLineOrder = pathname.startsWith('/line/order');
 
   const [showIntro, setShowIntro] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
@@ -32,7 +33,7 @@ export function LayoutWrapper({
     setChecked(true);
   }, [pathname]);
 
-  if (isAdmin) {
+  if (isAdmin || isLineOrder) {
     return <>{children}</>;
   }
 

@@ -91,6 +91,17 @@ function isOrderStatusCommand(text: string): boolean {
   ].includes(command);
 }
 
+function isNewOrderCommand(text: string): boolean {
+  const command = text.replace(/\s+/g, '').toLowerCase();
+  return [
+    '新增訂單',
+    '建立訂單',
+    '我要下單',
+    'new_order',
+    'action=new_order',
+  ].includes(command);
+}
+
 function getCustomerOrderStatus(order: LineOrder) {
   if (order.status === "已取消" || order.status === "已解除") {
     return { label: "已解除", textColor: "#6B7280", backgroundColor: "#F1F3F5" };
@@ -335,6 +346,29 @@ export async function POST(request: NextRequest) {
     // ── 查詢近期訂單狀態 ──
     if (isOrderStatusCommand(text)) {
       await replyRecentOrders(replyToken, userId);
+      continue;
+    }
+
+    // ── LINE 圖文選單：新增訂單 ──
+    if (isNewOrderCommand(text)) {
+      await replyMessage(replyToken, [
+        {
+          type: "template",
+          altText: "新增訂單：選擇活動大項與產品細項",
+          template: {
+            type: "buttons",
+            title: "新增訂單",
+            text: "在同一張表單選擇活動大項與產品細項，減少來回點擊。",
+            actions: [
+              {
+                type: "uri",
+                label: "開啟訂單表單",
+                uri: "https://besevent.com/line/order",
+              },
+            ],
+          },
+        },
+      ]);
       continue;
     }
 
