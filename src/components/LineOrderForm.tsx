@@ -22,10 +22,15 @@ export default function LineOrderForm({
   products: Product[];
   initialCustomer: { name: string; phone: string };
 }) {
-  const categories = useMemo(
-    () => Array.from(new Set(products.map(product => product.category))),
-    [products]
-  );
+  const categories = useMemo(() => {
+    const productCategories = Array.from(new Set(products.map(product => product.category)));
+    if (productCategories.includes('專案企劃')) {
+      return productCategories.flatMap(category => category === '專案企劃'
+        ? [category, '活動統籌']
+        : [category]);
+    }
+    return [...productCategories, '活動統籌'];
+  }, [products]);
   const [form, setForm] = useState<FormState>({
     category: categories[0] || '',
     productId: '',
@@ -41,7 +46,9 @@ export default function LineOrderForm({
   const [error, setError] = useState('');
 
   const categoryProducts = useMemo(
-    () => products.filter(product => product.category === form.category),
+    () => products.filter(product => product.category === (
+      form.category === '活動統籌' ? '專案企劃' : form.category
+    )),
     [form.category, products]
   );
   const selectedProduct = products.find(product => product.id === form.productId);
@@ -58,7 +65,7 @@ export default function LineOrderForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!form.category || !form.productId || !form.name.trim() || !form.phone.trim() || !form.eventDate) {
-      setError('請完成大項、細項、姓名、電話與活動日期。');
+      setError('請完成服務類型、產品項目／方案、姓名、電話與活動日期。');
       return;
     }
 
@@ -77,8 +84,8 @@ export default function LineOrderForm({
           event_end_date: form.eventEndDate || form.eventDate,
           description: [
             '【LINE 圖文選單新增訂單】',
-            `產品大項：${form.category}`,
-            `產品細項：${selectedProduct?.name || ''}`,
+            `服務類型：${form.category}`,
+            `產品項目／方案：${selectedProduct?.name || ''}`,
             form.note.trim() ? `需求備註：${form.note.trim()}` : '',
           ].filter(Boolean).join('\n'),
         }),
@@ -122,12 +129,12 @@ export default function LineOrderForm({
             <ClipboardList size={25} />
             <h1 className="text-2xl font-bold">新增訂單</h1>
           </div>
-          <p className="text-sm leading-6 text-white/70">先選擇服務大項，再從下方選擇需要的產品細項。</p>
+          <p className="text-sm leading-6 text-white/70">先選擇服務類型，再從下方選擇需要的產品項目或方案。</p>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-7 px-5 py-7 sm:px-9">
           <section>
-            <label className="mb-3 block font-bold text-primary">1. 選擇產品大項</label>
+            <label className="mb-3 block font-bold text-primary">1. 選擇服務類型</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {categories.map(category => (
                 <button
@@ -147,7 +154,7 @@ export default function LineOrderForm({
           </section>
 
           <section>
-            <label htmlFor="line-product" className="mb-3 block font-bold text-primary">2. 選擇產品細項</label>
+            <label htmlFor="line-product" className="mb-3 block font-bold text-primary">2. 選擇產品項目/方案</label>
             <div className="relative">
               <select
                 id="line-product"
@@ -156,7 +163,7 @@ export default function LineOrderForm({
                 required
                 className="w-full appearance-none rounded-xl border-2 border-primary/15 bg-white px-4 py-3.5 pr-11 text-primary outline-none focus:border-cta"
               >
-                <option value="">請選擇{form.category || '產品'}細項</option>
+                <option value="">請選擇產品項目或方案</option>
                 {categoryProducts.map(product => (
                   <option key={product.id} value={product.id}>{product.name}</option>
                 ))}
@@ -177,11 +184,6 @@ export default function LineOrderForm({
               <Field label="活動日期 *" type="date" value={form.eventDate} onChange={value => update('eventDate', value)} required />
               <Field label="結束日期" type="date" value={form.eventEndDate} min={form.eventDate} onChange={value => update('eventEndDate', value)} />
             </div>
-            {initialCustomer.phone && (
-              <p className="mt-3 rounded-xl bg-[#EAF8EF] px-4 py-3 text-sm font-medium text-[#237A3B]">
-                已自動帶入 LINE 綁定電話，不需要再次輸入。
-              </p>
-            )}
             <label className="mt-4 block text-sm font-semibold text-primary">
               其他需求
               <textarea
