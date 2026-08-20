@@ -31,6 +31,9 @@ export default async function LineOrderPage({
       .from('customers')
       .select('name, phone')
       .eq('line_user_id', lineUserId)
+      .not('phone', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
     boundCustomer = customer;
   }

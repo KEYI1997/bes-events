@@ -80,8 +80,8 @@ type LineOrder = {
 };
 
 function isOrderStatusCommand(text: string): boolean {
-  const command = text.trim().toLowerCase();
-  return [
+  const command = text.replace(/\s+/g, '').toLowerCase();
+  if ([
     "目前訂單",
     "目前訂單狀態",
     "我的訂單",
@@ -89,7 +89,13 @@ function isOrderStatusCommand(text: string): boolean {
     "查詢訂單",
     "order_status",
     "action=order_status",
-  ].includes(command);
+    "check_order_status",
+    "action=check_order_status",
+  ].includes(command)) return true;
+
+  return command.includes('目前訂單')
+    || command.includes('查詢訂單')
+    || (command.includes('order') && command.includes('status'));
 }
 
 function isNewOrderCommand(text: string): boolean {
@@ -253,6 +259,38 @@ function getPhoneVariants(phone: string) {
   return [...variants];
 }
 
+async function findBoundCustomer(userId?: string) {
+  if (!userId) return null;
+  const supabase = getServiceClient();
+
+  // limit(1) 可相容歷史上同一 LINE 帳號留下多筆客戶資料的情況。
+  const { data: customer, error } = await supabase
+    .from("customers")
+    .select("id, phone, name, line_display_name, line_picture_url, created_at, updated_at")
+    .eq("line_user_id", userId)
+    .not("phone", "is", null)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) console.error("LINE binding query error:", error.message);
+  if (customer?.phone) return customer;
+
+  // 若客戶表的歷史綁定遺失，改從已寫入 LINE User ID 的訂單恢復查詢能力。
+  const { data: order } = await supabase
+    .from("orders")
+    .select("customer_phone, customer_name")
+    .eq("line_user_id", userId)
+    .not("customer_phone", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return order?.customer_phone
+    ? { phone: order.customer_phone, name: order.customer_name }
+    : null;
+}
+
 async function replyRecentOrders(replyToken: string, userId?: string) {
   if (!userId) {
     await replyMessage(replyToken, [{ type: "text", text: "無法取得您的 LINE 帳號資訊，請稍後再試。" }]);
@@ -260,11 +298,7 @@ async function replyRecentOrders(replyToken: string, userId?: string) {
   }
 
   const supabase = getServiceClient();
-  const { data: customer } = await supabase
-    .from("customers")
-    .select("phone, name")
-    .eq("line_user_id", userId)
-    .maybeSingle();
+  const customer = await findBoundCustomer(userId);
 
   if (!customer?.phone) {
     await replyMessage(replyToken, [
@@ -462,12 +496,7 @@ export async function POST(request: NextRequest) {
     // 已綁定的客戶點選其他文字選單時，不再重複要求輸入電話。
     const phonePattern = /^[\d\s\-\+\(\)]{8,15}$/;
     if (!phonePattern.test(text)) {
-      const supabase = getServiceClient();
-      const { data: existingBinding } = await supabase
-        .from("customers")
-        .select("phone")
-        .eq("line_user_id", userId)
-        .maybeSingle();
+      const existingBinding = await findBoundCustomer(userId);
 
       await replyMessage(replyToken, [
         {
@@ -484,11 +513,10 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceClient();
 
     // 檢查是否已有此 LINE 帳號綁定
-    const { data: existingByLine } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("line_user_id", userId)
-      .maybeSingle();
+    const existingByLine = await findBoundCustomer(userId);
+    const existingCustomerByLine = existingByLine && 'id' in existingByLine
+      ? existingByLine
+      : null;
 
     if (existingByLine && normalizePhone(existingByLine.phone || "") === phone) {
       await replyMessage(replyToken, [
@@ -535,7 +563,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     let bindingError: { message: string } | null = null;
-    if (existingByLine && existingByPhone && existingByLine.id !== existingByPhone.id) {
+    if (existingCustomerByLine && existingByPhone && existingCustomerByLine.id !== existingByPhone.id) {
       // 新電話已有客戶紀錄：先解除舊紀錄，再把 LINE 資料移到新紀錄。
       const { error: detachError } = await supabase
         .from("customers")
@@ -545,7 +573,7 @@ export async function POST(request: NextRequest) {
           line_picture_url: null,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", existingByLine.id);
+        .eq("id", existingCustomerByLine.id);
       bindingError = detachError;
       if (!bindingError) {
         const { error: updateError } = await supabase
@@ -566,24 +594,24 @@ export async function POST(request: NextRequest) {
           .from("customers")
           .update({
             line_user_id: userId,
-            line_display_name: existingByLine.line_display_name,
-            line_picture_url: existingByLine.line_picture_url,
+            line_display_name: existingCustomerByLine.line_display_name,
+            line_picture_url: existingCustomerByLine.line_picture_url,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", existingByLine.id);
+          .eq("id", existingCustomerByLine.id);
       }
-    } else if (existingByLine) {
+    } else if (existingCustomerByLine) {
       // 已綁定的 LINE 帳號更換成通過核對的新電話。
       const { error } = await supabase
         .from("customers")
         .update({
           phone,
-          name: existingByLine.name || customerName,
+          name: existingCustomerByLine.name || customerName,
           line_display_name: displayName,
           line_picture_url: pictureUrl,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", existingByLine.id);
+        .eq("id", existingCustomerByLine.id);
       bindingError = error;
     } else if (existingByPhone) {
       // 新 LINE 帳號綁定到已有的電話紀錄。
@@ -622,7 +650,7 @@ export async function POST(request: NextRequest) {
     }
 
     const nameText = customerName ? `您好，${customerName}！\n` : "";
-    const bindingAction = existingByLine ? "換綁" : "綁定";
+    const bindingAction = existingCustomerByLine ? "換綁" : "綁定";
     await replyMessage(replyToken, [
       {
         type: "text",
