@@ -15,7 +15,13 @@ type FormState = {
   note: string;
 };
 
-export default function LineOrderForm({ products }: { products: Product[] }) {
+export default function LineOrderForm({
+  products,
+  initialCustomer,
+}: {
+  products: Product[];
+  initialCustomer: { name: string; phone: string };
+}) {
   const categories = useMemo(
     () => Array.from(new Set(products.map(product => product.category))),
     [products]
@@ -23,8 +29,8 @@ export default function LineOrderForm({ products }: { products: Product[] }) {
   const [form, setForm] = useState<FormState>({
     category: categories[0] || '',
     productId: '',
-    name: '',
-    phone: '',
+    name: initialCustomer.name,
+    phone: initialCustomer.phone,
     email: '',
     eventDate: '',
     eventEndDate: '',
@@ -166,11 +172,16 @@ export default function LineOrderForm({ products }: { products: Product[] }) {
             <h2 className="mb-5 font-bold text-primary">3. 填寫聯絡與活動資訊</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="姓名 *" value={form.name} onChange={value => update('name', value)} required />
-              <Field label="手機號碼 *" type="tel" inputMode="tel" value={form.phone} onChange={value => update('phone', value)} required placeholder="0912345678" />
+              <Field label="手機號碼 *" type="tel" inputMode="tel" value={form.phone} onChange={value => update('phone', value)} required placeholder="0912345678" readOnly={Boolean(initialCustomer.phone)} />
               <Field label="Email" type="email" value={form.email} onChange={value => update('email', value)} />
               <Field label="活動日期 *" type="date" value={form.eventDate} onChange={value => update('eventDate', value)} required />
               <Field label="結束日期" type="date" value={form.eventEndDate} min={form.eventDate} onChange={value => update('eventEndDate', value)} />
             </div>
+            {initialCustomer.phone && (
+              <p className="mt-3 rounded-xl bg-[#EAF8EF] px-4 py-3 text-sm font-medium text-[#237A3B]">
+                已自動帶入 LINE 綁定電話，不需要再次輸入。
+              </p>
+            )}
             <label className="mt-4 block text-sm font-semibold text-primary">
               其他需求
               <textarea
@@ -209,6 +220,7 @@ function Field({
   placeholder,
   inputMode,
   min,
+  readOnly = false,
 }: {
   label: string;
   value: string;
@@ -218,6 +230,7 @@ function Field({
   placeholder?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   min?: string;
+  readOnly?: boolean;
 }) {
   return (
     <label className="block text-sm font-semibold text-primary">
@@ -230,7 +243,8 @@ function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         min={min}
-        className="mt-2 w-full rounded-xl border-2 border-primary/15 px-4 py-3 font-normal outline-none focus:border-cta"
+        readOnly={readOnly}
+        className={`mt-2 w-full rounded-xl border-2 border-primary/15 px-4 py-3 font-normal outline-none focus:border-cta ${readOnly ? 'bg-gray-100 text-primary/65' : ''}`}
       />
     </label>
   );

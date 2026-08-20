@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { getServiceClient } from "@/lib/supabase";
+import { createLineOrderToken } from "@/lib/lineOrderToken";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +100,8 @@ function isNewOrderCommand(text: string): boolean {
     '我要下單',
     'new_order',
     'action=new_order',
+    'action=create_order',
+    'create_order',
   ].includes(command);
 }
 
@@ -351,6 +354,10 @@ export async function POST(request: NextRequest) {
 
     // ── LINE 圖文選單：新增訂單 ──
     if (isNewOrderCommand(text)) {
+      const orderToken = createLineOrderToken(userId);
+      const orderUrl = orderToken
+        ? `https://besevent.com/line/order?token=${encodeURIComponent(orderToken)}`
+        : "https://besevent.com/line/order";
       await replyMessage(replyToken, [
         {
           type: "template",
@@ -363,7 +370,7 @@ export async function POST(request: NextRequest) {
               {
                 type: "uri",
                 label: "開啟訂單表單",
-                uri: "https://besevent.com/line/order",
+                uri: orderUrl,
               },
             ],
           },
@@ -452,13 +459,22 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    // 判斷是否為電話號碼格式
+    // 已綁定的客戶點選其他文字選單時，不再重複要求輸入電話。
     const phonePattern = /^[\d\s\-\+\(\)]{8,15}$/;
     if (!phonePattern.test(text)) {
+      const supabase = getServiceClient();
+      const { data: existingBinding } = await supabase
+        .from("customers")
+        .select("phone")
+        .eq("line_user_id", userId)
+        .maybeSingle();
+
       await replyMessage(replyToken, [
         {
           type: "text",
-          text: "請傳送您的手機號碼來綁定帳號。\n\n例如：0912345678\n\n如有其他問題請直接留言，我們會盡快回覆您。",
+          text: existingBinding?.phone
+            ? "您的電話已完成綁定，不需要再次輸入。\n\n請使用下方圖文選單選擇功能；如有其他需求，也可以直接留言給我們。"
+            : "請傳送您的手機號碼來綁定帳號。\n\n例如：0912345678\n\n如有其他問題請直接留言，我們會盡快回覆您。",
         },
       ]);
       continue;
