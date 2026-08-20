@@ -109,15 +109,21 @@ function isOrderStatusCommand(text: string): boolean {
 
 function isNewOrderCommand(text: string): boolean {
   const command = text.replace(/\s+/g, '').toLowerCase();
-  return [
+  if ([
     '新增訂單',
+    '我要新增訂單',
     '建立訂單',
     '我要下單',
     'new_order',
     'action=new_order',
     'action=create_order',
     'create_order',
-  ].includes(command);
+  ].includes(command)) return true;
+
+  return command.includes('新增訂單')
+    || command.includes('建立訂單')
+    || (command.includes('new') && command.includes('order'))
+    || (command.includes('create') && command.includes('order'));
 }
 
 function getCustomerOrderStatus(order: LineOrder) {
