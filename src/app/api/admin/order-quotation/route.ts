@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { pushCustomerQuotationLineMessage } from '@/lib/customerLineNotifications';
 import { buildQuotationPdf } from '@/lib/quotationPdf';
+import { createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
+import { loadStoredQuotationDraft, saveStoredQuotationDraft, type StoredQuotationDraft } from '@/lib/quotationStorage';
 
 export const runtime = 'nodejs';
 
@@ -64,9 +66,12 @@ async function loadOrder(orderId: string) {
   return { order: data as unknown as QuotationOrderRecord | null, error };
 }
 
-async function generateOrderPdf(order: QuotationOrderRecord) {
+async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuotationDraft | null) {
   const product = getProductRecord(order.products);
   if (!product?.name) throw new Error('找不到訂單產品資料');
+  const quotationItems = stored
+    ? normalizeQuotationItems(stored.items)
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name);
   const pdf = await buildQuotationPdf({
     orderCode: order.order_code,
     customerName: order.customer_name,
@@ -79,8 +84,10 @@ async function generateOrderPdf(order: QuotationOrderRecord) {
     note: order.note,
     productName: product.name,
     productPriceNote: product.price_note,
+    quotationItems,
+    quotationRevision: stored?.revision || 1,
   });
-  return { pdf, product };
+  return { pdf, product, quotationItems };
 }
 
 function quotationFilename(order: QuotationOrderRecord, productName: string) {
@@ -97,7 +104,8 @@ export async function GET(request: NextRequest) {
   if (order.status === '已取消') return NextResponse.json({ error: '已取消的訂單不可輸出報價單' }, { status: 400 });
 
   try {
-    const { pdf, product } = await generateOrderPdf(order);
+    const stored = await loadStoredQuotationDraft(getServiceClient(), order.id);
+    const { pdf, product } = await generateOrderPdf(order, stored);
     const filename = quotationFilename(order, product.name || '服務');
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
@@ -124,7 +132,8 @@ export async function POST(request: NextRequest) {
   if (order.status === '已取消') return NextResponse.json({ error: '已取消的訂單不可傳送報價單' }, { status: 400 });
 
   try {
-    const { pdf, product } = await generateOrderPdf(order);
+    const stored = await loadStoredQuotationDraft(supabase, order.id);
+    const { pdf, product, quotationItems } = await generateOrderPdf(order, stored);
     const filename = quotationFilename(order, product.name || '服務');
     const normalizedPhone = normalizePhone(order.customer_phone);
     let lineUserId = '';
@@ -172,12 +181,32 @@ export async function POST(request: NextRequest) {
     }
 
     const sentAny = emailResult.sent || lineResult.sent;
-    const update: Record<string, string | boolean> = {};
+    const update: Record<string, unknown> = {};
     if (emailResult.sent) update.quotation_email_sent_at = now;
-    if (lineResult.sent) update.quotation_line_sent_at = now;
+    if (lineResult.sent) {
+      update.quotation_line_sent_at = now;
+      await saveStoredQuotationDraft(supabase, order.id, {
+        items: quotationItems,
+        revision: stored?.revision || 1,
+        updatedAt: stored?.updatedAt || null,
+        publicItems: quotationItems,
+        publicRevision: stored?.revision || 1,
+        sentRevision: stored?.revision || 1,
+      });
+    }
     if (sentAny) {
       update.quotation_sent = true;
       update.quotation_sent_at = now;
+      if (!lineResult.sent) {
+        await saveStoredQuotationDraft(supabase, order.id, {
+          items: quotationItems,
+          revision: stored?.revision || 1,
+          updatedAt: stored?.updatedAt || null,
+          publicItems: stored?.publicItems,
+          publicRevision: stored?.publicRevision,
+          sentRevision: stored?.revision || 1,
+        });
+      }
     }
     if (Object.keys(update).length > 0) {
       const { error: updateError } = await supabase.from('orders').update(update).eq('id', order.id);

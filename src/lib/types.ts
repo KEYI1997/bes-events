@@ -37,11 +37,25 @@ export interface Order {
   quotation_email_sent_at?: string | null; // Email 附件寄送成功時間
   quotation_line_sent_at?: string | null; // 官方 LINE 連結傳送成功時間
   quotation_token?: string; // 客戶 PDF 安全下載連結識別碼
+  quotation_items?: QuotationLineItem[] | null; // 管理者暫存的報價項目
+  quotation_revision?: number; // 報價單版本
+  quotation_sent_revision?: number | null; // 最近一次送出的報價版本
+  quotation_draft_updated_at?: string | null; // 報價草稿最後更新時間
+  quotation_public_items?: QuotationLineItem[] | null; // 最近一次 LINE 傳送的版本快照
+  quotation_public_revision?: number | null; // 最近一次 LINE 公開版本
   line_user_id?: string;      // LINE User ID（客戶綁定後填入）
   line_display_name?: string; // LINE 顯示名稱
   created_at: string;
   // joined
   product?: Product;
+}
+
+export interface QuotationLineItem {
+  id: string;
+  label: string;
+  unitPrice: number | null;
+  quantity: number | null;
+  note: string;
 }
 
 export interface Case {

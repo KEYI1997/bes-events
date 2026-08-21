@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
-import { extractQuotationUnitPrice, type QuotationOrderData } from '@/lib/quotationWorkbook';
+import { type QuotationOrderData } from '@/lib/quotationWorkbook';
+import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
+import type { QuotationLineItem } from '@/lib/types';
 
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
@@ -79,6 +81,8 @@ function drawCell(
 export type QuotationPdfData = QuotationOrderData & {
   customerEmail?: string | null;
   note?: string | null;
+  quotationItems?: QuotationLineItem[] | null;
+  quotationRevision?: number | null;
 };
 
 export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer> {
@@ -124,7 +128,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     ['Email', order.customerEmail || '', '活動名稱', order.eventName || ''],
     ['服務日期', order.borrowDate === order.returnDate
       ? formatDate(order.borrowDate)
-      : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`, '報價編號', order.orderCode || ''],
+      : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`, '報價編號', `${order.orderCode || ''}${order.quotationRevision ? ` / v${order.quotationRevision}` : ''}`],
   ];
   for (const [l1, v1, l2, v2] of customerRows) {
     drawCell(doc, l1, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 9, fillColor: BRAND });
@@ -144,18 +148,23 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   }
   y += 28;
 
-  const unitPrice = extractQuotationUnitPrice(order.productPriceNote);
-  const itemSubtotal = unitPrice === null ? null : unitPrice * order.quantity;
-  const itemRows: Array<[string, string, string, string, string]> = [
-    [order.productName, unitPrice === null ? '' : money(unitPrice), String(order.quantity), itemSubtotal === null ? '' : money(itemSubtotal), order.eventName || ''],
-    ['運費', '', '', '', ''],
-    ['人員交通費', '', '', '', ''],
-    ['搬運／樓層費', '', '', '', ''],
-    ['其他加購', '', '', '', ''],
-    ['', '', '', '', ''],
-    ['', '', '', '', ''],
-    ['', '', '', '', ''],
-  ];
+  const quotationItems = order.quotationItems
+    ? normalizeQuotationItems(order.quotationItems)
+    : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName);
+  const paddedItems = [...quotationItems.slice(0, 8)];
+  while (paddedItems.length < 8) {
+    paddedItems.push({ id: `pdf-blank-${paddedItems.length}`, label: '', unitPrice: null, quantity: null, note: '' });
+  }
+  const itemRows: Array<[string, string, string, string, string]> = paddedItems.map(item => {
+    const lineTotal = item.unitPrice !== null && item.quantity !== null ? item.unitPrice * item.quantity : null;
+    return [
+      item.label,
+      item.unitPrice === null ? '' : money(item.unitPrice),
+      item.quantity === null ? '' : String(item.quantity),
+      lineTotal === null ? '' : money(lineTotal),
+      item.note,
+    ];
+  });
   const rowH = 28;
   itemRows.forEach((row, rowIndex) => {
     x = MARGIN;
@@ -174,8 +183,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   const summaryLabelX = MARGIN + 286;
   const summaryLabelW = 82;
   const summaryValueW = CONTENT_WIDTH - 286 - summaryLabelW;
-  const tax = itemSubtotal === null ? null : Math.round(itemSubtotal * 0.05);
-  const total = itemSubtotal === null || tax === null ? null : itemSubtotal + tax;
+  const { subtotal: itemSubtotal, tax, total } = calculateQuotationTotals(quotationItems);
   const summaries: Array<[string, string]> = [
     ['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal)],
     ['營業稅 5%', tax === null ? '' : money(tax)],

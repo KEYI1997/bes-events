@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildQuotationPdf } from '@/lib/quotationPdf';
 import { getServiceClient } from '@/lib/supabase';
+import { loadStoredQuotationDraft } from '@/lib/quotationStorage';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +21,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
   const supabase = getServiceClient();
   const { data: orderResult, error } = await supabase
     .from('orders')
-    .select('order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, products(name, price_note)')
+    .select('id, order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, products(name, price_note)')
     .eq('quotation_token', token)
     .single();
   const order = Array.isArray(orderResult) ? orderResult[0] : orderResult;
@@ -30,6 +31,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
   if (!product?.name) return NextResponse.json({ error: '找不到產品資料' }, { status: 404 });
 
   try {
+    const stored = await loadStoredQuotationDraft(supabase, order.id);
     const pdf = await buildQuotationPdf({
       orderCode: order.order_code,
       customerName: order.customer_name,
@@ -42,6 +44,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
       note: order.note,
       productName: product.name,
       productPriceNote: product.price_note,
+      quotationItems: stored?.publicItems || stored?.items,
+      quotationRevision: stored?.publicRevision || stored?.revision || 1,
     });
     const filename = `報價單-${sanitize(order.customer_name)}-${sanitize(product.name)}.pdf`;
     return new NextResponse(new Uint8Array(pdf), {

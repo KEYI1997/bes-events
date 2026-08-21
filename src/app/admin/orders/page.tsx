@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, Send } from 'lucide-react';
-import type { Product, Order } from '@/lib/types';
+import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, FilePenLine, Send } from 'lucide-react';
+import type { Product, Order, QuotationLineItem } from '@/lib/types';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -45,6 +45,11 @@ export default function OrdersPage() {
   const [quotationUpdatingId, setQuotationUpdatingId] = useState<string | null>(null);
   const [quotationExportingId, setQuotationExportingId] = useState<string | null>(null);
   const [quotationSendingId, setQuotationSendingId] = useState<string | null>(null);
+  const [quotationEditingOrder, setQuotationEditingOrder] = useState<Order | null>(null);
+  const [quotationItems, setQuotationItems] = useState<QuotationLineItem[]>([]);
+  const [quotationRevision, setQuotationRevision] = useState(1);
+  const [quotationDraftLoading, setQuotationDraftLoading] = useState(false);
+  const [quotationDraftSaving, setQuotationDraftSaving] = useState(false);
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
@@ -362,6 +367,86 @@ export default function OrdersPage() {
     }
   };
 
+  const quotationTotals = useMemo(() => {
+    const activeItems = quotationItems.filter(item => item.label || item.unitPrice !== null || item.quantity !== null || item.note);
+    const incomplete = activeItems.some(item => (item.unitPrice === null) !== (item.quantity === null));
+    if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true };
+    const priced = activeItems.filter(item => item.unitPrice !== null && item.quantity !== null);
+    if (priced.length === 0) return { subtotal: null, tax: null, total: null, incomplete: false };
+    const subtotal = priced.reduce((sum, item) => sum + (item.unitPrice || 0) * (item.quantity || 0), 0);
+    const tax = Math.round(subtotal * 0.05);
+    return { subtotal, tax, total: subtotal + tax, incomplete: false };
+  }, [quotationItems]);
+
+  const openQuotationEditor = async (order: Order) => {
+    if (order.status === '已取消' || quotationDraftLoading) return;
+    setQuotationEditingOrder(order);
+    setQuotationDraftLoading(true);
+    try {
+      const response = await fetch(`/api/admin/order-quotation-draft?id=${encodeURIComponent(order.id)}`, { headers: getHeaders() });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || '載入報價單失敗');
+      setQuotationItems(result.items || []);
+      setQuotationRevision(result.revision || 1);
+    } catch (error) {
+      setQuotationEditingOrder(null);
+      window.alert(error instanceof Error ? error.message : '載入報價單失敗');
+    } finally {
+      setQuotationDraftLoading(false);
+    }
+  };
+
+  const updateQuotationItem = (id: string, field: keyof QuotationLineItem, value: string) => {
+    setQuotationItems(current => current.map(item => {
+      if (item.id !== id) return item;
+      if (field === 'unitPrice' || field === 'quantity') {
+        const numberValue = value === '' ? null : Number(value);
+        const next = { ...item, [field]: Number.isFinite(numberValue) ? numberValue : null };
+        if (field === 'unitPrice' && numberValue !== null && next.quantity === null) next.quantity = 1;
+        return next;
+      }
+      return { ...item, [field]: value };
+    }));
+  };
+
+  const saveQuotationDraft = async () => {
+    if (!quotationEditingOrder || quotationDraftSaving) return false;
+    setQuotationDraftSaving(true);
+    try {
+      const response = await fetch('/api/admin/order-quotation-draft', {
+        method: 'PUT',
+        headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: quotationEditingOrder.id, items: quotationItems }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || '儲存報價單失敗');
+      setQuotationItems(result.items || quotationItems);
+      setQuotationRevision(result.revision || quotationRevision + 1);
+      setOrders(current => current.map(item => item.id === quotationEditingOrder.id
+        ? {
+            ...item,
+            quotation_items: result.items,
+            quotation_revision: result.revision,
+            quotation_draft_updated_at: result.updatedAt,
+            quotation_sent: false,
+            quotation_sent_at: null,
+          }
+        : item));
+      return true;
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : '儲存報價單失敗');
+      return false;
+    } finally {
+      setQuotationDraftSaving(false);
+    }
+  };
+
+  const saveAndDownloadQuotation = async () => {
+    if (!quotationEditingOrder) return;
+    const saved = await saveQuotationDraft();
+    if (saved) await handleQuotationExport(quotationEditingOrder);
+  };
+
   // ===== 行事曆相關 =====
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -558,6 +643,16 @@ export default function OrdersPage() {
                         </div>
                         <button
                           type="button"
+                          onClick={() => void openQuotationEditor(o)}
+                          disabled={o.status === '已取消' || quotationDraftLoading}
+                          title={o.status === '已取消' ? '已取消的訂單不可編輯' : '填寫並暫存運費、加購與自訂項目'}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded border border-purple-300 text-xs text-purple-700 hover:bg-purple-50 disabled:border-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        >
+                          <FilePenLine className="w-3.5 h-3.5" />
+                          編輯報價單
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => void handleQuotationExport(o)}
                           disabled={o.status === '已取消' || quotationExportingId === o.id}
                           title={o.status === '已取消' ? '已取消的訂單不可輸出' : '下載 PDF 報價單'}
@@ -707,6 +802,163 @@ export default function OrdersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Quotation Draft Modal */}
+      {quotationEditingOrder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto">
+            <div className="flex items-start justify-between p-6 border-b sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>編輯報價單</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {quotationEditingOrder.customer_name}｜{productMap[quotationEditingOrder.product_id]?.name || '未知產品'}｜版本 v{quotationRevision}
+                </p>
+              </div>
+              <button onClick={() => setQuotationEditingOrder(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="p-6">
+              {quotationDraftLoading ? (
+                <div className="py-16 text-center text-gray-400">載入報價內容中…</div>
+              ) : (
+                <>
+                  <div className="rounded-xl border overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-sm">
+                      <thead className="bg-stone-50 text-gray-600">
+                        <tr>
+                          <th className="px-3 py-3 text-left w-[30%]">項目／服務內容</th>
+                          <th className="px-3 py-3 text-right w-[16%]">單價</th>
+                          <th className="px-3 py-3 text-center w-[12%]">數量</th>
+                          <th className="px-3 py-3 text-right w-[16%]">金額</th>
+                          <th className="px-3 py-3 text-left">備註</th>
+                          <th className="px-2 py-3 w-10" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {quotationItems.map((item, index) => {
+                          const lineTotal = item.unitPrice !== null && item.quantity !== null
+                            ? item.unitPrice * item.quantity
+                            : null;
+                          return (
+                            <tr key={item.id} className="border-t">
+                              <td className="p-2">
+                                <input
+                                  value={item.label}
+                                  onChange={e => updateQuotationItem(item.id, 'label', e.target.value)}
+                                  placeholder={index === 0 ? '產品／服務名稱' : '自訂項目'}
+                                  className="w-full px-3 py-2 border rounded-lg"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="1"
+                                  value={item.unitPrice ?? ''}
+                                  onChange={e => updateQuotationItem(item.id, 'unitPrice', e.target.value)}
+                                  placeholder="留空"
+                                  className="w-full px-3 py-2 border rounded-lg text-right"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="number"
+                                  min={0.01}
+                                  step="0.01"
+                                  value={item.quantity ?? ''}
+                                  onChange={e => updateQuotationItem(item.id, 'quantity', e.target.value)}
+                                  placeholder="—"
+                                  className="w-full px-3 py-2 border rounded-lg text-center"
+                                />
+                              </td>
+                              <td className="p-2 text-right font-medium text-gray-700 whitespace-nowrap">
+                                {lineTotal === null ? '—' : `NT$ ${lineTotal.toLocaleString('zh-TW')}`}
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  value={item.note}
+                                  onChange={e => updateQuotationItem(item.id, 'note', e.target.value)}
+                                  placeholder="選填"
+                                  className="w-full px-3 py-2 border rounded-lg"
+                                />
+                              </td>
+                              <td className="p-2 text-center">
+                                {index > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setQuotationItems(current => current.filter(row => row.id !== item.id))}
+                                    className="p-1 text-gray-300 hover:text-red-500"
+                                    title="移除此項"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex flex-wrap items-start justify-between gap-5 mt-5">
+                    <div>
+                      <button
+                        type="button"
+                        disabled={quotationItems.length >= 8}
+                        onClick={() => setQuotationItems(current => [...current, {
+                          id: `custom-${Date.now()}`,
+                          label: '',
+                          unitPrice: null,
+                          quantity: null,
+                          note: '',
+                        }])}
+                        className="inline-flex items-center gap-1 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
+                      >
+                        <Plus className="w-4 h-4" /> 新增項目
+                      </button>
+                      <p className="text-xs text-gray-400 mt-2">最多 8 筆。只填單價時，數量會自動設為 1。</p>
+                    </div>
+
+                    <div className="w-full sm:w-72 rounded-xl border bg-stone-50 p-4 space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">未稅小計</span><span>{quotationTotals.subtotal === null ? '—' : `NT$ ${quotationTotals.subtotal.toLocaleString('zh-TW')}`}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">營業稅 5%</span><span>{quotationTotals.tax === null ? '—' : `NT$ ${quotationTotals.tax.toLocaleString('zh-TW')}`}</span></div>
+                      <div className="flex justify-between border-t pt-2 text-base font-bold" style={{ color: '#8E5F43' }}><span>含稅總計</span><span>{quotationTotals.total === null ? '—' : `NT$ ${quotationTotals.total.toLocaleString('zh-TW')}`}</span></div>
+                      {quotationTotals.incomplete && <p className="text-xs text-amber-700 pt-1">尚有項目只填了單價或數量，總計會先保持空白。</p>}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    儲存修改會建立新版報價單，並將狀態改回「未送出」，避免客戶收到舊金額。
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-3 mt-6">
+                    <button type="button" onClick={() => setQuotationEditingOrder(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">關閉</button>
+                    <button
+                      type="button"
+                      onClick={() => void saveQuotationDraft()}
+                      disabled={quotationDraftSaving}
+                      className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg text-sm hover:bg-purple-50 disabled:opacity-50"
+                    >
+                      {quotationDraftSaving ? '儲存中…' : '暫存報價單'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void saveAndDownloadQuotation()}
+                      disabled={quotationDraftSaving}
+                      className="inline-flex items-center gap-2 px-5 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                      style={{ backgroundColor: '#AA7452' }}
+                    >
+                      <FileDown className="w-4 h-4" />
+                      儲存並下載 PDF
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
