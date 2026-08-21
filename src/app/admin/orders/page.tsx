@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileSpreadsheet } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, Send } from 'lucide-react';
 import type { Product, Order } from '@/lib/types';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
@@ -24,6 +24,7 @@ const EMPTY_ORDER = {
   product_id: '',
   customer_name: '',
   customer_phone: '',
+  customer_email: '',
   quantity: 1,
   borrow_date: '',
   return_date: '',
@@ -43,6 +44,7 @@ export default function OrdersPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [quotationUpdatingId, setQuotationUpdatingId] = useState<string | null>(null);
   const [quotationExportingId, setQuotationExportingId] = useState<string | null>(null);
+  const [quotationSendingId, setQuotationSendingId] = useState<string | null>(null);
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
@@ -209,6 +211,7 @@ export default function OrdersPage() {
       product_id: o.product_id,
       customer_name: o.customer_name,
       customer_phone: o.customer_phone || '',
+      customer_email: o.customer_email || '',
       quantity: o.quantity,
       borrow_date: o.borrow_date,
       return_date: o.return_date,
@@ -261,7 +264,7 @@ export default function OrdersPage() {
   };
 
   const handleQuotationSentToggle = async (order: Order) => {
-    if (order.status !== '已結案' || quotationUpdatingId) return;
+    if (order.status === '已取消' || quotationUpdatingId) return;
 
     const nextSent = !order.quotation_sent;
     const nextSentAt = nextSent ? new Date().toISOString() : null;
@@ -300,7 +303,7 @@ export default function OrdersPage() {
   };
 
   const handleQuotationExport = async (order: Order) => {
-    if (order.status !== '已結案' || quotationExportingId) return;
+    if (order.status === '已取消' || quotationExportingId) return;
 
     setQuotationExportingId(order.id);
     try {
@@ -316,7 +319,7 @@ export default function OrdersPage() {
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = `報價單-${order.customer_name || '客戶'}.xlsx`;
+      link.download = `報價單-${order.customer_name || '客戶'}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -325,6 +328,37 @@ export default function OrdersPage() {
       window.alert(error instanceof Error ? error.message : '產生報價單失敗');
     } finally {
       setQuotationExportingId(null);
+    }
+  };
+
+  const handleQuotationSend = async (order: Order) => {
+    if (order.status === '已取消' || quotationSendingId) return;
+
+    setQuotationSendingId(order.id);
+    try {
+      const response = await fetch('/api/admin/order-quotation', {
+        method: 'POST',
+        headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: order.id }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || '傳送 PDF 報價單失敗');
+
+      const delivered: string[] = [];
+      const failed: string[] = [];
+      if (result.email?.sent) delivered.push('Email（PDF 附件）');
+      else if (result.email?.available && result.email?.error) failed.push(`Email：${result.email.error}`);
+      if (result.line?.sent) delivered.push('官方 LINE（PDF 下載連結）');
+      else if (result.line?.available && result.line?.error) failed.push(`LINE：${result.line.error}`);
+
+      setOrders(current => current.map(item => item.id === order.id
+        ? { ...item, quotation_sent: true, quotation_sent_at: result.quotation_sent_at }
+        : item));
+      window.alert(`報價單已傳送：${delivered.join('、')}${failed.length ? `\n未成功：${failed.join('；')}` : ''}`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : '傳送 PDF 報價單失敗');
+    } finally {
+      setQuotationSendingId(null);
     }
   };
 
@@ -517,21 +551,36 @@ export default function OrdersPage() {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${o.quotation_sent ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                           {o.quotation_sent ? '已送出' : '未送出'}
                         </span>
+                        <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                          <span>{o.customer_email ? 'Email ✓' : 'Email —'}</span>
+                          <span>·</span>
+                          <span>{customers[o.customer_phone] ? 'LINE ✓' : 'LINE —'}</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => void handleQuotationExport(o)}
-                          disabled={o.status !== '已結案' || quotationExportingId === o.id}
-                          title={o.status === '已結案' ? '依訂單資料輸出 Excel 報價單' : '訂單結案後才可輸出報價單'}
+                          disabled={o.status === '已取消' || quotationExportingId === o.id}
+                          title={o.status === '已取消' ? '已取消的訂單不可輸出' : '下載 PDF 報價單'}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded border border-amber-300 text-xs text-amber-700 hover:bg-amber-50 disabled:border-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed"
                         >
-                          <FileSpreadsheet className="w-3.5 h-3.5" />
-                          {quotationExportingId === o.id ? '產生中…' : '輸出報價單'}
+                          <FileDown className="w-3.5 h-3.5" />
+                          {quotationExportingId === o.id ? '產生中…' : '下載 PDF'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleQuotationSend(o)}
+                          disabled={o.status === '已取消' || quotationSendingId === o.id}
+                          title={o.status === '已取消' ? '已取消的訂單不可傳送' : '自動傳送至客戶 Email 與官方 LINE'}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-300 text-xs text-blue-700 hover:bg-blue-50 disabled:border-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          {quotationSendingId === o.id ? '傳送中…' : '傳送 PDF'}
                         </button>
                         <button
                           type="button"
                           onClick={() => void handleQuotationSentToggle(o)}
-                          disabled={o.status !== '已結案' || quotationUpdatingId === o.id}
-                          title={o.status === '已結案' ? '手動更新報價單送出狀態' : '訂單結案後才可更新報價單狀態'}
+                          disabled={o.status === '已取消' || quotationUpdatingId === o.id}
+                          title={o.status === '已取消' ? '已取消的訂單不可更新' : '必要時手動修正報價單送出狀態'}
                           className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-300 disabled:cursor-not-allowed"
                         >
                           {quotationUpdatingId === o.id ? '更新中…' : o.quotation_sent ? '改為未送出' : '標記已送出'}
@@ -586,6 +635,17 @@ export default function OrdersPage() {
                   <label className="block text-sm font-medium mb-1">客戶電話</label>
                   <input value={form.customer_phone} onChange={e => setForm(f => ({ ...f, customer_phone: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">客戶 Email</label>
+                <input
+                  type="email"
+                  value={form.customer_email}
+                  onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))}
+                  placeholder="用於寄送 PDF 報價單"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                />
               </div>
 
               <div>

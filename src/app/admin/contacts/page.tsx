@@ -24,6 +24,7 @@ export default function ContactsPage() {
     product_id: '',
     customer_name: '',
     customer_phone: '',
+    customer_email: '',
     quantity: 1,
     borrow_date: '',
     return_date: '',
@@ -138,6 +139,7 @@ export default function ContactsPage() {
       product_id: matchedServiceProduct?.id || (serviceProducts.length === 1 ? serviceProducts[0].id : ''),
       customer_name: contact.name,
       customer_phone: contact.phone,
+      customer_email: contact.email || '',
       quantity: 1,
       borrow_date: contact.event_date || '',
       return_date: contact.event_end_date || '',
@@ -598,6 +600,17 @@ export default function ContactsPage() {
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">客戶 Email</label>
+                  <input
+                    type="email"
+                    value={orderForm.customer_email}
+                    onChange={e => setOrderForm(f => ({ ...f, customer_email: e.target.value }))}
+                    placeholder="用於寄送 PDF 報價單"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

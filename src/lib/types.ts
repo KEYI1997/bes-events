@@ -24,6 +24,7 @@ export interface Order {
   product_id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   quantity: number;
   borrow_date: string;
   return_date: string;
@@ -33,6 +34,9 @@ export interface Order {
   order_code?: string;        // 訂單碼，例如 BES-20260811-001
   quotation_sent?: boolean;   // 報價單是否已由管理者送出
   quotation_sent_at?: string | null; // 報價單標記送出的時間
+  quotation_email_sent_at?: string | null; // Email 附件寄送成功時間
+  quotation_line_sent_at?: string | null; // 官方 LINE 連結傳送成功時間
+  quotation_token?: string; // 客戶 PDF 安全下載連結識別碼
   line_user_id?: string;      // LINE User ID（客戶綁定後填入）
   line_display_name?: string; // LINE 顯示名稱
   created_at: string;

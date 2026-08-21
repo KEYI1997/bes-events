@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS orders (
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   customer_name TEXT NOT NULL,
   customer_phone TEXT,
+  customer_email TEXT,
   quantity INT NOT NULL DEFAULT 1,
   borrow_date DATE NOT NULL,
   return_date DATE NOT NULL,
@@ -20,6 +21,9 @@ CREATE TABLE IF NOT EXISTS orders (
   status TEXT NOT NULL DEFAULT '已預約' CHECK (status IN ('已預約', '出借中', '已歸還', '已結案', '已取消')),
   quotation_sent BOOLEAN NOT NULL DEFAULT false,
   quotation_sent_at TIMESTAMPTZ,
+  quotation_email_sent_at TIMESTAMPTZ,
+  quotation_line_sent_at TIMESTAMPTZ,
+  quotation_token UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

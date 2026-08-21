@@ -10,6 +10,21 @@ ALTER TABLE orders
 ALTER TABLE orders
   ADD COLUMN IF NOT EXISTS quotation_sent_at TIMESTAMPTZ;
 
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS customer_email TEXT;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS quotation_email_sent_at TIMESTAMPTZ;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS quotation_line_sent_at TIMESTAMPTZ;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS quotation_token UUID NOT NULL DEFAULT gen_random_uuid();
+
+CREATE UNIQUE INDEX IF NOT EXISTS orders_quotation_token_key
+  ON orders (quotation_token);
+
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
 
 ALTER TABLE orders
