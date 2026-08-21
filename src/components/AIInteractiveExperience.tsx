@@ -58,12 +58,11 @@ export default function AIInteractiveExperience() {
           </div>
 
           <div className="pt-20">
-            <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div className="mb-12">
               <div>
                 <p className="text-xs font-semibold tracking-[0.24em] text-slate-500">CHOOSE AN EXPERIENCE</p>
-                <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-white md:text-5xl">今天，想讓賓客怎麼玩？</h2>
+                <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-white md:text-5xl">為品牌打造高參與度的互動體驗</h2>
               </div>
-              <p className="max-w-sm text-sm leading-7 text-slate-400">點選下方體驗，看看不同的互動想像。每一種形式都可配合活動主題與品牌視覺客製。</p>
             </div>
 
             <div className="grid overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] lg:grid-cols-[0.78fr_1.22fr]">
