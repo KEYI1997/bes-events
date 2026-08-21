@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileSpreadsheet } from 'lucide-react';
 import type { Product, Order } from '@/lib/types';
 
-const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已取消'] as const;
+const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
   '已預約': 'bg-blue-100 text-blue-700',
   '出借中': 'bg-orange-100 text-orange-700',
   '已歸還': 'bg-green-100 text-green-700',
+  '已結案': 'bg-purple-100 text-purple-700',
   '已取消': 'bg-gray-100 text-gray-500',
 };
 
@@ -40,6 +41,8 @@ export default function OrdersPage() {
   const [editing, setEditing] = useState<Order | null>(null);
   const [form, setForm] = useState(EMPTY_ORDER);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [quotationUpdatingId, setQuotationUpdatingId] = useState<string | null>(null);
+  const [quotationExportingId, setQuotationExportingId] = useState<string | null>(null);
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
@@ -120,6 +123,7 @@ export default function OrdersPage() {
       .filter(o =>
         o.product_id === productId &&
         o.status !== '已歸還' &&
+        o.status !== '已結案' &&
         o.status !== '已取消' &&
         o.id !== excludeOrderId &&
         // 日期重疊判斷
@@ -254,6 +258,74 @@ export default function OrdersPage() {
     await fetch('/api/admin', { method: 'DELETE', headers: { ...getHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ table: 'orders', id: deleteId }) });
     setDeleteId(null);
     fetchData();
+  };
+
+  const handleQuotationSentToggle = async (order: Order) => {
+    if (order.status !== '已結案' || quotationUpdatingId) return;
+
+    const nextSent = !order.quotation_sent;
+    const nextSentAt = nextSent ? new Date().toISOString() : null;
+    setQuotationUpdatingId(order.id);
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'PUT',
+        headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'orders',
+          id: order.id,
+          record: {
+            quotation_sent: nextSent,
+            quotation_sent_at: nextSentAt,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || '更新報價單狀態失敗');
+      }
+
+      setOrders(current => current.map(item => item.id === order.id
+        ? {
+            ...item,
+            quotation_sent: nextSent,
+            quotation_sent_at: nextSentAt,
+          }
+        : item));
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : '更新報價單狀態失敗');
+    } finally {
+      setQuotationUpdatingId(null);
+    }
+  };
+
+  const handleQuotationExport = async (order: Order) => {
+    if (order.status !== '已結案' || quotationExportingId) return;
+
+    setQuotationExportingId(order.id);
+    try {
+      const response = await fetch(`/api/admin/order-quotation?id=${encodeURIComponent(order.id)}`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || '產生報價單失敗');
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `報價單-${order.customer_name || '客戶'}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : '產生報價單失敗');
+    } finally {
+      setQuotationExportingId(null);
+    }
   };
 
   // ===== 行事曆相關 =====
@@ -404,7 +476,6 @@ export default function OrdersPage() {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left">訂單碼</th>
                   <th className="px-4 py-3 text-left">產品</th>
                   <th className="px-4 py-3 text-left cursor-pointer select-none hover:bg-gray-50" onClick={() => toggleSort('customer_name')}>
                     客戶 {sortField === 'customer_name' && (sortDir === 'asc' ? '↑' : '↓')}
@@ -419,18 +490,13 @@ export default function OrdersPage() {
                   <th className="px-4 py-3 text-left">活動名稱</th>
                   <th className="px-4 py-3 text-center">LINE</th>
                   <th className="px-4 py-3 text-center">狀態</th>
+                  <th className="px-4 py-3 text-center">報價單</th>
                   <th className="px-4 py-3 text-center">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map(o => (
                   <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      {o.order_code
-                        ? <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{o.order_code}</span>
-                        : <span className="text-gray-300 text-xs">—</span>
-                      }
-                    </td>
                     <td className="px-4 py-3 font-medium">{productMap[o.product_id]?.name || '未知產品'}</td>
                     <td className="px-4 py-3">{o.customer_name}</td>
                     <td className="px-4 py-3 text-center">{o.quantity}</td>
@@ -445,6 +511,32 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[o.status]}`}>{o.status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${o.quotation_sent ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {o.quotation_sent ? '已送出' : '未送出'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void handleQuotationExport(o)}
+                          disabled={o.status !== '已結案' || quotationExportingId === o.id}
+                          title={o.status === '已結案' ? '依訂單資料輸出 Excel 報價單' : '訂單結案後才可輸出報價單'}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded border border-amber-300 text-xs text-amber-700 hover:bg-amber-50 disabled:border-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
+                          {quotationExportingId === o.id ? '產生中…' : '輸出報價單'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleQuotationSentToggle(o)}
+                          disabled={o.status !== '已結案' || quotationUpdatingId === o.id}
+                          title={o.status === '已結案' ? '手動更新報價單送出狀態' : '訂單結案後才可更新報價單狀態'}
+                          className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        >
+                          {quotationUpdatingId === o.id ? '更新中…' : o.quotation_sent ? '改為未送出' : '標記已送出'}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">

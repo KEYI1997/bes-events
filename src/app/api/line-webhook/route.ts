@@ -132,7 +132,7 @@ function getCustomerOrderStatus(order: LineOrder) {
   }
 
   const todayInTaipei = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
-  if (order.status === "已歸還" || order.status === "已完成" || (order.return_date && order.return_date < todayInTaipei)) {
+  if (order.status === "已歸還" || order.status === "已結案" || order.status === "已完成" || (order.return_date && order.return_date < todayInTaipei)) {
     return { label: "已完成", textColor: "#237A3B", backgroundColor: "#E9F7EE" };
   }
   return { label: "已接案執行中", textColor: "#A35D16", backgroundColor: "#FFF2E2" };

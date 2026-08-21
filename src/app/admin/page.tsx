@@ -58,7 +58,7 @@ export default function AdminDashboard() {
               o.status === '已預約' || o.status === '出借中'
             ).length;
             const completed = orderData.data.filter((o: { status: string }) => 
-              o.status === '已歸還'
+              o.status === '已歸還' || o.status === '已結案'
             ).length;
             const cancelled = orderData.data.filter((o: { status: string }) => 
               o.status === '已取消'

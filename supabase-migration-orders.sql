@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS orders (
   return_date DATE NOT NULL,
   event_name TEXT,
   note TEXT,
-  status TEXT NOT NULL DEFAULT '已預約' CHECK (status IN ('已預約', '出借中', '已歸還', '已取消')),
+  status TEXT NOT NULL DEFAULT '已預約' CHECK (status IN ('已預約', '出借中', '已歸還', '已結案', '已取消')),
+  quotation_sent BOOLEAN NOT NULL DEFAULT false,
+  quotation_sent_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
