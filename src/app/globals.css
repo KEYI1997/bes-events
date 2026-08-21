@@ -134,6 +134,33 @@ h1, h2, h3, h4, h5, h6 {
   cursor: grab;
   pointer-events: all;
 }
+
+/* AI 互動道具頁：低密度、聚焦式動態 */
+@keyframes ai-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ai-orbit {
+  0% { transform: rotate(0deg) scale(0.92); opacity: 0.65; }
+  45% { transform: rotate(170deg) scale(1.04); opacity: 1; }
+  100% { transform: rotate(360deg) scale(0.92); opacity: 0.65; }
+}
+
+.ai-fade-in {
+  animation: ai-fade-in 0.45s ease-out both;
+}
+
+.ai-orbit {
+  animation: ai-orbit 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-fade-in,
+  .ai-orbit {
+    animation: none;
+  }
+}
 .showgirl-range::-moz-range-thumb {
   width: 22px;
   height: 22px;
