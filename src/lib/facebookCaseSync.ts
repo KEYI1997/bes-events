@@ -233,6 +233,8 @@ function createTitle(message: string, createdAt?: string) {
 function collectImageSources(attachments: FacebookAttachment[] = []) {
   const sources = new Set<string>();
   const visit = (attachment: FacebookAttachment) => {
+    // 影片可能同時帶有預覽圖；影片與其預覽圖都不列入案例照片。
+    if (attachment.media_type?.toLowerCase() === 'video') return;
     const src = attachment.media?.image?.src;
     if (src && /^https:\/\//.test(src)) sources.add(src);
     attachment.subattachments?.data?.forEach(visit);
