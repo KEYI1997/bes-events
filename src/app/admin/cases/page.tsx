@@ -180,7 +180,7 @@ export default function CasesPage() {
                   <th className="w-32 min-w-32 px-4 py-3 text-left text-gray-500 font-medium whitespace-nowrap">活動類型</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">服務項目</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">主辦方</th>
-                  <th className="px-4 py-3 text-left text-gray-500 font-medium">活動日期</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">文章日期</th>
                   <th className="px-4 py-3 text-center text-gray-500 font-medium">狀態</th>
                   <th className="px-4 py-3 text-center text-gray-500 font-medium">操作</th>
                 </tr>
@@ -269,7 +269,7 @@ export default function CasesPage() {
                 <textarea value={form.applicable_occasions.join('\n')} onChange={e => setForm(f => ({ ...f, applicable_occasions: toList(e.target.value) }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="每行一個場合，例如：品牌發表會" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">活動日期</label>
+                <label className="block text-sm font-medium mb-1">文章日期</label>
                 <input type="date" value={form.event_date} onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
               <div>

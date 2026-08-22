@@ -80,10 +80,9 @@ function cleanCaseArticle(value: string) {
     }
     if (skippingServiceFooter) continue;
 
-    const isPromotionHeading = line.includes('｜') && /啟動|儀式|設備|租借|規劃|服務|道具|特效|調酒|show\s*girl/iu.test(line);
-    const isServiceDescription = /(?:提供專業活動設備|提供.*現場執行服務|活動設備租借|客製化活動規劃|品牌活動呈現|活動視覺輸出)/u.test(line);
     const isContactOrGenericSalesLine = /^(?:歡迎|立即|更多資訊|官方\s*(?:line|facebook)|私訊|洽詢)/iu.test(line);
-    if (isPromotionHeading || isServiceDescription || isContactOrGenericSalesLine || /^[-—–]$/u.test(line)) continue;
+    // 服務／商品名稱與其適用場合是本篇案例的有效資訊，保留作為前臺說明與欄位判斷依據。
+    if (isContactOrGenericSalesLine || /^[-—–]$/u.test(line)) continue;
 
     articleLines.push(line);
   }
@@ -207,7 +206,10 @@ function classifyPost(message: string) {
 
 function createTitle(message: string, createdAt?: string) {
   const firstLine = firstContentLine(message);
+  const bracketedTitle = firstLine.match(/【[^】]{1,100}】/u)?.[0];
 
+  // 粉專貼文的第一行是文章名稱；若含【】則完整採用其中文字，避免帶入後續正文。
+  if (bracketedTitle) return bracketedTitle;
   if (firstLine) return firstLine.slice(0, 80);
   return `Facebook 活動案例 ${createdAt ? createdAt.slice(0, 10) : ''}`.trim();
 }
