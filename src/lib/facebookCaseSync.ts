@@ -41,6 +41,52 @@ function normaliseText(value: string) {
   return value.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+// Facebook 貼文常以 emoji、圖形符號作為段落裝飾；案例頁只保留可讀文字。
+function removePostIcons(value: string) {
+  return value
+    .replace(/[\u{1F000}-\u{1FAFF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{27BF}\uFE0F\u200D\u20E3◆◇●○■□▶►▸▪▫★☆✦✧]/gu, '')
+    .replace(/^[ \t]+|[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function firstContentLine(message: string) {
+  return message
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean) || '';
+}
+
+function cleanClientName(value: string) {
+  const cleaned = removePostIcons(value)
+    .replace(/^(?:主辦(?:單位|方)?|業主(?:單位|方)?|客戶|委託單位|協辦(?:單位)?)\s*[:：]?\s*/u, '')
+    .replace(/[，,。；;｜|].*$/u, '')
+    .trim();
+  if (!cleaned || /^(?:本公司|境曜有限公司|境曜啟動儀式活動統包|bright events services)$/iu.test(cleaned)) return '';
+  return cleaned.slice(0, 60);
+}
+
+function legalCompanyName(value: string) {
+  const match = value.match(/([A-Za-z0-9\u3400-\u9FFF&（）()．·・\s]{2,50}?(?:股份有限公司|有限公司|公司))/u);
+  return match ? cleanClientName(match[1]) : '';
+}
+
+function detectClientName(message: string) {
+  const labelledMatch = message.match(/(?:主辦(?:單位|方)?|業主(?:單位|方)?|客戶|委託單位)\s*[:：]\s*([^\n]{2,80})/u);
+  if (labelledMatch) {
+    const labelledName = legalCompanyName(labelledMatch[1]) || cleanClientName(labelledMatch[1]);
+    if (labelledName) return labelledName;
+  }
+
+  // 業主名稱多半會放在貼文標題；優先掃描標題，再掃描前幾行以免誤判文末標註。
+  const lines = message.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(0, 5);
+  for (const line of lines) {
+    const clientName = legalCompanyName(line);
+    if (clientName) return clientName;
+  }
+  return '';
+}
+
 function classifyPost(message: string) {
   const text = normaliseText(message);
 
@@ -57,10 +103,7 @@ function classifyPost(message: string) {
 }
 
 function createTitle(message: string, createdAt?: string) {
-  const firstLine = message
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .find(Boolean);
+  const firstLine = firstContentLine(message);
 
   if (firstLine) return firstLine.slice(0, 80);
   return `Facebook 活動案例 ${createdAt ? createdAt.slice(0, 10) : ''}`.trim();
@@ -149,7 +192,7 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
       )).filter(Boolean);
       if (imageUrls.length === 0) throw new Error('貼文沒有可用圖片');
 
-      const message = post.message?.trim() || '';
+      const message = removePostIcons(post.message || '');
       const classified = classifyPost(message);
       const { data: createdCase, error: insertError } = await supabase
         .from('cases')
@@ -159,6 +202,7 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
           service_type: classified.serviceType,
           description: message || '此案例內容請參閱原始 Facebook 貼文。',
           image_url: imageUrls[0],
+          client_name: detectClientName(message) || null,
           event_date: post.created_time?.slice(0, 10) || null,
           visible: false,
           sort_order: nextSortOrder++,
