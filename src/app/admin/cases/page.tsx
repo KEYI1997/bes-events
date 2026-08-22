@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import {
   closestCenter,
   DndContext,
@@ -37,6 +37,7 @@ export default function CasesPage() {
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [syncingFacebook, setSyncingFacebook] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -101,6 +102,25 @@ export default function CasesPage() {
     fetchData();
   };
 
+  const handleFacebookSync = async () => {
+    setSyncingFacebook(true);
+    try {
+      const response = await fetch('/api/admin/facebook-case-sync', {
+        method: 'POST',
+        headers: getHeaders(),
+      });
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || 'Facebook 同步失敗');
+      const failedMessage = json.failed?.length ? `\n${json.failed.length} 篇圖片或資料處理失敗，可稍後再試。` : '';
+      alert(`Facebook 同步完成：新增 ${json.imported} 筆草稿、略過 ${json.skipped} 筆既有或無圖片貼文。${failedMessage}`);
+      await fetchData();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Facebook 同步失敗');
+    } finally {
+      setSyncingFacebook(false);
+    }
+  };
+
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id || savingOrder) return;
     const from = cases.findIndex(item => item.id === active.id);
@@ -130,8 +150,12 @@ export default function CasesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold" style={{ color: '#4A4947' }}>案例管理</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span className="hidden text-xs text-gray-500 sm:inline">{savingOrder ? '正在儲存排列順序…' : '按住手掌即可拖曳排序'}</span>
+          <button onClick={handleFacebookSync} disabled={syncingFacebook} className="flex items-center gap-2 rounded-lg border border-[#AA7452] px-4 py-2 text-sm font-medium text-[#AA7452] transition hover:bg-[#AA745210] disabled:cursor-not-allowed disabled:opacity-60">
+            <RefreshCw className={`w-4 h-4 ${syncingFacebook ? 'animate-spin' : ''}`} />
+            {syncingFacebook ? '同步中…' : '從 Facebook 同步'}
+          </button>
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" style={{ backgroundColor: '#AA7452' }}>
             <Plus className="w-4 h-4" /> 新增案例
           </button>

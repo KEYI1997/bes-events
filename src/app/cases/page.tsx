@@ -17,6 +17,7 @@ export default async function CasesPage() {
     .from('cases')
     .select('*')
     .eq('visible', true)
+    .order('sort_order', { ascending: true })
     .order('event_date', { ascending: false });
 
   return (

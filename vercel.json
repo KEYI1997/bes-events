@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/facebook-case-sync",
+      "schedule": "15 18 * * *"
+    }
+  ]
+}

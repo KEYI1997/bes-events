@@ -1,32 +1,26 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Case } from '@/lib/types';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 
 const CATEGORIES = [
   '全部',
+  '開幕典禮',
   '記者會',
-  '尾牙',
-  '家庭日',
-  '典禮',
-  '市集',
-  '展覽',
+  '新品發表會',
+  '展覽攤位',
+  '政府活動',
+  '春酒尾牙',
+  '典禮節慶',
 ];
 
 export default function CasesGrid({ cases }: { cases: Case[] }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category') ?? '';
-  const validInitial = CATEGORIES.includes(categoryParam) ? categoryParam : '全部';
-
-  const [activeCategory, setActiveCategory] = useState(validInitial);
-
-  // 當 URL query 變動時同步更新篩選（例如使用者點 Header 下拉切換分類）
-  useEffect(() => {
-    const cat = searchParams.get('category') ?? '';
-    setActiveCategory(CATEGORIES.includes(cat) ? cat : '全部');
-  }, [searchParams]);
+  const activeCategory = CATEGORIES.includes(categoryParam) ? categoryParam : '全部';
 
   const filteredCases = activeCategory === '全部'
     ? cases
@@ -39,7 +33,7 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
-            onClick={() => setActiveCategory(cat)}
+            onClick={() => router.replace(cat === '全部' ? '/cases' : `/cases?category=${encodeURIComponent(cat)}`, { scroll: false })}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer ${
               activeCategory === cat
                 ? 'bg-cta text-white'
@@ -56,7 +50,7 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCases.map((caseItem, index) => (
             <AnimateOnScroll key={caseItem.id} delay={index * 80}>
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
+              <Link href={`/cases/${caseItem.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col focus:outline-none focus:ring-2 focus:ring-cta">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
                     src={caseItem.image_url}
@@ -80,7 +74,7 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
             </AnimateOnScroll>
           ))}
         </div>
