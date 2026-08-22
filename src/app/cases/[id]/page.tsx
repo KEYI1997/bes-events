@@ -38,6 +38,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
     <main className="min-h-screen bg-white pt-28 pb-20">
       <article className="mx-auto max-w-5xl px-4">
         <Link href="/cases" className="mb-8 inline-flex text-sm font-medium text-cta hover:underline">← 返回活動案例</Link>
+        <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cta">Case sharing</p>
         <div className="mb-8 flex flex-wrap items-center gap-3">
           <span className="rounded-full bg-cta/10 px-3 py-1 text-sm font-medium text-cta">{caseItem.category}</span>
           {caseItem.service_type && <span className="text-sm text-primary/60">{caseItem.service_type}</span>}
@@ -46,7 +47,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         <h1 className="mb-8 text-3xl font-bold leading-tight text-primary md:text-5xl">{caseItem.title}</h1>
         <div className="grid gap-4 sm:grid-cols-2">
           {imageUrls.map((imageUrl, index) => (
-            <div key={imageUrl} className={`relative overflow-hidden rounded-2xl bg-primary/5 ${index === 0 && imageUrls.length % 2 === 1 ? 'sm:col-span-2' : ''}`}>
+            <div key={`${imageUrl}-${index}`} className={`relative overflow-hidden rounded-2xl bg-primary/5 ${imageUrls.length % 2 === 1 && index === imageUrls.length - 1 ? 'sm:col-span-2 sm:w-1/2 sm:justify-self-center' : ''}`}>
               <Image src={imageUrl} alt={`${caseItem.title} 活動照片 ${index + 1}`} width={1400} height={900} className="h-auto w-full object-cover" />
             </div>
           ))}
