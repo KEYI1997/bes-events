@@ -116,7 +116,7 @@ export default function CasesPage() {
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || 'Facebook 同步失敗');
       const failedMessage = json.failed?.length ? `\n${json.failed.length} 篇圖片或資料處理失敗，可稍後再試。` : '';
-      alert(`Facebook 同步完成：新增 ${json.imported} 筆草稿、略過 ${json.skipped} 筆既有或無圖片貼文。${failedMessage}`);
+      alert(`Facebook 同步完成：新增 ${json.imported} 筆案例、略過 ${json.skipped} 筆既有或無圖片貼文。${failedMessage}`);
       await fetchData();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Facebook 同步失敗');
@@ -177,7 +177,7 @@ export default function CasesPage() {
                   <th className="px-4 py-3 w-10"></th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">圖片</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">活動名稱</th>
-                  <th className="px-4 py-3 text-left text-gray-500 font-medium">活動類型</th>
+                  <th className="w-32 min-w-32 px-4 py-3 text-left text-gray-500 font-medium whitespace-nowrap">活動類型</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">服務項目</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">主辦方</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">活動日期</th>
@@ -201,8 +201,8 @@ export default function CasesPage() {
                       {c.image_url ? <img src={c.image_url} alt={c.title} className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100" />}
                     </td>
                     <td className="px-4 py-3 font-medium">{c.title}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.category}</span>
+                    <td className="w-32 min-w-32 px-4 py-3 whitespace-nowrap">
+                      <span className="inline-block px-2 py-1 rounded text-xs whitespace-nowrap" style={{ backgroundColor: '#AA745220', color: '#AA7452' }}>{c.category}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{c.service_type || '—'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.client_name || '—'}</td>

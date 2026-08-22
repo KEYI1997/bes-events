@@ -73,15 +73,17 @@ function cleanCaseArticle(value: string) {
       continue;
     }
 
-    if (/^(?:我們協助|我們提供|服務(?:項目|內容)|提供項目|合作服務)/u.test(line)) {
+    // 粉專文末的服務清單、提供內容、聯絡方式屬於通用宣傳，不是單一案例內容。
+    if (/^(?:我們協助|我們提供|本公司(?:協助|提供)|服務(?:項目|內容)|提供項目|合作服務)/u.test(line)) {
       skippingServiceFooter = true;
       continue;
     }
     if (skippingServiceFooter) continue;
 
     const isPromotionHeading = line.includes('｜') && /啟動|儀式|設備|租借|規劃|服務|道具|特效|調酒|show\s*girl/iu.test(line);
-    const isContactOrGenericSalesLine = /^(?:歡迎|立即|更多資訊|官方\s*(?:line|facebook)|私訊|洽詢|提供專業活動設備|提供.*現場執行服務)/iu.test(line);
-    if (isPromotionHeading || isContactOrGenericSalesLine) continue;
+    const isServiceDescription = /(?:提供專業活動設備|提供.*現場執行服務|活動設備租借|客製化活動規劃|品牌活動呈現|活動視覺輸出)/u.test(line);
+    const isContactOrGenericSalesLine = /^(?:歡迎|立即|更多資訊|官方\s*(?:line|facebook)|私訊|洽詢)/iu.test(line);
+    if (isPromotionHeading || isServiceDescription || isContactOrGenericSalesLine || /^[-—–]$/u.test(line)) continue;
 
     articleLines.push(line);
   }
@@ -299,11 +301,12 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
       if (imageUrls.length === 0) throw new Error('貼文沒有可用圖片');
 
       const rawMessage = post.message || '';
-      const usedProducts = detectUsedProducts(rawMessage, products);
-      const usedServices = detectUsedServices(rawMessage, usedProducts, products);
-      const applicableOccasions = detectOccasions(rawMessage);
+      // 分類與摘要只根據清理後的案例正文，避免粉專固定服務文案影響判斷。
       const message = cleanCaseArticle(rawMessage);
-      const classified = classifyPost(rawMessage);
+      const usedProducts = detectUsedProducts(message, products);
+      const usedServices = detectUsedServices(message, usedProducts, products);
+      const applicableOccasions = detectOccasions(message);
+      const classified = classifyPost(message);
       const { data: createdCase, error: insertError } = await supabase
         .from('cases')
         .insert({
