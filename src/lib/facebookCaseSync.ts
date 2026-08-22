@@ -90,6 +90,22 @@ function cleanCaseArticle(value: string) {
   return articleLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+// 活動類型應僅看活動正文，不能讓商品的「可用場合」反過來改變活動分類。
+function extractActivityNarrative(value: string) {
+  const lines = removeHashtags(removePostIcons(value)).split(/\r?\n/);
+  const narrative: string[] = [];
+
+  for (const sourceLine of lines) {
+    const line = sourceLine.trim();
+    if (/^[-—–]$/u.test(line)) break;
+    if (line.includes('｜') && /啟動|儀式|設備|租借|規劃|服務|道具|特效|調酒|show\s*girl/iu.test(line)) break;
+    if (/^(?:我們協助|我們提供|本公司(?:協助|提供)|服務(?:項目|內容)|提供項目|合作服務)/u.test(line)) break;
+    if (line) narrative.push(line);
+  }
+
+  return narrative.join('\n').trim();
+}
+
 function firstContentLine(message: string) {
   return message
     .split(/\r?\n/)
@@ -197,7 +213,7 @@ function classifyPost(message: string) {
   if (/展覽|展會|攤位|booth/.test(text)) return { category: '展覽攤位', serviceType: '活動策劃統包' };
   if (/政府|市府|縣府|公所|部\b/.test(text)) return { category: '政府活動', serviceType: '活動策劃統包' };
   if (/尾牙|春酒|年會|晚宴/.test(text)) return { category: '春酒尾牙', serviceType: '活動策劃統包' };
-  if (/啟動|開幕|揭幕|典禮|儀式|節慶/.test(text)) return { category: '典禮節慶', serviceType: '啟動儀式' };
+  if (/啟動|開幕|揭幕|典禮|儀式|節慶|納涼季|嘉年華|[春夏秋冬]季/.test(text)) return { category: '典禮節慶', serviceType: '啟動儀式' };
   if (/調酒|bartend|雞尾酒|酒吧/.test(text)) return { category: '開幕典禮', serviceType: '外派調酒' };
   if (/特效|冷焰火|煙霧|彩帶|泡泡/.test(text)) return { category: '開幕典禮', serviceType: '活動特效' };
 
@@ -305,16 +321,17 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
       const rawMessage = post.message || '';
       // 分類與摘要只根據清理後的案例正文，避免粉專固定服務文案影響判斷。
       const message = cleanCaseArticle(rawMessage);
+      const activityNarrative = extractActivityNarrative(rawMessage);
       const usedProducts = detectUsedProducts(message, products);
       const usedServices = detectUsedServices(message, usedProducts, products);
       const applicableOccasions = detectOccasions(message);
-      const classified = classifyPost(message);
+      const classified = classifyPost(activityNarrative);
       const { data: createdCase, error: insertError } = await supabase
         .from('cases')
         .insert({
           title: createTitle(message, post.created_time),
           category: classified.category,
-          service_type: classified.serviceType,
+          service_type: usedServices[0] || classified.serviceType,
           description: message || '此案例活動內容已由 Facebook 貼文同步，詳細資訊請參閱原始貼文。',
           image_url: imageUrls[0],
           client_name: detectClientName(rawMessage) || null,
