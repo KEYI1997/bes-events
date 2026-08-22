@@ -317,7 +317,8 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
           used_products: usedProducts,
           applicable_occasions: applicableOccasions,
           event_date: post.created_time?.slice(0, 10) || null,
-          visible: false,
+          // Facebook 同步完成後直接顯示於前臺；既有貼文仍以標記避免重複建立。
+          visible: true,
           sort_order: nextSortOrder++,
         })
         .select('id')
