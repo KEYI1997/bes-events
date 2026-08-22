@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ backgroundColor: '#4A4947' }}
@@ -154,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-0 min-h-screen cursor-default">
+      <main className="min-h-screen flex-1 cursor-default lg:ml-64">
         <div className="p-6 lg:p-8 pt-16 lg:pt-8">
           {children}
         </div>
