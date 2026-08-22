@@ -25,8 +25,12 @@ const SERVICE_TYPES = ['活動策劃統包', '啟動儀式', '活動特效', '�
 
 const EMPTY_CASE = {
   title: '', category: '開幕典禮' as string, service_type: '',
-  description: '', image_url: '', client_name: '', event_date: '', visible: true, sort_order: 0,
+  description: '', image_url: '', client_name: '', event_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
 };
+
+function toList(value: string) {
+  return value.split(/[\n,，、]/).map(item => item.trim()).filter(Boolean);
+}
 
 export default function CasesPage() {
   const [cases, setCases] = useState<Case[]>([]);
@@ -66,7 +70,7 @@ export default function CasesPage() {
 
   const openEdit = (c: Case) => {
     setEditing(c);
-    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, client_name: c.client_name, event_date: c.event_date, visible: c.visible, sort_order: c.sort_order ?? 0 });
+    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, client_name: c.client_name, event_date: c.event_date, used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
     setShowModal(true);
   };
 
@@ -251,6 +255,18 @@ export default function CasesPage() {
                   <option value="">請選擇</option>
                   {SERVICE_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">本次使用服務</label>
+                <textarea value={form.used_services.join('\n')} onChange={e => setForm(f => ({ ...f, used_services: toList(e.target.value) }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="每行一項，例如：啟動儀式規劃" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">本次使用道具／產品</label>
+                <textarea value={form.used_products.join('\n')} onChange={e => setForm(f => ({ ...f, used_products: toList(e.target.value) }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="每行一項，例如：七彩光柱啟動儀式" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">適用場合</label>
+                <textarea value={form.applicable_occasions.join('\n')} onChange={e => setForm(f => ({ ...f, applicable_occasions: toList(e.target.value) }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="每行一個場合，例如：品牌發表會" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">活動日期</label>

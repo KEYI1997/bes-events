@@ -26,6 +26,9 @@ CREATE TABLE cases (
   image_url TEXT NOT NULL,
   client_name TEXT,
   event_date DATE,
+  used_services TEXT[] NOT NULL DEFAULT '{}',
+  used_products TEXT[] NOT NULL DEFAULT '{}',
+  applicable_occasions TEXT[] NOT NULL DEFAULT '{}',
   visible BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
 );

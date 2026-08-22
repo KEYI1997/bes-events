@@ -19,6 +19,8 @@ type FacebookPostsResponse = {
   error?: { message?: string };
 };
 
+type ProductReference = { name: string; category: string };
+
 export type FacebookCaseSyncResult = {
   imported: number;
   skipped: number;
@@ -50,6 +52,43 @@ function removePostIcons(value: string) {
     .trim();
 }
 
+function removeHashtags(value: string) {
+  return value
+    .replace(/(^|\s)#[^\s#]+/g, '$1')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function cleanCaseArticle(value: string) {
+  const cleaned = removeHashtags(removePostIcons(value));
+  const lines = cleaned.split(/\r?\n/);
+  const articleLines: string[] = [];
+  let skippingServiceFooter = false;
+
+  for (const sourceLine of lines) {
+    const line = sourceLine.trim();
+    if (!line) {
+      if (!skippingServiceFooter && articleLines.at(-1) !== '') articleLines.push('');
+      continue;
+    }
+
+    if (/^(?:我們協助|我們提供|服務(?:項目|內容)|提供項目|合作服務)/u.test(line)) {
+      skippingServiceFooter = true;
+      continue;
+    }
+    if (skippingServiceFooter) continue;
+
+    const isPromotionHeading = line.includes('｜') && /啟動|儀式|設備|租借|規劃|服務|道具|特效|調酒|show\s*girl/iu.test(line);
+    const isContactOrGenericSalesLine = /^(?:歡迎|立即|更多資訊|官方\s*(?:line|facebook)|私訊|洽詢|提供專業活動設備|提供.*現場執行服務)/iu.test(line);
+    if (isPromotionHeading || isContactOrGenericSalesLine) continue;
+
+    articleLines.push(line);
+  }
+
+  return articleLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 function firstContentLine(message: string) {
   return message
     .split(/\r?\n/)
@@ -71,20 +110,82 @@ function legalCompanyName(value: string) {
   return match ? cleanClientName(match[1]) : '';
 }
 
+function publicOrganisationName(value: string) {
+  const match = value.match(/(教育部|文化部|經濟部|交通部|內政部|外交部|勞動部|衛生福利部|環境部|農業部|國防部|數位發展部|[\u3400-\u9FFF]{1,16}(?:市政府|縣政府|鄉公所|鎮公所|區公所|局|處|署|所|館|中心|大學|學校|協會|基金會))/u);
+  return match ? cleanClientName(match[1]) : '';
+}
+
 function detectClientName(message: string) {
   const labelledMatch = message.match(/(?:主辦(?:單位|方)?|業主(?:單位|方)?|客戶|委託單位)\s*[:：]\s*([^\n]{2,80})/u);
   if (labelledMatch) {
-    const labelledName = legalCompanyName(labelledMatch[1]) || cleanClientName(labelledMatch[1]);
+    const labelledName = legalCompanyName(labelledMatch[1]) || publicOrganisationName(labelledMatch[1]) || cleanClientName(labelledMatch[1]);
     if (labelledName) return labelledName;
   }
 
   // 業主名稱多半會放在貼文標題；優先掃描標題，再掃描前幾行以免誤判文末標註。
   const lines = message.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(0, 5);
   for (const line of lines) {
-    const clientName = legalCompanyName(line);
+    const clientName = legalCompanyName(line) || publicOrganisationName(line);
     if (clientName) return clientName;
   }
   return '';
+}
+
+function compact(value: string) {
+  return value.replace(/[\s｜|「」『』()（）]/g, '').toLowerCase();
+}
+
+function unique(values: string[]) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function detectUsedProducts(message: string, products: ProductReference[]) {
+  const compactMessage = compact(message);
+  return products
+    .filter(product => compact(product.name).length >= 3 && compactMessage.includes(compact(product.name)))
+    .map(product => product.name);
+}
+
+function detectUsedServices(message: string, matchedProducts: string[], products: ProductReference[]) {
+  const serviceByCategory: Record<string, string> = {
+    'AI互動道具': 'AI 互動道具',
+    '專案企劃': '活動策劃統包',
+    '啟動儀式': '啟動儀式',
+    '活動特效': '活動特效',
+    '燈光音響舞台': '燈光音響舞台',
+    '外派調酒': '外派調酒',
+    'Show Girl': 'SHOW GIRL',
+  };
+  const usedServices = products
+    .filter(product => matchedProducts.includes(product.name))
+    .map(product => serviceByCategory[product.category] || product.category);
+  const phrases: Array<[RegExp, string]> = [
+    [/啟動儀式規劃/u, '啟動儀式規劃'],
+    [/客製化活動規劃/u, '客製化活動規劃'],
+    [/品牌活動呈現/u, '品牌活動呈現'],
+    [/活動現場執行/u, '活動現場執行'],
+    [/活動視覺輸出/u, '活動視覺輸出'],
+    [/活動設備租借|設備租借/u, '活動設備租借'],
+  ];
+  return unique([...usedServices, ...phrases.filter(([pattern]) => pattern.test(message)).map(([, label]) => label)]);
+}
+
+function detectOccasions(message: string) {
+  const patterns: Array<[RegExp, string]> = [
+    [/品牌(?:發表|發表會)|新品發表/u, '品牌發表會'],
+    [/企業活動/u, '企業活動'],
+    [/開幕(?:典禮)?/u, '開幕典禮'],
+    [/剪綵(?:儀式)?/u, '剪綵儀式'],
+    [/記者會/u, '記者會'],
+    [/展覽(?:活動)?|展會/u, '展覽活動'],
+    [/商場活動/u, '商場活動'],
+    [/政府活動/u, '政府活動'],
+    [/尾牙/u, '尾牙'],
+    [/春酒/u, '春酒'],
+    [/家庭日/u, '家庭日'],
+    [/市集/u, '市集'],
+  ];
+  return unique(patterns.filter(([pattern]) => pattern.test(message)).map(([, label]) => label));
 }
 
 function classifyPost(message: string) {
@@ -160,6 +261,11 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
 
   const supabase = getServiceClient();
   const result: FacebookCaseSyncResult = { imported: 0, skipped: 0, failed: [] };
+  const { data: productReferences } = await supabase
+    .from('products')
+    .select('name, category')
+    .eq('visible', true);
+  const products = (productReferences || []) as ProductReference[];
   const { data: newestCase } = await supabase
     .from('cases')
     .select('sort_order')
@@ -192,17 +298,24 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
       )).filter(Boolean);
       if (imageUrls.length === 0) throw new Error('貼文沒有可用圖片');
 
-      const message = removePostIcons(post.message || '');
-      const classified = classifyPost(message);
+      const rawMessage = post.message || '';
+      const usedProducts = detectUsedProducts(rawMessage, products);
+      const usedServices = detectUsedServices(rawMessage, usedProducts, products);
+      const applicableOccasions = detectOccasions(rawMessage);
+      const message = cleanCaseArticle(rawMessage);
+      const classified = classifyPost(rawMessage);
       const { data: createdCase, error: insertError } = await supabase
         .from('cases')
         .insert({
           title: createTitle(message, post.created_time),
           category: classified.category,
           service_type: classified.serviceType,
-          description: message || '此案例內容請參閱原始 Facebook 貼文。',
+          description: message || '此案例活動內容已由 Facebook 貼文同步，詳細資訊請參閱原始貼文。',
           image_url: imageUrls[0],
-          client_name: detectClientName(message) || null,
+          client_name: detectClientName(rawMessage) || null,
+          used_services: usedServices,
+          used_products: usedProducts,
+          applicable_occasions: applicableOccasions,
           event_date: post.created_time?.slice(0, 10) || null,
           visible: false,
           sort_order: nextSortOrder++,

@@ -54,6 +54,13 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         <div className="mx-auto mt-10 max-w-3xl whitespace-pre-wrap text-base leading-8 text-primary/80 md:text-lg">
           {caseItem.description}
         </div>
+        {(caseItem.used_services?.length || caseItem.used_products?.length || caseItem.applicable_occasions?.length) ? (
+          <section className="mx-auto mt-12 grid max-w-3xl gap-6 border-t pt-8 md:grid-cols-3">
+            {caseItem.used_services?.length ? <CaseMetadata title="本次服務" items={caseItem.used_services} /> : null}
+            {caseItem.used_products?.length ? <CaseMetadata title="使用道具／產品" items={caseItem.used_products} /> : null}
+            {caseItem.applicable_occasions?.length ? <CaseMetadata title="適用場合" items={caseItem.applicable_occasions} /> : null}
+          </section>
+        ) : null}
         {detail.sourceUrl && (
           <div className="mt-10 border-t pt-6">
             <a href={detail.sourceUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-cta hover:underline">查看原始 Facebook 貼文 ↗</a>
@@ -61,5 +68,16 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         )}
       </article>
     </main>
+  );
+}
+
+function CaseMetadata({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h2 className="mb-3 text-sm font-bold text-primary">{title}</h2>
+      <ul className="space-y-2 text-sm leading-6 text-primary/70">
+        {items.map(item => <li key={item}>• {item}</li>)}
+      </ul>
+    </div>
   );
 }

@@ -67,6 +67,9 @@ export interface Case {
   client_name: string;
   event_date: string;
   service_type: string;
+  used_services: string[];
+  used_products: string[];
+  applicable_occasions: string[];
   sort_order: number;
   visible: boolean;
   created_at: string;
