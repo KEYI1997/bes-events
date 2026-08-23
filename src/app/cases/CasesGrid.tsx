@@ -90,6 +90,6 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
 function formatCaseTitle(caseItem: Case) {
   const titleMatch = caseItem.title.match(/【([^】]+)】/);
   const activityTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
-  const products = caseItem.used_products?.filter(Boolean).join('、');
+  const products = caseItem.used_products?.filter(Boolean).join(' | ');
   return products ? `${products} | ${activityTitle}` : activityTitle;
 }
