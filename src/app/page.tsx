@@ -15,6 +15,7 @@ import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
 import CoverflowCarousel from "@/components/CoverflowCarousel";
 import ServiceTabs from "@/components/ServiceTabs";
+import ScrollRevealSection from "@/components/ScrollRevealSection";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -96,6 +97,7 @@ export default async function HomePage() {
       <HeroCarousel />
 
       {/* ── Section 2：服務項目 ── */}
+      <ScrollRevealSection>
       <section data-snap="true" className="py-20 bg-white border-b-2 border-gray-300">
         <div className="max-w-6xl mx-auto px-4 md:px-16">
           <AnimateOnScroll>
@@ -113,8 +115,10 @@ export default async function HomePage() {
           </AnimateOnScroll>
         </div>
       </section>
+      </ScrollRevealSection>
 
       {/* ── Section 3：案例展示 + 客戶一覽（同一區塊） ── */}
+      <ScrollRevealSection>
       <section data-snap="true" className="bg-white overflow-hidden border-b-2 border-gray-300">
 
         {/* 分隔線 */}
@@ -186,8 +190,10 @@ export default async function HomePage() {
         </div>
 
       </section>
+      </ScrollRevealSection>
 
       {/* ── Section 4：聯絡我們 ── */}
+      <ScrollRevealSection>
       <section data-snap="true" className="py-20 bg-white border-b-2 border-gray-300">
         <div className="max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
@@ -198,6 +204,7 @@ export default async function HomePage() {
           </AnimateOnScroll>
         </div>
       </section>
+      </ScrollRevealSection>
     </>
   );
 }
