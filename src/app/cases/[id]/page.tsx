@@ -42,6 +42,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   return (
     <main className="min-h-screen bg-[#fbfaf8] pb-24 pt-24 text-[#252b3a]">
       <article className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
+        <Link href="/cases" className="mb-8 inline-flex text-base font-bold text-[#81704f] transition-colors hover:text-[#aa8a56] hover:underline">← 返回活動案例</Link>
         <header className="border-b border-[#dedbd5] pb-8 md:pb-10">
           <p className="mb-5 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#aa8a56]">CASE STUDY</p>
           <h1 className="whitespace-nowrap text-[1.8rem] font-semibold leading-[1.18] tracking-[-0.02em] text-[#252b3a] sm:text-5xl md:text-[3.5rem]">{displayTitle}</h1>
@@ -62,7 +63,6 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             {caseItem.applicable_occasions?.length ? <CaseMetadata title="適用場合" items={caseItem.applicable_occasions} /> : null}
           </section>
         ) : null}
-        <Link href="/cases" className="mt-10 inline-flex text-sm font-medium text-[#81704f] transition-colors hover:text-[#aa8a56] hover:underline">← 返回活動案例</Link>
         {detail.sourceUrl && (
           <div className="mt-10 border-t pt-6">
             <a href={detail.sourceUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-cta hover:underline">查看原始 Facebook 貼文 ↗</a>
