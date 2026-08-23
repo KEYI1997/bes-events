@@ -137,7 +137,6 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Scroll-driven page reveal: natural scrolling, no snap or forced jumps. */
 .scroll-reveal-shell {
-  --scroll-reveal-progress: 0;
   position: relative;
   z-index: 10;
   margin-top: -100vh;
@@ -148,30 +147,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .scroll-reveal-panel {
   min-height: 1px;
-  transform: translate3d(0, calc((1 - var(--scroll-reveal-progress)) * 100%), 0);
-  transform-origin: center bottom;
-  will-change: transform;
-}
-
-.scroll-reveal-reduced {
-  margin-top: 0;
-  padding-top: 0;
-}
-
-.scroll-reveal-reduced .scroll-reveal-panel {
-  transform: none;
-  will-change: auto;
+  position: relative;
+  box-shadow: 0 -18px 42px rgba(20, 28, 42, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-reveal-shell {
     margin-top: 0;
     padding-top: 0;
-  }
-
-  .scroll-reveal-panel {
-    transform: none;
-    will-change: auto;
   }
 }
 
