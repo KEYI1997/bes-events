@@ -34,7 +34,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   }
   const imageUrls = detail.imageUrls?.length ? detail.imageUrls : [caseItem.image_url];
   const titleMatch = caseItem.title.match(/【([^】]+)】/);
-  const displayTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
+  const activityTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
+  const products = caseItem.used_products?.filter(Boolean).join('、');
+  const displayTitle = products ? `${products} | ${activityTitle}` : activityTitle;
   const articleText = caseItem.description.replace(/^\s*【[^】]+】\s*\r?\n?/, '').trim();
 
   return (

@@ -66,7 +66,7 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-primary mb-2">
-                    {caseItem.title}
+                    {formatCaseTitle(caseItem)}
                   </h3>
                   {caseItem.client_name && (
                     <p className="text-primary/60 text-sm mt-auto">
@@ -85,4 +85,11 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
       )}
     </>
   );
+}
+
+function formatCaseTitle(caseItem: Case) {
+  const titleMatch = caseItem.title.match(/【([^】]+)】/);
+  const activityTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
+  const products = caseItem.used_products?.filter(Boolean).join('、');
+  return products ? `${products} | ${activityTitle}` : activityTitle;
 }
