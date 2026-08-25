@@ -1,16 +1,31 @@
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import AIInteractiveExperience from '@/components/AIInteractiveExperience';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'AI 互動道具 | 境曜有限公司 BES Events',
-  description: '讓影像、聲音與想像即時成為可參與、可分享的 AI 活動體驗。',
-};
+const description = '讓影像、聲音與想像即時成為可參與、可分享的 AI 活動體驗。';
+
+export const metadata = createPageMetadata({
+  title: 'AI 互動道具',
+  description,
+  path: '/services/ai-interactive-props',
+  image: '/images/services/AI互動道具.png',
+  keywords: ['AI 互動道具', 'AI 活動體驗', '品牌互動', '境曜有限公司'],
+});
+
+const structuredData = [
+  serviceJsonLd('ai-interactive-props', 'AI 互動道具', description, '/images/services/AI互動道具.png'),
+  breadcrumbJsonLd([
+    { name: '首頁', path: '/' },
+    { name: '服務項目', path: '/services' },
+    { name: 'AI 互動道具', path: '/services/ai-interactive-props' },
+  ]),
+];
 
 export default function AIInteractivePropsPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050b18] text-white">
+    <><JsonLd data={structuredData} /><main className="min-h-screen overflow-hidden bg-[#050b18] text-white">
       <section className="relative isolate min-h-[88vh] pt-28 md:pt-36">
         <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_78%_28%,rgba(37,99,235,0.24),transparent_32%),radial-gradient(circle_at_20%_72%,rgba(6,182,212,0.12),transparent_28%),linear-gradient(135deg,#050b18_0%,#081225_58%,#050914_100%)]" />
         <div className="absolute inset-0 -z-10 opacity-25 [background-image:linear-gradient(rgba(96,165,250,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(96,165,250,0.16)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)]" />
@@ -57,6 +72,6 @@ export default function AIInteractivePropsPage() {
 
       <div className="h-px bg-gradient-to-r from-transparent via-cyan-200/30 to-transparent" />
       <AIInteractiveExperience />
-    </main>
+    </main></>
   );
 }

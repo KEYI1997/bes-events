@@ -1,9 +1,10 @@
-import { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: '隱私權政策 | 境曜有限公司 BES Events',
+export const metadata = createPageMetadata({
+  title: '隱私權政策',
   description: '境曜有限公司隱私權及個資保護政策',
-};
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (

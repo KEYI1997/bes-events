@@ -1,16 +1,18 @@
-import { Metadata } from 'next';
 import { Suspense } from 'react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { supabase } from '@/lib/supabase';
 import { Case } from '@/lib/types';
 import CasesGrid from './CasesGrid';
+import { createPageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: '活動案例',
   description: '境曜有限公司活動案例展示，包含記者會、尾牙、家庭日、典禮、市集、展覽等各類型活動。',
-};
+  path: '/cases',
+  keywords: ['活動案例', '企業活動案例', '記者會案例', '尾牙活動案例'],
+});
 
 export default async function CasesPage() {
   const { data: cases } = await supabase

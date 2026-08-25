@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import type { Case } from '@/lib/types';
 import CaseGallery from './CaseGallery';
+import JsonLd from '@/components/JsonLd';
+import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 
 type FacebookCaseDetail = { sourceUrl?: string; imageUrls?: string[] };
 
@@ -11,8 +13,16 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data } = await supabase.from('cases').select('title, description').eq('id', id).eq('visible', true).maybeSingle();
-  return data ? { title: data.title, description: data.description?.slice(0, 150) } : { title: '活動案例' };
+  const { data } = await supabase.from('cases').select('title, description, image_url').eq('id', id).eq('visible', true).maybeSingle();
+  return data
+    ? createPageMetadata({
+        title: data.title,
+        description: data.description?.slice(0, 150) || `${SITE_NAME}活動案例`,
+        path: `/cases/${id}`,
+        image: data.image_url || undefined,
+        keywords: ['活動案例', data.title, SITE_NAME],
+      })
+    : createPageMetadata({ title: '活動案例', description: `${SITE_NAME}活動案例`, path: '/cases' });
 }
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,9 +48,28 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const products = caseItem.used_products?.filter(Boolean).join(' | ');
   const displayTitle = products ? `${products} | ${activityTitle}` : activityTitle;
   const articleText = caseItem.description.replace(/^\s*【[^】]+】\s*\r?\n?/, '').trim();
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: displayTitle,
+      description: articleText.slice(0, 180),
+      image: imageUrls.filter(Boolean).map(absoluteUrl),
+      mainEntityOfPage: absoluteUrl(`/cases/${id}`),
+      author: { '@id': `${SITE_URL}/#organization` },
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      datePublished: caseItem.created_at,
+      inLanguage: 'zh-Hant-TW',
+    },
+    breadcrumbJsonLd([
+      { name: '首頁', path: '/' },
+      { name: '活動案例', path: '/cases' },
+      { name: displayTitle, path: `/cases/${id}` },
+    ]),
+  ];
 
   return (
-    <main className="min-h-screen bg-[#fbfaf8] pb-24 pt-24 text-[#252b3a]">
+    <><JsonLd data={structuredData} /><main className="min-h-screen bg-[#fbfaf8] pb-24 pt-24 text-[#252b3a]">
       <article className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
         <Link href="/cases" className="mb-8 inline-flex text-base font-bold text-[#81704f] transition-colors hover:text-[#aa8a56] hover:underline">← 返回活動案例</Link>
         <header className="border-b border-[#dedbd5] pb-8 md:pb-10">
@@ -69,7 +98,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           </div>
         )}
       </article>
-    </main>
+    </main></>
   );
 }
 

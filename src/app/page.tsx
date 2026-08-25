@@ -1,15 +1,4 @@
 import Link from "next/link";
-import {
-  Sparkles,
-  Bot,
-  CalendarCheck,
-  Wine,
-  Users,
-  Star,
-  ArrowRight,
-  Phone,
-  CheckCircle,
-} from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -17,70 +6,16 @@ import CoverflowCarousel from "@/components/CoverflowCarousel";
 import ServiceTabs from "@/components/ServiceTabs";
 import ScrollRevealSection from "@/components/ScrollRevealSection";
 import { supabase } from "@/lib/supabase";
+import { createPageMetadata, SERVICE_SEO_PAGES, SITE_DESCRIPTION } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const SERVICES = [
-  {
-    icon: Bot,
-    title: "AI 互動道具",
-    desc: "結合 AI 技術的創新互動道具，打造沉浸式活動體驗。",
-    href: "/services/ai-interactive-props",
-  },
-  {
-    icon: CalendarCheck,
-    title: "活動策劃統包",
-    desc: "從企劃到執行，提供一站式活動統包服務，讓您省心省力。",
-    href: "/services/event-package",
-  },
-  {
-    icon: Star,
-    title: "啟動儀式",
-    desc: "星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。",
-    href: "/services/opening-ceremony",
-  },
-  {
-    icon: Sparkles,
-    title: "活動特效",
-    desc: "專業活動特效服務，為現場營造震撼視覺效果。",
-    href: "/services/special-effects",
-  },
-  {
-    icon: Wine,
-    title: "外派調酒",
-    desc: "專業調酒師現場調製，為活動增添品味與儀式感。",
-    href: "/services/bartending",
-  },
-  {
-    icon: Users,
-    title: "SHOW GIRL",
-    desc: "專業活動人員派遣，提供展場接待、活動協助等服務。",
-    href: "/services/showgirl",
-  },
-];
-
-const ADVANTAGES = [
-  {
-    icon: CheckCircle,
-    title: "一站式服務",
-    desc: "從企劃到執行全程包辦，省去多方溝通成本。",
-  },
-  {
-    icon: Star,
-    title: "豐富經驗",
-    desc: "服務超過百場活動，累積各產業活動執行經驗。",
-  },
-  {
-    icon: CalendarCheck,
-    title: "彈性客製",
-    desc: "依據預算與需求量身打造專屬活動方案。",
-  },
-  {
-    icon: Users,
-    title: "7 年以上活動經驗",
-    desc: "經驗豐富的企劃、技術與執行團隊，確保活動完美呈現。",
-  },
-];
+export const metadata = createPageMetadata({
+  title: "境曜有限公司｜台北活動企劃、啟動儀式與活動整合",
+  description: SITE_DESCRIPTION,
+  path: "/",
+  keywords: ["境曜有限公司", "BES Events", "台北活動企劃", "活動整合公司"],
+});
 
 export default async function HomePage() {
   // 取得客戶 Logo
@@ -136,16 +71,16 @@ export default async function HomePage() {
           <div className="relative w-full h-[460px]">
             <CoverflowCarousel
               images={[
-                { src: "/images/cases/case-1.jpg", alt: "案例1" },
-                { src: "/images/cases/case-2.jpg", alt: "案例2" },
-                { src: "/images/cases/case-3.webp", alt: "案例3" },
-                { src: "/images/cases/case-4.jpg", alt: "案例4" },
-                { src: "/images/cases/case-5.jpg", alt: "案例5" },
-                { src: "/images/cases/case-6.jpg", alt: "案例6" },
-                { src: "/images/cases/case-7.jpg", alt: "案例7" },
-                { src: "/images/cases/case-8.jpg", alt: "案例8" },
-                { src: "/images/cases/case-9.jpg", alt: "案例9" },
-                { src: "/images/cases/case-10.jpg", alt: "案例10" },
+                { src: "/images/cases/case-1.jpg", alt: "企業品牌發表會舞台與燈光案例" },
+                { src: "/images/cases/case-2.jpg", alt: "境曜有限公司企業活動執行案例" },
+                { src: "/images/cases/case-3.webp", alt: "大型戶外活動企劃與現場執行案例" },
+                { src: "/images/cases/case-4.jpg", alt: "品牌記者會活動整合案例" },
+                { src: "/images/cases/case-5.jpg", alt: "企業典禮與啟動儀式案例" },
+                { src: "/images/cases/case-6.jpg", alt: "展覽活動空間與流程規劃案例" },
+                { src: "/images/cases/case-7.jpg", alt: "企業家庭日活動企劃案例" },
+                { src: "/images/cases/case-8.jpg", alt: "尾牙春酒舞台活動案例" },
+                { src: "/images/cases/case-9.jpg", alt: "商場品牌推廣活動案例" },
+                { src: "/images/cases/case-10.jpg", alt: "活動特效與現場技術整合案例" },
               ]}
               autoplay={true}
               autoplayDirection="rightToLeft"
@@ -191,6 +126,45 @@ export default async function HomePage() {
 
       </section>
       </ScrollRevealSection>
+
+      <section className="border-b-2 border-gray-300 bg-gray-50 py-20">
+        <div className="mx-auto max-w-6xl px-4 md:px-16">
+          <AnimateOnScroll>
+            <div className="mb-10 max-w-3xl">
+              <h2 className="text-3xl font-bold text-primary md:text-4xl">境曜有限公司活動服務一覽</h2>
+              <p className="mt-4 text-lg leading-8 text-primary/70">
+                依活動目標快速比較服務內容，並前往各分頁查看方案、適用場合與實際案例。
+              </p>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+              <table className="w-full min-w-[760px] border-collapse text-left">
+                <thead className="bg-primary text-white">
+                  <tr>
+                    <th className="px-5 py-4 font-semibold">服務項目</th>
+                    <th className="px-5 py-4 font-semibold">服務概要</th>
+                    <th className="px-5 py-4 font-semibold">常見需求</th>
+                    <th className="px-5 py-4 font-semibold">詳細介紹</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SERVICE_SEO_PAGES.map((service) => (
+                    <tr key={service.slug} className="border-t border-gray-200 align-top">
+                      <th scope="row" className="px-5 py-5 font-semibold text-primary">{service.name}</th>
+                      <td className="px-5 py-5 leading-7 text-primary/75">{service.summary}</td>
+                      <td className="px-5 py-5 leading-7 text-primary/75">{service.intents}</td>
+                      <td className="px-5 py-5">
+                        <Link className="font-semibold text-cta underline-offset-4 hover:underline" href={`/services/${service.slug}`}>
+                          查看服務分頁
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </AnimateOnScroll>
+        </div>
+      </section>
 
       {/* ── Section 4：聯絡我們 ── */}
       <ScrollRevealSection>

@@ -2,9 +2,11 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingPlans from '@/components/BartendingPlans';
+import JsonLd from '@/components/JsonLd';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
+import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd, SERVICE_SEO_PAGES } from '@/lib/seo';
 
 const CATEGORY_MAP: Record<string, string> = {
   'ai-interactive-props': 'AI 互動道具',
@@ -37,15 +39,32 @@ type Props = { params: Promise<{ category: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params;
-  const title = CATEGORY_MAP[category];
-  if (!title) return { title: '服務項目 | 境曜有限公司' };
-  return { title: `${title} | 境曜有限公司 BES Events`, description: CATEGORY_DESC[category] };
+  const service = SERVICE_SEO_PAGES.find(item => item.slug === category);
+  if (!service) return createPageMetadata({ title: '服務項目', description: '境曜有限公司活動整合服務。', path: '/services' });
+  return createPageMetadata({
+    title: service.name,
+    description: CATEGORY_DESC[category] || service.summary,
+    path: `/services/${category}`,
+    image: service.image,
+    keywords: [service.name, ...service.intents.split('、'), '境曜有限公司'],
+  });
 }
 
 export default async function ServiceCategoryPage({ params }: Props) {
   const { category } = await params;
   const categoryName = CATEGORY_MAP[category];
   if (!categoryName) notFound();
+  const service = SERVICE_SEO_PAGES.find(item => item.slug === category);
+  const structuredData = service
+    ? [
+        serviceJsonLd(service.slug, service.name, CATEGORY_DESC[category] || service.summary, service.image),
+        breadcrumbJsonLd([
+          { name: '首頁', path: '/' },
+          { name: '服務項目', path: '/services' },
+          { name: service.name, path: `/services/${service.slug}` },
+        ]),
+      ]
+    : [];
 
   // showgirl 由獨立的靜態頁面處理
   if (category === 'showgirl') {
@@ -56,21 +75,21 @@ export default async function ServiceCategoryPage({ params }: Props) {
   const { data: products } = await supabase.from('products').select('*').eq('category', dbCategory).eq('visible', true).order('sort_order', { ascending: true });
 
   if (category === 'event-package') {
-    return <EventPackagePage />;
+    return <><JsonLd data={structuredData} /><EventPackagePage /></>;
   }
 
   if (category === 'opening-ceremony') {
-    return <OpeningCeremonyPage products={(products || []) as Product[]} />;
+    return <><JsonLd data={structuredData} /><OpeningCeremonyPage products={(products || []) as Product[]} /></>;
   }
 
   if (category === 'special-effects') {
-    return <SpecialEffectsPage products={(products || []) as Product[]} />;
+    return <><JsonLd data={structuredData} /><SpecialEffectsPage products={(products || []) as Product[]} /></>;
   }
 
   // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
-      <main className="bg-white min-h-screen">
+      <><JsonLd data={structuredData} /><main className="bg-white min-h-screen">
         <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
           <div className="relative z-10 text-center px-4">
@@ -81,12 +100,12 @@ export default async function ServiceCategoryPage({ params }: Props) {
           </div>
         </section>
         <BartendingPlans products={(products || []) as Product[]} />
-      </main>
+      </main></>
     );
   }
 
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={structuredData} /><main className="bg-white min-h-screen">
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
         <div className="relative z-10 text-center px-4">
@@ -100,7 +119,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
           <div className="text-center py-16"><p className="text-primary/60 text-lg">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}
       </section>
-    </main>
+    </main></>
   );
 }
 

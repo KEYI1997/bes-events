@@ -1,12 +1,27 @@
-import { Metadata } from 'next';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import JsonLd from '@/components/JsonLd';
 import ShowGirlGallery from '@/components/ShowGirlGallery';
 import ShowGirlInquiryForm from '@/components/ShowGirlInquiryForm';
+import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Show Girl | 境曜有限公司 BES Events',
-  description: '專業活動人員派遣，提供展場接待、活動協助等服務。境曜有限公司 Show Girl 專業團隊。',
-};
+const description = '專業活動人員派遣，提供展場接待、品牌推廣、頒獎與活動現場協助。';
+
+export const metadata = createPageMetadata({
+  title: 'SHOW GIRL 活動人員派遣',
+  description,
+  path: '/services/showgirl',
+  image: '/images/services/show girl.png',
+  keywords: ['Show Girl', '活動人員派遣', '展場接待', '境曜有限公司'],
+});
+
+const structuredData = [
+  serviceJsonLd('showgirl', 'SHOW GIRL 活動人員派遣', description, '/images/services/show girl.png'),
+  breadcrumbJsonLd([
+    { name: '首頁', path: '/' },
+    { name: '服務項目', path: '/services' },
+    { name: 'SHOW GIRL 活動人員', path: '/services/showgirl' },
+  ]),
+];
 
 // 已上傳的壓縮圖片 URL（21 張，1200px / 75% 品質）
 const SHOWGIRL_IMAGES = [
@@ -35,7 +50,7 @@ const SHOWGIRL_IMAGES = [
 
 export default function ShowGirlPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={structuredData} /><main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -93,6 +108,6 @@ export default function ShowGirlPage() {
         </div>
       </section>
 
-    </main>
+    </main></>
   );
 }

@@ -57,10 +57,12 @@ npm run dev
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
 | `RESEND_API_KEY` | Resend API 金鑰 |
 | `NEXT_PUBLIC_ADMIN_PASSWORD` | 後台管理密碼（自訂） |
-| `NEXT_PUBLIC_SITE_URL` | 網站網址（https://bes114.com） |
+| `NEXT_PUBLIC_SITE_URL` | 正式網站網址（https://besevent.com） |
+| `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | GA4 Measurement ID（選填，例如 G-XXXXXXXXXX） |
+| `GOOGLE_SITE_VERIFICATION` | Google Search Console HTML 標記驗證碼（選填） |
 
 5. Deploy！
-6. 在 Vercel 設定 Custom Domain: `bes114.com`
+6. 在 Vercel 設定 Custom Domain: `besevent.com`
 
 ---
 

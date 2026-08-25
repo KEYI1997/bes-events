@@ -1,13 +1,15 @@
-import { Metadata } from 'next';
 import { Phone, Mail, MessageCircle, MapPin, Clock, Building2 } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import ContactFormInline from '@/components/ContactFormInline';
 import { LINE_URL } from '@/lib/siteLinks';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: '聯絡我們 | 境曜有限公司 BES Events',
+export const metadata = createPageMetadata({
+  title: '聯絡境曜有限公司',
   description: '聯繫境曜有限公司，取得活動企劃、啟動儀式、燈光音響等服務的專業諮詢與報價。',
-};
+  path: '/contact',
+  keywords: ['境曜有限公司電話', '活動企劃報價', '台北活動公司聯絡'],
+});
 
 const CONTACT_INFO = [
   {

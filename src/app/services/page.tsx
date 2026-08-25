@@ -1,13 +1,15 @@
-import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: '服務項目 | 境曜有限公司 BES Events',
+export const metadata = createPageMetadata({
+  title: '活動企劃與整合服務',
   description: '境曜有限公司提供 AI 互動道具、活動策劃統包、啟動儀式、活動特效、外派調酒、SHOW GIRL 等一站式活動服務。',
-};
+  path: '/services',
+  keywords: ['活動企劃服務', '活動統包', '啟動儀式', 'AI 互動道具'],
+});
 
 const SERVICES = [
   {

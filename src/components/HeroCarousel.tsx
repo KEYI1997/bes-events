@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 
 const SLIDES = [
-  { src: '/images/hero/hero-1.png', alt: '境曜活動 1' },
-  { src: '/images/hero/hero-2.png', alt: '境曜活動 2' },
+  { src: '/images/hero/hero-1.png', alt: '境曜有限公司企業活動企劃與舞台現場執行' },
+  { src: '/images/hero/hero-2.png', alt: '境曜有限公司品牌活動整合與啟動儀式' },
 ];
 
 export default function HeroCarousel() {
@@ -78,6 +78,9 @@ export default function HeroCarousel() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-6 md:px-12">
             <div className="max-w-3xl mx-auto">
+              <p className="mb-4 text-sm font-semibold tracking-[0.2em] text-white/85">
+                境曜有限公司 BES EVENTS
+              </p>
               <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-6 tracking-tight">
                 每一場活動
                 <br />

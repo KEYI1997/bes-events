@@ -1,11 +1,13 @@
-import { Metadata } from 'next';
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: '關於境曜 | 境曜有限公司 BES Events',
+export const metadata = createPageMetadata({
+  title: '關於境曜',
   description: '境曜有限公司（Bright Events Services）專注於各類型活動整合與現場執行，提供一站式活動服務。',
-};
+  path: '/about',
+  keywords: ['境曜有限公司', 'BES Events', '台北活動公司'],
+});
 
 export default function AboutPage() {
   return (
