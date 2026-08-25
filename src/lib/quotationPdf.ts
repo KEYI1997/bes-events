@@ -93,6 +93,10 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
 
   const doc = new PDFDocument({
     size: 'A4',
+    // Set the embedded CJK font as PDFKit's initial font. PDFKit otherwise
+    // eagerly opens its built-in Helvetica AFM file during construction,
+    // which is not available in some serverless bundles.
+    font: fontPath,
     margins: { top: MARGIN, right: MARGIN, bottom: MARGIN, left: MARGIN },
     info: {
       Title: `境曜活動租借報價單 - ${order.customerName}`,
