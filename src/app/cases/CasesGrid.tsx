@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,6 +22,31 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category') ?? '';
   const activeCategory = CATEGORIES.includes(categoryParam) ? categoryParam : '全部';
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const updateUnderline = () => {
+      const activeIndex = CATEGORIES.indexOf(activeCategory);
+      const activeTab = tabRefs.current[activeIndex];
+      const container = tabsContainerRef.current;
+
+      if (!activeTab || !container) return;
+
+      const underlineWidth = 28;
+      const containerRect = container.getBoundingClientRect();
+      const tabRect = activeTab.getBoundingClientRect();
+      setUnderlineStyle({
+        left: tabRect.left - containerRect.left + (tabRect.width - underlineWidth) / 2,
+        width: underlineWidth,
+      });
+    };
+
+    updateUnderline();
+    window.addEventListener('resize', updateUnderline);
+    return () => window.removeEventListener('resize', updateUnderline);
+  }, [activeCategory]);
 
   const filteredCases = activeCategory === '全部'
     ? cases
@@ -29,20 +55,29 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
   return (
     <>
       {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-3 mb-12 justify-center">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => router.replace(cat === '全部' ? '/cases' : `/cases?category=${encodeURIComponent(cat)}`, { scroll: false })}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-              activeCategory === cat
-                ? 'bg-cta text-white'
-                : 'bg-white text-primary hover:bg-cta/10'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      <div className="relative mb-12">
+        <div ref={tabsContainerRef} className="relative flex flex-wrap justify-center gap-3">
+          {CATEGORIES.map((cat, index) => (
+            <button
+              key={cat}
+              type="button"
+              ref={(el) => { tabRefs.current[index] = el; }}
+              onClick={() => router.replace(cat === '全部' ? '/cases' : `/cases?category=${encodeURIComponent(cat)}`, { scroll: false })}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
+                activeCategory === cat
+                  ? 'bg-cta text-white'
+                  : 'bg-white text-primary hover:bg-cta/10'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-3 h-0.5 rounded-full bg-cta transition-[left,width] duration-500 ease-out"
+            style={underlineStyle}
+          />
+        </div>
       </div>
 
       {/* Cases Grid */}
