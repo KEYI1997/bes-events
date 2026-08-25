@@ -89,18 +89,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
   // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
-      <><JsonLd data={structuredData} /><main className="bg-white min-h-screen">
-        <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
-          <div className="relative z-10 text-center px-4">
-            <AnimateOnScroll>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">外派調酒</h1>
-              <p className="text-white/80 text-lg max-w-2xl mx-auto">{CATEGORY_DESC['bartending']}</p>
-            </AnimateOnScroll>
-          </div>
-        </section>
-        <BartendingPlans products={(products || []) as Product[]} />
-      </main></>
+      <><JsonLd data={structuredData} /><BartendingPlans products={(products || []) as Product[]} /></>
     );
   }
 
