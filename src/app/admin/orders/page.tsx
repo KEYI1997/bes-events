@@ -636,11 +636,6 @@ export default function OrdersPage() {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${o.quotation_sent ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                           {o.quotation_sent ? '已送出' : '未送出'}
                         </span>
-                        <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                          <span>{o.customer_email ? 'Email ✓' : 'Email —'}</span>
-                          <span>·</span>
-                          <span>{customers[o.customer_phone] ? 'LINE ✓' : 'LINE —'}</span>
-                        </div>
                         <button
                           type="button"
                           onClick={() => void openQuotationEditor(o)}
