@@ -60,6 +60,10 @@ export default async function ServiceCategoryPage({ params }: Props) {
     return <EventPackagePage />;
   }
 
+  if (category === 'opening-ceremony') {
+    return <OpeningCeremonyPage products={(products || []) as Product[]} />;
+  }
+
   // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
@@ -113,6 +117,61 @@ export default async function ServiceCategoryPage({ params }: Props) {
         )}
       </section>
     </main>
+  );
+}
+
+function OpeningCeremonyPage({ products }: { products: Product[] }) {
+  return (
+    <main className="min-h-screen bg-[#fdfcfb] text-[#172039]">
+      <section className="relative overflow-hidden border-b border-[#e2ded8]">
+        <div className="relative z-10 mx-auto max-w-[1400px] px-6 pb-28 pt-32 md:px-12 lg:px-20 lg:pb-36">
+          <AnimateOnScroll>
+            <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">OPENING CEREMONY</p>
+            <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">啟動儀式</h1>
+            <p className="mt-5 text-2xl text-[#303746] md:text-3xl">讓開場成為活動最具記憶點的一刻</p>
+            <p className="mt-8 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">星辰運轉、全息投影、沙漏啟動等多種創意儀式，<br className="hidden md:block" />以精準節奏與現場執行，為品牌揭開精彩序幕。</p>
+          </AnimateOnScroll>
+        </div>
+        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none">
+          <defs>
+            <filter id="ceremony-inner-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="1.8" /></filter>
+            <filter id="ceremony-mid-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="7" /></filter>
+            <filter id="ceremony-outer-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="15" /></filter>
+            <filter id="ceremony-core-soften" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="0.45" /></filter>
+          </defs>
+          <path id="ceremony-line-1" d="M-40 122 C155 78 305 190 520 104 C720 24 925 118 1240 42" stroke="#c89b55" strokeWidth="1.35" opacity=".38" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" dur="1.7s" fill="freeze" /></path>
+          <path id="ceremony-line-2" d="M-30 332 C168 366 344 244 506 298 C716 372 906 238 1230 184" stroke="#d0a565" strokeWidth="1" opacity=".24" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".16s" dur="1.8s" fill="freeze" /></path>
+          <path id="ceremony-line-3" d="M-20 508 C205 560 340 425 540 462 C754 502 900 570 1235 348" stroke="#d8b67a" strokeWidth=".8" opacity=".42" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".3s" dur="1.9s" fill="freeze" /></path>
+          <path d="M-20 230 C130 196 238 264 376 214 C506 166 594 80 748 92 C910 104 1050 164 1230 96" stroke="#d8b67a" strokeWidth=".55" opacity=".2" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".42s" dur="2s" fill="freeze" /></path>
+          <path d="M-20 412 C126 352 262 420 404 366 C548 312 658 394 810 338 C958 282 1068 338 1230 286" stroke="#c89b55" strokeWidth=".45" opacity=".18" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".55s" dur="2s" fill="freeze" /></path>
+          <path d="M176 620 C286 520 394 582 472 496 C560 398 654 494 748 400 C846 304 970 402 1114 270" stroke="#d0a565" strokeWidth=".35" opacity=".16" strokeDasharray="1400" strokeDashoffset="1400"><animate attributeName="stroke-dashoffset" from="1400" to="0" begin=".7s" dur="2.1s" fill="freeze" /></path>
+          <GoldenGlow x={408} y={142} begin="1.95s" />
+          <GoldenGlow x={874} y={273} begin="2.1s" soft />
+          <GoldenGlow x={276} y={525} begin="2.25s" soft />
+        </svg>
+      </section>
+
+      <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
+        <SectionHeading title="啟動儀式方案" english="CEREMONY SOLUTIONS" />
+        {products.length > 0 ? (
+          <div className="mt-16"><ServiceProductGrid products={products} /></div>
+        ) : (
+          <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function GoldenGlow({ x, y, begin, soft = false }: { x: number; y: number; begin: string; soft?: boolean }) {
+  return (
+    <g transform={`translate(${x} ${y})`} opacity="0">
+      <animate attributeName="opacity" from="0" to="1" begin={begin} dur=".45s" fill="freeze" />
+      <circle r={soft ? 28 : 24} fill="#d6a34a" opacity={soft ? ".06" : ".09"} filter="url(#ceremony-outer-glow)" />
+      <circle r={soft ? 17 : 15} fill="#d8b067" opacity={soft ? ".15" : ".22"} filter="url(#ceremony-mid-glow)" />
+      <circle r={soft ? 6 : 5} fill="#d6a34a" opacity=".72" filter="url(#ceremony-inner-glow)" />
+      <circle r="1.15" fill="#fffdf7" opacity=".9" filter="url(#ceremony-core-soften)" />
+    </g>
   );
 }
 
