@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle, ChevronDown, ClipboardList, LoaderCircle } from 'lucide-react';
 import { Product } from '@/lib/types';
+import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 
 type FormState = {
   category: string;
@@ -92,6 +93,7 @@ export default function LineOrderForm({
       });
 
       if (!response.ok) throw new Error('送出失敗');
+      trackGoogleAdsLeadConversion();
       setSuccess(true);
     } catch {
       setError('訂單需求送出失敗，請稍後再試或直接在 LINE 留言。');

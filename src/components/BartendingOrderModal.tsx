@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, ClipboardList } from 'lucide-react';
+import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 
 const EVENT_TYPES = [
   '婚宴 / 婚禮',
@@ -119,6 +120,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
       });
 
       if (res.ok) {
+        trackGoogleAdsLeadConversion();
         setSuccess(true);
       } else {
         alert('提交失敗，請稍後再試');

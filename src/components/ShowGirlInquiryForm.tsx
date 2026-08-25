@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
+import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 
 // 台灣手機格式：09xx-xxx-xxx 或 09xxxxxxxx（10碼）
 const PHONE_REGEX = /^09\d{2}-?\d{3}-?\d{3}$/;
@@ -65,7 +66,7 @@ export default function ShowGirlInquiryForm() {
     if (!EMAIL_REGEX.test(email)) { setEmailError('請輸入正確的 Email 格式'); return; }
     setSubmitting(true);
     try {
-      await fetch('/api/contact', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,6 +78,8 @@ export default function ShowGirlInquiryForm() {
           description: `活動名稱：${eventName}\n需要人數：${headcount} 人\n身高範圍：${heightMin}～${heightMax} cm（含高跟鞋）\n服裝要求：${outfit}`,
         }),
       });
+      if (!response.ok) throw new Error('送出失敗');
+      trackGoogleAdsLeadConversion();
       setSubmitted(true);
     } catch {
       alert('送出失敗，請稍後再試');

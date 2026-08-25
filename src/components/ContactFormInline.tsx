@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
+import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date'] as const;
 
@@ -52,6 +53,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
         body: JSON.stringify(form),
       });
       if (res.ok) {
+        trackGoogleAdsLeadConversion();
         setSuccess(true);
         setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: '' });
       } else {

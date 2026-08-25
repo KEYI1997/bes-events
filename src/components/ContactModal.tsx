@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle, X } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
+import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -80,6 +81,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
         body: JSON.stringify({ ...submissionForm, description: desc }),
       });
       if (res.ok) {
+        trackGoogleAdsLeadConversion();
         setSuccess(true);
         setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: '' });
         setSelectedAddOns([]);
