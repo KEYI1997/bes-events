@@ -66,7 +66,7 @@ export async function GET() {
       return images.length ? [{
         page: `${SITE_URL}/products/detail/${product.id}`,
         images: images.map(url => ({
-          url,
+          url: absoluteUrl(url),
           title: `${product.name}｜境曜有限公司`,
           caption: `境曜有限公司提供的${product.name}服務與設備照片。`,
         })),
@@ -75,7 +75,7 @@ export async function GET() {
     ...cases.flatMap(item => item.image_url ? [{
       page: `${SITE_URL}/cases/${item.id}`,
       images: [{
-        url: item.image_url,
+        url: absoluteUrl(item.image_url),
         title: `${item.title}｜境曜活動案例`,
         caption: `境曜有限公司活動企劃與現場執行案例：${item.title}`,
       }],
