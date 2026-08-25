@@ -1,4 +1,4 @@
-import { SERVICE_SEO_PAGES, SITE_URL, absoluteUrl } from '@/lib/seo';
+import { PRODUCT_CATEGORY_SEO_PAGES, SERVICE_SEO_PAGES, SITE_URL, absoluteUrl } from '@/lib/seo';
 
 type ImagePage = { page: string; images: Array<{ url: string; title: string; caption: string }> };
 type ProductImageRecord = { id: string; name: string; image_url?: string | null };
@@ -52,6 +52,14 @@ export async function GET() {
         url: absoluteUrl(service.image),
         title: `境曜有限公司 ${service.name}`,
         caption: service.summary,
+      }],
+    })),
+    ...PRODUCT_CATEGORY_SEO_PAGES.map(category => ({
+      page: `${SITE_URL}/products/${category.slug}`,
+      images: [{
+        url: absoluteUrl(category.image),
+        title: `境曜有限公司 ${category.name}`,
+        caption: category.summary,
       }],
     })),
   ];

@@ -3,13 +3,16 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { supabase } from '@/lib/supabase';
 import { Case } from '@/lib/types';
 import CasesGrid from './CasesGrid';
-import { createPageMetadata } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import { createPageMetadata, itemListJsonLd, webPageJsonLd } from '@/lib/seo';
+
+const description = '瀏覽境曜有限公司的企業活動案例，包含記者會、尾牙春酒、家庭日、典禮、市集、展覽與品牌活動的企劃及現場執行成果。';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = createPageMetadata({
   title: '活動案例',
-  description: '境曜有限公司活動案例展示，包含記者會、尾牙、家庭日、典禮、市集、展覽等各類型活動。',
+  description,
   path: '/cases',
   keywords: ['活動案例', '企業活動案例', '記者會案例', '尾牙活動案例'],
 });
@@ -23,7 +26,14 @@ export default async function CasesPage() {
     .order('event_date', { ascending: false });
 
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={[
+      webPageJsonLd({ path: '/cases', name: '境曜有限公司活動案例', description, type: 'CollectionPage' }),
+      itemListJsonLd('境曜有限公司活動案例', ((cases as Case[]) || []).map(caseItem => ({
+        name: caseItem.title,
+        path: `/cases/${caseItem.id}`,
+        description: caseItem.description?.slice(0, 160),
+      }))),
+    ]} /><main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -46,6 +56,6 @@ export default async function CasesPage() {
           <CasesGrid cases={(cases as Case[]) || []} />
         </Suspense>
       </section>
-    </main>
+    </main></>
   );
 }

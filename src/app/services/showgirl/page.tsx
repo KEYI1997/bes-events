@@ -2,7 +2,7 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 import JsonLd from '@/components/JsonLd';
 import ShowGirlGallery from '@/components/ShowGirlGallery';
 import ShowGirlInquiryForm from '@/components/ShowGirlInquiryForm';
-import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd } from '@/lib/seo';
+import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, webPageJsonLd } from '@/lib/seo';
 
 const description = '專業活動人員派遣，提供展場接待、品牌推廣、頒獎與活動現場協助。';
 
@@ -15,6 +15,13 @@ export const metadata = createPageMetadata({
 });
 
 const structuredData = [
+  webPageJsonLd({
+    path: '/services/showgirl',
+    name: 'SHOW GIRL 活動人員派遣｜境曜有限公司',
+    description,
+    image: '/images/services/show girl.png',
+    mainEntityId: `${absoluteUrl('/services/showgirl')}#service`,
+  }),
   serviceJsonLd('showgirl', 'SHOW GIRL 活動人員派遣', description, '/images/services/show girl.png'),
   breadcrumbJsonLd([
     { name: '首頁', path: '/' },

@@ -2,11 +2,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
-import { createPageMetadata } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import { createPageMetadata, itemListJsonLd, SERVICE_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
+
+const description = '境曜有限公司提供 AI 互動道具、活動企劃統包、啟動儀式、活動特效、外派調酒與 SHOW GIRL 活動人員等一站式活動服務。';
 
 export const metadata = createPageMetadata({
   title: '活動企劃與整合服務',
-  description: '境曜有限公司提供 AI 互動道具、活動策劃統包、啟動儀式、活動特效、外派調酒、SHOW GIRL 等一站式活動服務。',
+  description,
   path: '/services',
   keywords: ['活動企劃服務', '活動統包', '啟動儀式', 'AI 互動道具'],
 });
@@ -52,7 +55,10 @@ const SERVICES = [
 
 export default function ServicesPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={[
+      webPageJsonLd({ path: '/services', name: '境曜有限公司活動企劃與整合服務', description, type: 'CollectionPage' }),
+      itemListJsonLd('活動服務項目', SERVICE_SEO_PAGES.map(service => ({ name: service.name, path: `/services/${service.slug}`, description: service.summary }))),
+    ]} /><main className="bg-white min-h-screen">
       {/* Hero Banner */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -99,6 +105,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-    </main>
+    </main></>
   );
 }

@@ -6,7 +6,7 @@ import JsonLd from '@/components/JsonLd';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
-import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd, SERVICE_SEO_PAGES } from '@/lib/seo';
+import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, SERVICE_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
 
 const CATEGORY_MAP: Record<string, string> = {
   'ai-interactive-props': 'AI 互動道具',
@@ -57,6 +57,13 @@ export default async function ServiceCategoryPage({ params }: Props) {
   const service = SERVICE_SEO_PAGES.find(item => item.slug === category);
   const structuredData = service
     ? [
+        webPageJsonLd({
+          path: `/services/${service.slug}`,
+          name: `${service.name}｜境曜有限公司`,
+          description: CATEGORY_DESC[category] || service.summary,
+          image: service.image,
+          mainEntityId: `${absoluteUrl(`/services/${service.slug}`)}#service`,
+        }),
         serviceJsonLd(service.slug, service.name, CATEGORY_DESC[category] || service.summary, service.image),
         breadcrumbJsonLd([
           { name: '首頁', path: '/' },

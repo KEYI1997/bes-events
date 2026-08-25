@@ -45,7 +45,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     async function fetchProduct() {
-      const { data } = await supabase.from('products').select('*').eq('id', productId).single();
+      const { data } = await supabase.from('products').select('*').eq('id', productId).eq('visible', true).maybeSingle();
       setProduct(data);
       setLoading(false);
     }
@@ -87,7 +87,7 @@ export default function ProductDetailPage() {
                 <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
                   <Image
                     src={images[currentSlide] || images[0]}
-                    alt={product.name}
+                    alt={`${product.name}－${product.category}活動服務圖片`}
                     fill
                     className="object-cover"
                   />
@@ -274,7 +274,7 @@ export default function ProductDetailPage() {
       {lightboxOpen && images.length > 0 && (
         <ImageLightbox
           src={images[currentSlide] || images[0]}
-          alt={product.name}
+          alt={`${product.name}－${product.category}活動方案圖片`}
           onClose={() => setLightboxOpen(false)}
         />
       )}

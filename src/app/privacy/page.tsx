@@ -1,14 +1,17 @@
-import { createPageMetadata } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import { createPageMetadata, webPageJsonLd } from '@/lib/seo';
+
+const description = '境曜有限公司官網隱私權及個人資料保護政策，說明網站蒐集、使用與保護訪客資料的方式。';
 
 export const metadata = createPageMetadata({
   title: '隱私權政策',
-  description: '境曜有限公司隱私權及個資保護政策',
+  description,
   path: '/privacy',
 });
 
 export default function PrivacyPage() {
   return (
-    <main className="bg-white min-h-screen pt-32 pb-16">
+    <><JsonLd data={webPageJsonLd({ path: '/privacy', name: '境曜有限公司隱私權政策', description })} /><main className="bg-white min-h-screen pt-32 pb-16">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl md:text-4xl font-bold text-primary mb-8">隱私權政策</h1>
 
@@ -91,6 +94,6 @@ export default function PrivacyPage() {
           </p>
         </div>
       </div>
-    </main>
+    </main></>
   );
 }

@@ -5,8 +5,9 @@ import HeroCarousel from "@/components/HeroCarousel";
 import CoverflowCarousel from "@/components/CoverflowCarousel";
 import ServiceTabs from "@/components/ServiceTabs";
 import ScrollRevealSection from "@/components/ScrollRevealSection";
+import JsonLd from "@/components/JsonLd";
 import { supabase } from "@/lib/supabase";
-import { createPageMetadata, SERVICE_SEO_PAGES, SITE_DESCRIPTION } from "@/lib/seo";
+import { createPageMetadata, itemListJsonLd, SERVICE_SEO_PAGES, SITE_DESCRIPTION, webPageJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,18 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={[
+        webPageJsonLd({
+          path: "/",
+          name: "境曜有限公司｜台北活動企劃、啟動儀式與活動整合",
+          description: SITE_DESCRIPTION,
+        }),
+        itemListJsonLd("境曜有限公司活動服務", SERVICE_SEO_PAGES.map(service => ({
+          name: service.name,
+          path: `/services/${service.slug}`,
+          description: service.summary,
+        }))),
+      ]} />
       {/* ── Section 1：Hero 樞紐區 ── */}
       <HeroCarousel />
 

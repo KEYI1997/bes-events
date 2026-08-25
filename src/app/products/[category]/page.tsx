@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import JsonLd from '@/components/JsonLd';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
+import { breadcrumbJsonLd, createPageMetadata, itemListJsonLd, PRODUCT_CATEGORY_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
 
 const CATEGORY_MAP: Record<string, string> = {
   'opening-ceremony': '啟動儀式',
@@ -20,32 +22,29 @@ const CATEGORY_DESC: Record<string, string> = {
   'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
 };
 
-const CATEGORY_HERO_IMG: Record<string, string> = {
-  'opening-ceremony': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196606975-syj452041wn.png',
-  'stage-lighting': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196622151-e7httcbmjkj.png',
-  'event-planning': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196617398-71mam68zxfp.png',
-  'bartending': 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196611709-wyxmfyfx61r.png',
-};
-
 type Props = {
   params: Promise<{ category: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params;
-  const title = CATEGORY_MAP[category];
-  if (!title) return { title: '產品服務 | 境曜有限公司' };
-  return {
-    title: `${title} | 境曜有限公司 BES Events`,
-    description: CATEGORY_DESC[category] || `境曜有限公司提供專業${title}服務`,
-  };
+  const page = PRODUCT_CATEGORY_SEO_PAGES.find(item => item.slug === category);
+  if (!page) return createPageMetadata({ title: '產品服務', description: '境曜有限公司活動產品與服務方案。', path: '/services' });
+  return createPageMetadata({
+    title: page.name,
+    description: page.summary,
+    path: `/products/${category}`,
+    image: page.image,
+    keywords: [CATEGORY_MAP[category], page.name, '境曜有限公司'],
+  });
 }
 
 export default async function ProductCategoryPage({ params }: Props) {
   const { category } = await params;
   const categoryName = CATEGORY_MAP[category];
+  const seoPage = PRODUCT_CATEGORY_SEO_PAGES.find(item => item.slug === category);
 
-  if (!categoryName) {
+  if (!categoryName || !seoPage) {
     notFound();
   }
 
@@ -57,7 +56,19 @@ export default async function ProductCategoryPage({ params }: Props) {
     .order('sort_order', { ascending: true });
 
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={[
+      webPageJsonLd({ path: `/products/${category}`, name: `${seoPage.name}｜境曜有限公司`, description: seoPage.summary, type: 'CollectionPage', image: seoPage.image }),
+      breadcrumbJsonLd([
+        { name: '首頁', path: '/' },
+        { name: '服務項目', path: '/services' },
+        { name: seoPage.name, path: `/products/${category}` },
+      ]),
+      itemListJsonLd(seoPage.name, ((products as Product[]) || []).map(product => ({
+        name: product.name,
+        path: `/products/detail/${product.id}`,
+        description: product.description?.slice(0, 160),
+      }))),
+    ]} /><main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -82,8 +93,8 @@ export default async function ProductCategoryPage({ params }: Props) {
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full flex flex-col transition-transform duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
-                      src={product.image_urls?.[0] || (product as any).image_url?.split(',')[0] || '/images/placeholder.jpg'}
-                      alt={product.name}
+                      src={product.image_urls?.[0] || product.image_url?.split(',')[0] || '/images/placeholder.jpg'}
+                      alt={`${product.name}－${categoryName}活動方案`}
                       fill
                       className="object-cover"
                     />
@@ -119,6 +130,6 @@ export default async function ProductCategoryPage({ params }: Props) {
         )}
       </section>
 
-    </main>
+    </main></>
   );
 }

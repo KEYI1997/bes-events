@@ -1,8 +1,11 @@
-import { SERVICE_SEO_PAGES, SITE_ADDRESS, SITE_EMAIL, SITE_PHONE, SITE_URL } from '@/lib/seo';
+import { PRODUCT_CATEGORY_SEO_PAGES, SERVICE_SEO_PAGES, SITE_ADDRESS, SITE_EMAIL, SITE_PHONE, SITE_URL } from '@/lib/seo';
 
 export function GET() {
   const services = SERVICE_SEO_PAGES
     .map(service => `- ${service.name}: ${service.summary} (${SITE_URL}/services/${service.slug})`)
+    .join('\n');
+  const catalogs = PRODUCT_CATEGORY_SEO_PAGES
+    .map(category => `- ${category.name}: ${category.summary} (${SITE_URL}/products/${category.slug})`)
     .join('\n');
   const body = `# 境曜有限公司（BES Events）
 
@@ -17,9 +20,19 @@ Service area: Taiwan
 - Services: ${SITE_URL}/services
 - Cases: ${SITE_URL}/cases
 - Contact: ${SITE_URL}/contact
+- XML sitemap: ${SITE_URL}/sitemap.xml
+- Image sitemap: ${SITE_URL}/image-sitemap.xml
 
 ## Services
 ${services}
+
+## Product and solution catalogs
+${catalogs}
+
+## Content model
+- Service pages explain capabilities, suitable occasions and inquiry paths.
+- Product detail pages describe individual equipment, props or service plans.
+- Case study pages document actual event execution and the services or products used.
 
 ## Company facts
 - Legal name: 境曜有限公司

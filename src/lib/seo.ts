@@ -63,6 +63,33 @@ export const SERVICE_SEO_PAGES = [
   },
 ] as const;
 
+export const PRODUCT_CATEGORY_SEO_PAGES = [
+  {
+    slug: 'opening-ceremony',
+    name: '啟動儀式產品與方案',
+    summary: '瀏覽星辰運轉、全息投影、沙漏啟動等創意啟動道具與活動方案。',
+    image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196606975-syj452041wn.png',
+  },
+  {
+    slug: 'stage-lighting',
+    name: '燈光音響舞台設備',
+    summary: '瀏覽活動燈光、音響、舞台與視訊設備，依場地及流程規劃專業現場技術。',
+    image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196622151-e7httcbmjkj.png',
+  },
+  {
+    slug: 'event-planning',
+    name: '活動專案企劃方案',
+    summary: '瀏覽記者會、企業家庭日、尾牙春酒與品牌活動的一站式企劃執行方案。',
+    image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196617398-71mam68zxfp.png',
+  },
+  {
+    slug: 'bartending',
+    name: '外派調酒方案',
+    summary: '瀏覽行動吧台、專業調酒師、客製酒單與不同活動規模的外派調酒方案。',
+    image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196611709-wyxmfyfx61r.png',
+  },
+] as const;
+
 export function absoluteUrl(path = '/') {
   return new URL(path, `${SITE_URL}/`).toString();
 }
@@ -185,6 +212,61 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
       position: index + 1,
       name: item.name,
       item: absoluteUrl(item.path),
+    })),
+  };
+}
+
+type WebPageJsonLdOptions = {
+  path: string;
+  name: string;
+  description: string;
+  type?: 'WebPage' | 'AboutPage' | 'ContactPage' | 'CollectionPage';
+  image?: string;
+  mainEntityId?: string;
+};
+
+export function webPageJsonLd({
+  path,
+  name,
+  description,
+  type = 'WebPage',
+  image = DEFAULT_OG_IMAGE,
+  mainEntityId,
+}: WebPageJsonLdOptions) {
+  const url = absoluteUrl(path);
+  return {
+    '@context': 'https://schema.org',
+    '@type': type,
+    '@id': `${url}#webpage`,
+    url,
+    name,
+    description,
+    inLanguage: 'zh-Hant-TW',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    primaryImageOfPage: {
+      '@type': 'ImageObject',
+      url: absoluteUrl(image),
+    },
+    ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}),
+  };
+}
+
+export function itemListJsonLd(
+  name: string,
+  items: Array<{ name: string; path: string; description?: string }>,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: absoluteUrl(item.path),
+      name: item.name,
+      ...(item.description ? { description: item.description } : {}),
     })),
   };
 }

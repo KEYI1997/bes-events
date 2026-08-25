@@ -2,11 +2,14 @@ import { Phone, Mail, MessageCircle, MapPin, Clock, Building2 } from 'lucide-rea
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import ContactFormInline from '@/components/ContactFormInline';
 import { LINE_URL } from '@/lib/siteLinks';
-import { createPageMetadata } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import { createPageMetadata, SITE_URL, webPageJsonLd } from '@/lib/seo';
+
+const description = '聯繫境曜有限公司，取得活動企劃統包、啟動儀式、AI 互動、活動特效、外派調酒與活動人員服務的專業諮詢及報價。';
 
 export const metadata = createPageMetadata({
   title: '聯絡境曜有限公司',
-  description: '聯繫境曜有限公司，取得活動企劃、啟動儀式、燈光音響等服務的專業諮詢與報價。',
+  description,
   path: '/contact',
   keywords: ['境曜有限公司電話', '活動企劃報價', '台北活動公司聯絡'],
 });
@@ -52,7 +55,7 @@ const CONTACT_INFO = [
 
 export default function ContactPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={webPageJsonLd({ path: '/contact', name: '聯絡境曜有限公司', description, type: 'ContactPage', mainEntityId: `${SITE_URL}/#organization` })} /><main className="bg-white min-h-screen">
       {/* Hero */}
       <section className="relative bg-primary h-[40vh] flex items-center justify-center pt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary" />
@@ -125,6 +128,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-    </main>
+    </main></>
   );
 }

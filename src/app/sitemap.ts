@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SERVICE_SEO_PAGES, SITE_URL } from '@/lib/seo';
+import { PRODUCT_CATEGORY_SEO_PAGES, SERVICE_SEO_PAGES, SITE_URL } from '@/lib/seo';
 
 type PublicRecord = { id: string; created_at?: string | null };
 
@@ -31,6 +31,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${SITE_URL}/services/${service.slug}`,
       changeFrequency: 'monthly' as const,
       priority: 0.85,
+    })),
+    ...PRODUCT_CATEGORY_SEO_PAGES.map(category => ({
+      url: `${SITE_URL}/products/${category.slug}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.75,
     })),
     { url: `${SITE_URL}/cases`, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/contact`, changeFrequency: 'yearly', priority: 0.75 },

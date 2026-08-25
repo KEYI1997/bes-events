@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { Case } from '@/lib/types';
 import CaseGallery from './CaseGallery';
 import JsonLd from '@/components/JsonLd';
-import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
+import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, SITE_NAME, SITE_URL, webPageJsonLd } from '@/lib/seo';
 
 type FacebookCaseDetail = { sourceUrl?: string; imageUrls?: string[] };
 
@@ -48,10 +48,19 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const products = caseItem.used_products?.filter(Boolean).join(' | ');
   const displayTitle = products ? `${products} | ${activityTitle}` : activityTitle;
   const articleText = caseItem.description.replace(/^\s*【[^】]+】\s*\r?\n?/, '').trim();
+  const articleId = `${absoluteUrl(`/cases/${id}`)}#article`;
   const structuredData = [
+    webPageJsonLd({
+      path: `/cases/${id}`,
+      name: `${displayTitle}｜境曜有限公司活動案例`,
+      description: articleText.slice(0, 180),
+      image: imageUrls.find(Boolean),
+      mainEntityId: articleId,
+    }),
     {
       '@context': 'https://schema.org',
       '@type': 'Article',
+      '@id': articleId,
       headline: displayTitle,
       description: articleText.slice(0, 180),
       image: imageUrls.filter(Boolean).map(absoluteUrl),

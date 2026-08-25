@@ -1,16 +1,19 @@
 import AnimateOnScroll from '@/components/AnimateOnScroll';
-import { createPageMetadata } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import { createPageMetadata, webPageJsonLd } from '@/lib/seo';
+
+const description = '認識境曜有限公司（BES Events）的活動整合理念、專業團隊與服務經驗，從策略企劃、舞台技術到現場執行，協助品牌完成重要活動。';
 
 export const metadata = createPageMetadata({
   title: '關於境曜',
-  description: '境曜有限公司（Bright Events Services）專注於各類型活動整合與現場執行，提供一站式活動服務。',
+  description,
   path: '/about',
   keywords: ['境曜有限公司', 'BES Events', '台北活動公司'],
 });
 
 export default function AboutPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <><JsonLd data={webPageJsonLd({ path: '/about', name: '關於境曜有限公司', description, type: 'AboutPage' })} /><main className="bg-white min-h-screen">
 
       {/* ── Hero Banner ── */}
       <section className="relative bg-primary h-[25vh] flex items-center justify-center pt-20">
@@ -102,6 +105,6 @@ export default function AboutPage() {
         </AnimateOnScroll>
       </section>
 
-    </main>
+    </main></>
   );
 }

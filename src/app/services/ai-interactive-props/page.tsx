@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AIInteractiveExperience from '@/components/AIInteractiveExperience';
 import JsonLd from '@/components/JsonLd';
-import { breadcrumbJsonLd, createPageMetadata, serviceJsonLd } from '@/lib/seo';
+import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, webPageJsonLd } from '@/lib/seo';
 
 const description = '讓影像、聲音與想像即時成為可參與、可分享的 AI 活動體驗。';
 
@@ -15,6 +15,13 @@ export const metadata = createPageMetadata({
 });
 
 const structuredData = [
+  webPageJsonLd({
+    path: '/services/ai-interactive-props',
+    name: 'AI 互動道具｜境曜有限公司',
+    description,
+    image: '/images/services/AI互動道具.png',
+    mainEntityId: `${absoluteUrl('/services/ai-interactive-props')}#service`,
+  }),
   serviceJsonLd('ai-interactive-props', 'AI 互動道具', description, '/images/services/AI互動道具.png'),
   breadcrumbJsonLd([
     { name: '首頁', path: '/' },
