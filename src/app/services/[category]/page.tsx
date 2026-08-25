@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { ShieldCheck, SlidersHorizontal, Sparkles } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingPlans from '@/components/BartendingPlans';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
@@ -64,6 +63,10 @@ export default async function ServiceCategoryPage({ params }: Props) {
     return <OpeningCeremonyPage products={(products || []) as Product[]} />;
   }
 
+  if (category === 'special-effects') {
+    return <SpecialEffectsPage products={(products || []) as Product[]} />;
+  }
+
   // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
@@ -90,31 +93,33 @@ export default async function ServiceCategoryPage({ params }: Props) {
           <AnimateOnScroll><h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{categoryName}</h1><p className="text-white/80 text-lg max-w-2xl mx-auto">{CATEGORY_DESC[category]}</p></AnimateOnScroll>
         </div>
       </section>
-      {category === 'special-effects' && (
-        <section className="bg-[#F9F7F0] border-b border-primary/10">
-          <div className="max-w-6xl mx-auto px-4 py-10 md:py-14 grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { icon: Sparkles, title: '效果精準設計', text: '依流程、音樂節點與場地條件規劃施放時機，讓活動高潮更有張力。' },
-              { icon: ShieldCheck, title: '安全專業操作', text: '進場前評估電力、淨空與安全距離，必要設備由專業人員現場控施。' },
-              { icon: SlidersHorizontal, title: '彈性組合配置', text: '可依場地大小與預算搭配泡泡、煙霧、彩帶、火花及 CO₂ 系列設備。' },
-            ].map(item => (
-              <AnimateOnScroll key={item.title}>
-                <div className="h-full bg-white rounded-2xl p-6 shadow-sm border border-primary/10">
-                  <item.icon className="w-8 h-8 text-cta mb-4" />
-                  <h2 className="text-lg font-bold text-primary mb-2">{item.title}</h2>
-                  <p className="text-sm text-primary/70 leading-relaxed">{item.text}</p>
-                </div>
-              </AnimateOnScroll>
-            ))}
-          </div>
-        </section>
-      )}
       <section className="bg-white max-w-7xl mx-auto px-4 py-16 md:py-24">
         {products && products.length > 0 ? (
           <ServiceProductGrid products={products as Product[]} />
         ) : (
           <div className="text-center py-16"><p className="text-primary/60 text-lg">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}
+      </section>
+    </main>
+  );
+}
+
+function SpecialEffectsPage({ products }: { products: Product[] }) {
+  return (
+    <main className="min-h-screen bg-white text-[#172039]">
+      <section className="border-b border-[#e4e0d9] bg-[#fdfcfb] pt-28">
+        <div className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 md:pb-12 lg:px-12">
+          <AnimateOnScroll>
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-[#b58445]">SPECIAL EFFECTS</p>
+            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-baseline md:gap-6">
+              <h1 className="text-3xl font-semibold tracking-tight text-[#172039] md:text-4xl">活動特效</h1>
+              <p className="max-w-3xl text-base leading-7 text-[#4f535b] md:text-lg">{CATEGORY_DESC['special-effects']}</p>
+            </div>
+          </AnimateOnScroll>
+        </div>
+      </section>
+      <section className="mx-auto max-w-7xl px-4 py-14 md:py-16">
+        {products.length > 0 ? <ServiceProductGrid products={products} /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
       </section>
     </main>
   );
