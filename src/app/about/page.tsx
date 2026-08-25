@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { createPageMetadata } from '@/lib/seo';
 
@@ -55,21 +54,9 @@ export default function AboutPage() {
         </AnimateOnScroll>
       </section>
 
-      {/* ── 全寬橫幅大圖 ── */}
-      <div className="w-full aspect-[21/9] relative overflow-hidden">
-        <Image
-          src="/images/services/燈光音響舞台.png"
-          alt="境曜活動現場"
-          fill
-          className="object-cover object-center"
-          priority
-        />
-        <div className="absolute inset-0 bg-primary/20" />
-      </div>
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
+      {/* 故事與理念分隔線 */}
+      <div className="mx-auto max-w-6xl bg-white px-6 md:px-16">
+        <div className="h-px w-full bg-gray-200" />
       </div>
 
       {/* ── 我們的理念 ── */}
@@ -115,20 +102,9 @@ export default function AboutPage() {
         </AnimateOnScroll>
       </section>
 
-      {/* ── 第二張橫幅大圖 ── */}
-      <div className="w-full aspect-[21/9] relative overflow-hidden">
-        <Image
-          src="/images/services/活動策劃統包.png"
-          alt="境曜活動策劃"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-primary/20" />
-      </div>
-
-      {/* 分隔線 */}
-      <div className="flex justify-center bg-white px-8">
-        <div className="w-full h-[2px] bg-gray-300"></div>
+      {/* 理念與亮點分隔線 */}
+      <div className="mx-auto max-w-6xl bg-white px-6 md:px-16">
+        <div className="h-px w-full bg-gray-200" />
       </div>
 
       {/* ── 數字亮點 ── */}
