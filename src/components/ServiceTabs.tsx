@@ -52,14 +52,15 @@ export default function ServiceTabs() {
 
   useEffect(() => {
     const updateUnderline = () => {
+      const underlineWidth = 28;
       const activeTab = tabRefs.current[activeIndex];
       const container = tabsContainerRef.current;
       if (activeTab && container) {
         const containerRect = container.getBoundingClientRect();
         const tabRect = activeTab.getBoundingClientRect();
         setUnderlineStyle({
-          left: tabRect.left - containerRect.left,
-          width: tabRect.width,
+          left: tabRect.left - containerRect.left + (tabRect.width - underlineWidth) / 2,
+          width: underlineWidth,
         });
       }
     };
@@ -90,6 +91,7 @@ export default function ServiceTabs() {
           {SERVICES.map((service, index) => (
             <button
               key={service.title}
+              type="button"
               ref={(el) => { tabRefs.current[index] = el; }}
               onClick={() => setActiveIndex(index)}
               className={`px-6 py-2.5 rounded-full border-2 text-sm font-medium transition-all duration-300 ${
@@ -103,7 +105,8 @@ export default function ServiceTabs() {
           ))}
           {/* 底部滑動線 */}
           <div
-            className="absolute -bottom-3 h-1 bg-cta rounded-full transition-all duration-500 ease-out"
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-3 h-0.5 bg-cta rounded-full transition-[left,width] duration-500 ease-out"
             style={{
               left: underlineStyle.left,
               width: underlineStyle.width,

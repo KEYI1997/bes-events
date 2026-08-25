@@ -137,6 +137,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Scroll-driven page reveal: natural scrolling, no snap or forced jumps. */
 .scroll-reveal-shell {
+  pointer-events: none;
   position: relative;
   z-index: 10;
   margin-top: -100vh;
@@ -146,6 +147,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .scroll-reveal-panel {
+  pointer-events: auto;
   min-height: 1px;
   position: relative;
   box-shadow: 0 -18px 42px rgba(20, 28, 42, 0.08);
