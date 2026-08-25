@@ -99,14 +99,14 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   terms.forEach((term, i) => { doc.fillColor(BRAND).fontSize(termFontSize).text(`${i + 1}.`, MARGIN, termY, { width: 17, align: 'right' }); doc.fillColor(INK).fontSize(termFontSize).text(term, MARGIN + 22, termY, { width: CONTENT_WIDTH - 22, lineGap: 0 }); termY += termStep; });
 
   const signatureTop = termY + (relaxedLayout ? 10 : 6); const signatureGap = 12; const signatureWidth = (CONTENT_WIDTH - signatureGap) / 2;
-  const signatureHeight = relaxedLayout ? 76 : 58;
+  const signatureHeight = relaxedLayout ? 99 : 75;
   doc.roundedRect(MARGIN, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
   doc.roundedRect(MARGIN + signatureWidth + signatureGap, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
-  doc.fillColor(BRAND).fontSize(relaxedLayout ? 9 : 8).text('廠商簽章', MARGIN + 8, signatureTop + 8, { width: signatureWidth - 16, align: 'center' });
-  doc.fillColor(BRAND).fontSize(relaxedLayout ? 9 : 8).text('客戶簽章', MARGIN + signatureWidth + signatureGap + 8, signatureTop + 8, { width: signatureWidth - 16, align: 'center' });
-  if (fs.existsSync(stampPath)) doc.image(stampPath, MARGIN + 45, signatureTop + (relaxedLayout ? 24 : 17), { fit: relaxedLayout ? [78, 46] : [66, 38], align: 'center', valign: 'center' });
+  doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('廠商簽章', MARGIN + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
+  doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('客戶簽章', MARGIN + signatureWidth + signatureGap + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
+  if (fs.existsSync(stampPath)) doc.image(stampPath, MARGIN + 39, signatureTop + (relaxedLayout ? 31 : 24), { fit: relaxedLayout ? [90, 58] : [82, 48], align: 'center', valign: 'center' });
   const customerSignX = MARGIN + signatureWidth + signatureGap + 18;
-  const signatureLineY = signatureTop + (relaxedLayout ? 58 : 42);
+  const signatureLineY = signatureTop + (relaxedLayout ? 78 : 59);
   doc.moveTo(customerSignX, signatureLineY).lineTo(customerSignX + signatureWidth - 36, signatureLineY).lineWidth(0.5).strokeColor(BORDER).stroke();
   doc.fillColor(MUTED).fontSize(relaxedLayout ? 7 : 6.2).text('簽名／蓋章', customerSignX, signatureLineY + 4, { width: signatureWidth - 36, align: 'center' });
   const bankTop = signatureTop + signatureHeight + (relaxedLayout ? 12 : 7);

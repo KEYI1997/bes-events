@@ -1,7 +1,7 @@
 import { extractQuotationUnitPrice } from '@/lib/quotationWorkbook';
 import type { QuotationLineItem } from '@/lib/types';
 
-const STANDARD_LABELS = ['運費', '人員交通費', '搬運／樓層費', '其他加購'];
+const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
 
 export function createDefaultQuotationItems(
   productName: string,
