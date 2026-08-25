@@ -38,9 +38,18 @@ function BartendingLines() {
       <path d="M-35 490 C190 544 357 412 548 448 C760 489 933 550 1240 345" stroke="#d8b67a" strokeWidth=".75" opacity=".3" strokeDasharray="1700" strokeDashoffset="1700"><animate attributeName="stroke-dashoffset" from="1700" to="0" begin=".34s" dur="2s" fill="freeze" /></path>
       <path d="M-20 220 C160 180 294 268 430 214 C620 138 800 248 1030 176 C1114 150 1170 158 1230 132" stroke="#d8b67a" strokeWidth=".42" opacity=".14" />
       <path d="M80 566 C264 476 394 594 582 518 C766 444 940 530 1230 438" stroke="#c89b55" strokeWidth=".35" opacity=".14" />
-      <circle cx="650" cy="91" r="32" fill="url(#bar-point)" opacity=".32" filter="url(#bar-glow)" /><circle cx="650" cy="91" r="1.8" fill="#fffdf7" opacity=".9" />
-      <circle cx="184" cy="490" r="35" fill="url(#bar-point)" opacity=".28" filter="url(#bar-glow)" /><circle cx="184" cy="490" r="1.8" fill="#fffdf7" opacity=".9" />
-      <circle cx="1050" cy="380" r="34" fill="url(#bar-point)" opacity=".3" filter="url(#bar-glow)" /><circle cx="1050" cy="380" r="1.8" fill="#fffdf7" opacity=".9" />
+      <g aria-hidden="true">
+        <circle r="32" fill="url(#bar-point)" opacity=".32" filter="url(#bar-glow)" /><circle r="2" fill="#fffdf7" opacity=".92" />
+        <animateMotion path="M-50 145 C155 56 338 193 548 96 C742 8 978 135 1250 52" dur="15s" repeatCount="indefinite" />
+      </g>
+      <g aria-hidden="true">
+        <circle r="35" fill="url(#bar-point)" opacity=".28" filter="url(#bar-glow)" /><circle r="1.8" fill="#fffdf7" opacity=".9" />
+        <animateMotion path="M-35 490 C190 544 357 412 548 448 C760 489 933 550 1240 345" dur="18s" begin="-7s" repeatCount="indefinite" />
+      </g>
+      <g aria-hidden="true">
+        <circle r="34" fill="url(#bar-point)" opacity=".3" filter="url(#bar-glow)" /><circle r="1.9" fill="#fffdf7" opacity=".9" />
+        <animateMotion path="M-40 305 C180 360 338 240 520 292 C739 355 920 218 1240 174" dur="16s" begin="-11s" repeatCount="indefinite" />
+      </g>
     </svg>
   );
 }
@@ -58,7 +67,7 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
       <section className="relative min-h-[620px] border-b border-[#e2ded8] bg-white md:min-h-[680px]">
         <div className="absolute inset-y-0 right-0 w-full md:w-[61%]">
           <Image src="/images/services/bartending.png" alt="外派調酒活動服務" fill priority className="object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/55 to-transparent md:from-white md:via-white/20 md:to-transparent" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,1)_0%,rgba(255,255,255,.98)_20%,rgba(255,255,255,.82)_48%,rgba(255,255,255,.42)_76%,rgba(255,255,255,0)_100%)]" />
         </div>
         <BartendingLines />
         <div className="relative z-10 mx-auto flex min-h-[620px] max-w-[1400px] items-center px-6 py-28 md:min-h-[680px] md:px-12 lg:px-20">
