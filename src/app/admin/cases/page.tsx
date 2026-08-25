@@ -32,6 +32,10 @@ function toList(value: string) {
   return value.split(/[\n,，、]/).map(item => item.trim()).filter(Boolean);
 }
 
+function imageList(value: string) {
+  return value.split(',').map(item => item.trim()).filter(Boolean);
+}
+
 export default function CasesPage() {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,16 +79,24 @@ export default function CasesPage() {
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', 'cases');
-    const res = await fetch('/api/upload', { method: 'POST', headers: getHeaders(), body: fd });
-    const json = await res.json();
-    if (json.url) setForm(f => ({ ...f, image_url: json.url }));
-    setUploading(false);
+    try {
+      const uploaded = await Promise.all(files.map(async file => {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'cases');
+        const res = await fetch('/api/upload', { method: 'POST', headers: getHeaders(), body: fd });
+        const json = await res.json();
+        return res.ok && json.url ? json.url as string : null;
+      }));
+      const urls = uploaded.filter((url): url is string => Boolean(url));
+      if (urls.length) setForm(f => ({ ...f, image_url: [...imageList(f.image_url), ...urls].join(',') }));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -198,7 +210,7 @@ export default function CasesPage() {
                     label={`拖曳調整 ${c.title} 的順序`}
                   >
                     <td className="px-4 py-3">
-                      {c.image_url ? <img src={c.image_url} alt={c.title} className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100" />}
+                      {c.image_url ? <img src={imageList(c.image_url)[0]} alt={c.title} className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100" />}
                     </td>
                     <td className="px-4 py-3 font-medium">{c.title}</td>
                     <td className="w-32 min-w-32 px-4 py-3 whitespace-nowrap">
@@ -281,11 +293,11 @@ export default function CasesPage() {
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-2 px-4 py-2 border border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                     <Upload className="w-4 h-4" />
-                    <span className="text-sm">{uploading ? '上傳中...' : '選擇圖片'}</span>
-                    <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+                    <span className="text-sm">{uploading ? '上傳中...' : '選擇圖片（可複選）'}</span>
+                    <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
                   </label>
-                  {form.image_url && <img src={form.image_url} alt="preview" className="w-12 h-12 rounded-lg object-cover" />}
                 </div>
+                {imageList(form.image_url).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{imageList(form.image_url).map((url, index) => <div key={`${url}-${index}`} className="relative"><img src={url} alt={`preview-${index + 1}`} className="h-16 w-16 rounded-lg object-cover" /><button type="button" onClick={() => setForm(f => ({ ...f, image_url: imageList(f.image_url).filter((_, imageIndex) => imageIndex !== index).join(',') }))} className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 text-xs text-white" aria-label={`移除第 ${index + 1} 張圖片`}>×</button></div>)}</div>}
               </div>
               <div className="flex items-center">
                 <label className="flex items-center gap-2 cursor-pointer">

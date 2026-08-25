@@ -88,7 +88,7 @@ export default function CasesGrid({ cases }: { cases: Case[] }) {
               <Link href={`/cases/${caseItem.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col focus:outline-none focus:ring-2 focus:ring-cta">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
-                    src={caseItem.image_url}
+                    src={caseItem.image_url.split(',')[0]}
                     alt={caseItem.title}
                     fill
                     className="object-cover hover:scale-105 transition-transform duration-500"

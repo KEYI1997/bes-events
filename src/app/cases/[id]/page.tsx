@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         title: data.title,
         description: data.description?.slice(0, 150) || `${SITE_NAME}活動案例`,
         path: `/cases/${id}`,
-        image: data.image_url || undefined,
+        image: data.image_url?.split(',')[0] || undefined,
         keywords: ['活動案例', data.title, SITE_NAME],
       })
     : createPageMetadata({ title: '活動案例', description: `${SITE_NAME}活動案例`, path: '/cases' });
@@ -42,7 +42,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   } catch {
     detail = {};
   }
-  const imageUrls = detail.imageUrls?.length ? detail.imageUrls : [caseItem.image_url];
+  const imageUrls = detail.imageUrls?.length ? detail.imageUrls : caseItem.image_url.split(',').map(url => url.trim()).filter(Boolean);
   const titleMatch = caseItem.title.match(/【([^】]+)】/);
   const activityTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
   const products = caseItem.used_products?.filter(Boolean).join(' | ');

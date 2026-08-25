@@ -84,7 +84,7 @@ export default function EventsCasesGrid({ cases, initialCategory }: EventsCasesG
               <div className="relative aspect-video overflow-hidden">
                 {c.image_url ? (
                   <Image
-                    src={c.image_url}
+                    src={c.image_url.split(',')[0]}
                     alt={c.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
