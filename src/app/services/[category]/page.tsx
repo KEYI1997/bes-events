@@ -150,13 +150,16 @@ function EventPackagePage() {
         <svg aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-32 w-full" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none">
           <defs><filter id="gold-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
           <path id="hero-line-1" d="M0 92C180 125 350 104 520 91C720 76 890 90 1010 58C1100 34 1150 12 1200 4" stroke="#cda774" strokeWidth="1" opacity=".8" />
-          <path id="hero-line-2" d="M0 112C170 135 320 132 500 112C690 91 850 104 1000 76C1090 58 1150 34 1200 18" stroke="#b58445" strokeWidth=".8" opacity=".45" />
-          <path id="hero-line-3" d="M0 76C180 104 350 82 530 74C730 66 900 78 1025 46C1110 24 1160 8 1200 0" stroke="#dfc49c" strokeWidth=".7" opacity=".65" />
           <circle r="4.5" fill="#b58445" filter="url(#gold-glow)"><animateMotion dur="8s" repeatCount="indefinite" path="M0 92C180 125 350 104 520 91C720 76 890 90 1010 58C1100 34 1150 12 1200 4" /></circle>
-          <circle r="3.5" fill="#cda774" filter="url(#gold-glow)"><animateMotion dur="10s" begin="-3s" repeatCount="indefinite" path="M0 112C170 135 320 132 500 112C690 91 850 104 1000 76C1090 58 1150 34 1200 18" /></circle>
-          <circle r="3" fill="#dfc49c" filter="url(#gold-glow)"><animateMotion dur="12s" begin="-6s" repeatCount="indefinite" path="M0 76C180 104 350 82 530 74C730 66 900 78 1025 46C1110 24 1160 8 1200 0" /></circle>
         </svg>
       </section>
+
+      <div aria-hidden="true" className="pointer-events-none relative h-24 overflow-hidden md:h-32">
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none">
+          <path d="M0 92C170 120 315 128 470 105C630 80 760 66 900 83C1030 98 1120 86 1200 58" stroke="#d0a565" strokeWidth="1" opacity=".5" />
+          <circle r="4" fill="#c89b55" filter="url(#gold-glow)"><animateMotion dur="10s" begin="-2s" repeatCount="indefinite" path="M1200 58C1120 86 1030 98 900 83C760 66 630 80 470 105C315 128 170 120 0 92" /></circle>
+        </svg>
+      </div>
 
       <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
         <SectionHeading title="我們提供的服務" english="OUR SERVICES" />
@@ -176,9 +179,10 @@ function EventPackagePage() {
       </section>
 
       <Divider />
-      <section className="mx-auto grid max-w-[1400px] gap-14 px-6 py-24 md:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:px-20 lg:py-32">
+      <section className="relative mx-auto grid max-w-[1400px] gap-14 overflow-hidden px-6 py-24 md:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:px-20 lg:py-32">
         <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-sm text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
         <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">正在規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">告訴我們活動日期、規模與需求，<br />由專人協助您規劃最合適的方案。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢活動企劃 →</a></div>
+        <svg aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-28 w-full" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none"><path d="M0 108C180 48 350 38 520 72C700 108 850 124 1000 79C1090 53 1150 42 1200 55" stroke="#d8b67a" strokeWidth="1.1" opacity=".45" /><circle r="4" fill="#c89b55" filter="url(#gold-glow)"><animateMotion dur="11s" begin="-5s" repeatCount="indefinite" path="M1200 55C1150 42 1090 53 1000 79C850 124 700 108 520 72C350 38 180 48 0 108" /></circle></svg>
       </section>
     </main>
   );
