@@ -147,7 +147,15 @@ function EventPackagePage() {
             <a href="/contact" className="mt-9 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢專案規劃 →</a>
           </AnimateOnScroll>
         </div>
-        <svg aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-24 w-full text-[#cda774]" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none"><path d="M0 82C190 112 350 90 520 82C720 72 890 80 1010 50C1100 28 1150 5 1200 0" stroke="currentColor" strokeWidth="1" /><circle cx="1010" cy="50" r="5" fill="currentColor" /></svg>
+        <svg aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-32 w-full" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none">
+          <defs><filter id="gold-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
+          <path id="hero-line-1" d="M0 92C180 125 350 104 520 91C720 76 890 90 1010 58C1100 34 1150 12 1200 4" stroke="#cda774" strokeWidth="1" opacity=".8" />
+          <path id="hero-line-2" d="M0 112C170 135 320 132 500 112C690 91 850 104 1000 76C1090 58 1150 34 1200 18" stroke="#b58445" strokeWidth=".8" opacity=".45" />
+          <path id="hero-line-3" d="M0 76C180 104 350 82 530 74C730 66 900 78 1025 46C1110 24 1160 8 1200 0" stroke="#dfc49c" strokeWidth=".7" opacity=".65" />
+          <circle r="4.5" fill="#b58445" filter="url(#gold-glow)"><animateMotion dur="8s" repeatCount="indefinite" path="M0 92C180 125 350 104 520 91C720 76 890 90 1010 58C1100 34 1150 12 1200 4" /></circle>
+          <circle r="3.5" fill="#cda774" filter="url(#gold-glow)"><animateMotion dur="10s" begin="-3s" repeatCount="indefinite" path="M0 112C170 135 320 132 500 112C690 91 850 104 1000 76C1090 58 1150 34 1200 18" /></circle>
+          <circle r="3" fill="#dfc49c" filter="url(#gold-glow)"><animateMotion dur="12s" begin="-6s" repeatCount="indefinite" path="M0 76C180 104 350 82 530 74C730 66 900 78 1025 46C1110 24 1160 8 1200 0" /></circle>
+        </svg>
       </section>
 
       <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
@@ -161,7 +169,7 @@ function EventPackagePage() {
       <section className="mx-auto max-w-[1100px] px-6 py-24 md:px-12 lg:py-32">
         <SectionHeading title="活動統包流程" english="OUR PROCESS" />
         <div className="relative mt-20 hidden min-h-[720px] md:block">
-          <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 900 720" fill="none" preserveAspectRatio="none"><path d="M450 65C450 120 630 115 630 180C630 245 450 240 450 300C450 360 270 355 270 420C270 485 450 480 450 540C450 600 630 595 630 660" stroke="#cda774" strokeWidth="1.5" /></svg>
+          <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 900 720" fill="none" preserveAspectRatio="none"><path d="M324 52 C324 105 576 104 576 157 C576 210 324 209 324 262 C324 315 576 314 576 367 C576 420 324 419 324 472 C324 525 576 524 576 577" stroke="#cda774" strokeWidth="1.5" /></svg>
           {processes.map(([title, text], index) => { const left = index % 2 === 0; return <div key={title} className={`absolute flex w-[43%] items-center gap-6 ${left ? 'left-0 justify-end text-right' : 'right-0 flex-row-reverse justify-end text-left'}`} style={{ top: `${index * 105 + 12}px` }}><div className="max-w-[250px]"><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 text-[15px] leading-7 text-[#5b5e65]">{text}</p></div><div className="relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#cda774] bg-[#fdfcfb] text-2xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div></div>; })}
         </div>
         <div className="mt-16 space-y-8 md:hidden">{processes.map(([title, text], index) => <div key={title} className="flex gap-5 border-b border-[#e1ddd6] pb-8"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#cda774] text-xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div><div><h3 className="text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-7 text-[#5b5e65]">{text}</p></div></div>)}</div>
@@ -169,7 +177,7 @@ function EventPackagePage() {
 
       <Divider />
       <section className="mx-auto grid max-w-[1400px] gap-14 px-6 py-24 md:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:px-20 lg:py-32">
-        <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-sm text-[#4f535b]">{occasions.map((occasion, i) => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
+        <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-sm text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
         <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">正在規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">告訴我們活動日期、規模與需求，<br />由專人協助您規劃最合適的方案。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢活動企劃 →</a></div>
       </section>
     </main>
