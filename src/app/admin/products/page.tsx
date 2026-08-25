@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { PRODUCT_CATEGORIES } from '@/lib/services';
 import { SortableTableRow } from '@/components/admin/SortableTableRow';
+import { parseProductOptionRows, serializeProductOptionRows, type ProductOptionRow } from '@/lib/productOptions';
 
 interface ProductData {
   id: string;
@@ -51,8 +52,10 @@ function getDisplayImage(p: ProductData): string {
 
 // 從 description 解析服務內容、注意事項、YouTube、AI圖檔
 function parseProduct(p: ProductData) {
+  const priceOptions = parseProductOptionRows(p.description || '', '價格選項');
+  const addOns = parseProductOptionRows(p.description || '', '加購方案');
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '' };
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns };
   }
   const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
@@ -61,7 +64,7 @@ function parseProduct(p: ProductData) {
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file };
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns };
 }
 
 export default function ProductsPage() {
@@ -71,7 +74,7 @@ export default function ProductsPage() {
   const [showDetail, setShowDetail] = useState<ProductData | null>(null);
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [form, setForm] = useState({
-    name: '', category: '啟動儀式', price_note: '',
+    name: '', category: '啟動儀式', price_note: '', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[],
     service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
     image_url: '', size_image_url: '', ai_file_url: '',
     stock: 1, visible: true,
@@ -104,7 +107,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_note: '', service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
+    setForm({ name: '', category: '啟動儀式', price_note: '', price_options: [], add_ons: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
     setShowModal(true);
   };
 
@@ -118,6 +121,8 @@ export default function ProductsPage() {
       name: p.name,
       category: p.category,
       price_note: p.price_note || '',
+      price_options: parsed.priceOptions,
+      add_ons: parsed.addOns,
       service_content: parsed.service,
       features: parsed.features,
       occasions: parsed.occasions,
@@ -183,6 +188,8 @@ export default function ProductsPage() {
     // 組合為舊schema格式存入（兼容）
     const description = [
       form.service_content ? `${form.category === '活動特效' ? '【效果介紹】' : '【服務內容】'}\n${form.service_content}` : '',
+      form.price_options.length ? `【價格選項】\n${serializeProductOptionRows(form.price_options)}` : '',
+      form.add_ons.length ? `【加購方案】\n${serializeProductOptionRows(form.add_ons)}` : '',
       form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
       form.occasions ? `【適用場合】\n${form.occasions}` : '',
@@ -196,7 +203,9 @@ export default function ProductsPage() {
       category: form.category,
       description,
       image_url: form.image_url,
-      price_note: form.price_note,
+      price_note: form.price_options.length
+        ? form.price_options.filter(row => row.label.trim() || row.price.trim()).map(row => `${row.label.trim()} ${row.price.trim()}`).join('\n')
+        : form.price_note,
       stock: form.stock,
       visible: form.visible,
       ai_file_url: form.ai_file_url || null,
@@ -236,6 +245,18 @@ export default function ProductsPage() {
     }
     setShowModal(false);
     fetchData();
+  };
+
+  const addOptionRow = (field: 'price_options' | 'add_ons') => {
+    setForm(current => ({ ...current, [field]: [...current[field], { label: '', price: '' }] }));
+  };
+
+  const updateOptionRow = (field: 'price_options' | 'add_ons', index: number, key: keyof ProductOptionRow, value: string) => {
+    setForm(current => ({ ...current, [field]: current[field].map((row, rowIndex) => rowIndex === index ? { ...row, [key]: value } : row) }));
+  };
+
+  const removeOptionRow = (field: 'price_options' | 'add_ons', index: number) => {
+    setForm(current => ({ ...current, [field]: current[field].filter((_, rowIndex) => rowIndex !== index) }));
   };
 
   const filteredProducts = products
@@ -493,18 +514,25 @@ export default function ProductsPage() {
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
 
-              {/* 分類 + 價格 */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* 分類 */}
+              <div>
                 <div>
                   <label className="block text-sm font-medium mb-1">分類 *</label>
                   <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">價格說明</label>
-                  <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="如：$36,000" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">價格選項</label><p className="mt-0.5 text-xs text-gray-500">可新增不同種類、規格或數量的價格。</p></div><button type="button" onClick={() => addOptionRow('price_options')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增價格列</button></div>
+                {form.price_options.length > 0 ? <div className="space-y-2">{form.price_options.map((row, index) => <div key={`price-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('price_options', index, 'label', e.target.value)} placeholder="項目／規格，例如：四頭" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('price_options', index, 'price', e.target.value)} placeholder="價格，例如：NT$12,000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><button type="button" onClick={() => removeOptionRow('price_options', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此價格列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未新增價格選項。若僅需要一個價格，可直接填寫下方的單一價格說明。</div>}
+                <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="單一價格說明（沒有價格選項時使用），例如：NT$36,000" className="mt-3 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" />
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">加購方案</label><p className="mt-0.5 text-xs text-gray-500">前臺建立訂單時，客戶可勾選這些加購項目。</p></div><button type="button" onClick={() => addOptionRow('add_ons')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增加購列</button></div>
+                {form.add_ons.length > 0 ? <div className="space-y-2">{form.add_ons.map((row, index) => <div key={`addon-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('add_ons', index, 'label', e.target.value)} placeholder="加購項目名稱" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('add_ons', index, 'price', e.target.value)} placeholder="加購價格，例如：NT$3,000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><button type="button" onClick={() => removeOptionRow('add_ons', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此加購列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未設定加購方案。</div>}
               </div>
 
               {/* 服務內容 */}

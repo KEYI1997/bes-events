@@ -10,9 +10,10 @@ interface ContactModalProps {
   onClose: () => void;
   productName?: string;
   serviceType?: string;
+  addOnOptions?: Array<{ label: string; price: string }>;
 }
 
-export default function ContactModal({ isOpen, onClose, productName, serviceType }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, productName, serviceType, addOnOptions = [] }: ContactModalProps) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: ''
   });
@@ -21,6 +22,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
   const [error, setError] = useState('');
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const [phoneError, setPhoneError] = useState('');
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +51,14 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     setError('');
 
     // 把產品名稱加到描述中
-    const desc = productName
-      ? `【詢問商品】${productName}\n${form.description}`
-      : form.description;
+    const selectedAddOnLines = addOnOptions
+      .filter(option => selectedAddOns.includes(option.label))
+      .map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`);
+    const desc = [
+      productName ? `【詢問商品】${productName}` : '',
+      selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
+      form.description,
+    ].filter(Boolean).join('\n');
 
     try {
       const res = await fetch('/api/contact', {
@@ -62,6 +69,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
       if (res.ok) {
         setSuccess(true);
         setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: '' });
+        setSelectedAddOns([]);
       } else {
         setError('提交失敗，請稍後再試');
       }
@@ -77,6 +85,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     setError('');
     setErrorFields([]);
     setPhoneError('');
+    setSelectedAddOns([]);
     onClose();
   };
 
@@ -183,6 +192,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
                   </select>
                   {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
+                {addOnOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">加購方案 <span className="font-normal text-gray-400">（可複選）</span></p><div className="space-y-2 rounded-lg border border-gray-200 p-3">{addOnOptions.map(option => <label key={option.label} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="checkbox" checked={selectedAddOns.includes(option.label)} onChange={event => setSelectedAddOns(current => event.target.checked ? [...current, option.label] : current.filter(label => label !== option.label))} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span>{option.price && <span className="text-sm font-medium text-[#AA7452]">{option.price}</span>}</label>)}</div></div>}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>
                   <input

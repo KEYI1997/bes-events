@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
+import { parseProductOptionRows } from '@/lib/productOptions';
 
 interface ProductDetail {
   id: string;
@@ -25,7 +26,7 @@ function parseDescription(desc: string) {
   const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const sizeImg = desc.match(/【尺寸圖】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
-  return { service, features, notice, occasions, youtube, sizeImg };
+  return { service, features, notice, occasions, youtube, sizeImg, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案') };
 }
 
 function parseLines(text: string): string[] {
@@ -56,6 +57,9 @@ export default function ProductDetailPage() {
 
   const images = product.image_url ? product.image_url.split(',').filter(Boolean) : [];
   const parsed = parseDescription(product.description || '');
+  const priceOptions = parsed.priceOptions.length > 0
+    ? parsed.priceOptions
+    : product.price_note ? [{ label: '價格', price: product.price_note }] : [];
   const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
@@ -142,7 +146,9 @@ export default function ProductDetailPage() {
             <div className="bg-white rounded-2xl p-8 shadow-sm flex flex-col justify-center w-full">
               <h1 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#4A4947' }}>{product.name}</h1>
               <hr className="border-gray-200 mb-6" />
-              <p className="text-3xl font-bold mb-8" style={{ color: '#AA7452' }}>NT {product.price_note || '洽詢'}</p>
+              <div className="mb-8 space-y-2">
+                {priceOptions.length > 0 ? priceOptions.map((option, index) => <div key={`${option.label}-${index}`} className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2 last:border-b-0"><span className="text-sm font-medium text-gray-600">{option.label}</span><span className="text-xl font-bold text-right" style={{ color: '#AA7452' }}>{option.price || '洽詢'}</span></div>) : <p className="text-3xl font-bold" style={{ color: '#AA7452' }}>洽詢</p>}
+              </div>
 
               {/* 建立訂單 */}
               <button
@@ -260,6 +266,7 @@ export default function ProductDetailPage() {
         onClose={() => setContactOpen(false)}
         productName={product.name}
         serviceType={serviceType}
+        addOnOptions={parsed.addOns}
       />
 
       {/* 圖片放大 Lightbox */}
