@@ -67,7 +67,7 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
       <section className="relative min-h-[620px] border-b border-[#e2ded8] bg-white md:min-h-[680px]">
         <div className="absolute inset-y-0 right-0 w-full md:w-[61%]">
           <Image src="/images/services/bartending.png" alt="外派調酒活動服務" fill priority className="object-cover object-center" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,1)_0%,rgba(255,255,255,.98)_20%,rgba(255,255,255,.82)_48%,rgba(255,255,255,.42)_76%,rgba(255,255,255,0)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,1)_0%,rgba(255,255,255,.98)_12%,rgba(255,255,255,.82)_29%,rgba(255,255,255,.42)_46%,rgba(255,255,255,0)_60%)]" />
         </div>
         <BartendingLines />
         <div className="relative z-10 mx-auto flex min-h-[620px] max-w-[1400px] items-center px-6 py-28 md:min-h-[680px] md:px-12 lg:px-20">
