@@ -106,8 +106,9 @@ export default async function ServiceCategoryPage({ params }: Props) {
 
 function SpecialEffectsPage({ products }: { products: Product[] }) {
   return (
-    <main className="min-h-screen bg-white text-[#172039]">
-      <section className="border-b border-[#e4e0d9] bg-[#fdfcfb] pt-28">
+    <main className="relative min-h-screen overflow-hidden bg-white text-[#172039]">
+      <SpecialEffectsAmbient />
+      <section className="relative z-10 border-b border-[#e4e0d9] bg-[#fdfcfb]/90 pt-28">
         <div className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 md:pb-12 lg:px-12">
           <AnimateOnScroll>
             <p className="text-xs font-medium uppercase tracking-[0.24em] text-[#b58445]">SPECIAL EFFECTS</p>
@@ -118,11 +119,37 @@ function SpecialEffectsPage({ products }: { products: Product[] }) {
           </AnimateOnScroll>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-4 py-14 md:py-16">
+      <section className="relative z-10 mx-auto max-w-7xl px-4 py-14 md:py-16">
         {products.length > 0 ? <ServiceProductGrid products={products} /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
       </section>
     </main>
   );
+}
+
+function SpecialEffectsAmbient() {
+  return (
+    <svg aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 1200 1600" preserveAspectRatio="none" fill="none">
+      <defs>
+        <radialGradient id="effects-glow-outer" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#d6a34a" stopOpacity=".12" /><stop offset="45%" stopColor="#d8b067" stopOpacity=".045" /><stop offset="100%" stopColor="#d8b067" stopOpacity="0" /></radialGradient>
+        <radialGradient id="effects-glow-inner" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#fffaf0" stopOpacity=".9" /><stop offset="18%" stopColor="#d6a34a" stopOpacity=".78" /><stop offset="68%" stopColor="#d8b067" stopOpacity=".14" /><stop offset="100%" stopColor="#d8b067" stopOpacity="0" /></radialGradient>
+      </defs>
+      <path id="effects-line-1" d="M-50 170 C200 85 385 250 595 154 C790 65 1000 190 1250 80" stroke="#c89b55" strokeWidth="1" opacity=".28" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" dur="1.8s" fill="freeze" /></path>
+      <path id="effects-line-2" d="M-40 420 C190 510 360 360 555 435 C755 514 950 350 1240 470" stroke="#d0a565" strokeWidth=".75" opacity=".22" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".18s" dur="2s" fill="freeze" /></path>
+      <path id="effects-line-3" d="M-45 920 C185 820 360 1010 570 900 C790 784 990 980 1245 850" stroke="#d8b67a" strokeWidth=".85" opacity=".25" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".35s" dur="2.1s" fill="freeze" /></path>
+      <path d="M-35 270 C145 235 285 318 430 278 C630 225 805 306 1010 230 C1100 198 1165 208 1240 180" stroke="#d8b67a" strokeWidth=".42" opacity=".16" />
+      <path d="M-20 665 C180 590 300 720 470 640 C670 545 845 704 1040 610 C1130 566 1180 574 1230 550" stroke="#c89b55" strokeWidth=".38" opacity=".14" />
+      <path d="M90 1270 C260 1170 396 1330 565 1225 C724 1128 885 1290 1110 1174" stroke="#d0a565" strokeWidth=".48" opacity=".16" />
+      <EffectsGlow pathId="effects-line-1" duration="15s" begin="1.9s" />
+      <EffectsGlow pathId="effects-line-2" duration="18s" begin="2.1s" reverse large />
+      <EffectsGlow pathId="effects-line-3" duration="20s" begin="2.3s" />
+    </svg>
+  );
+}
+
+function EffectsGlow({ pathId, duration, begin, reverse = false, large = false }: { pathId: string; duration: string; begin: string; reverse?: boolean; large?: boolean }) {
+  const outerRadius = large ? 32 : 28;
+  const innerRadius = large ? 8 : 7;
+  return <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin={begin} dur=".45s" fill="freeze" /><circle r={outerRadius} fill="url(#effects-glow-outer)" /><circle r={innerRadius} fill="url(#effects-glow-inner)" /><circle r="1.2" fill="#fffdf7" opacity=".88" /><animateMotion dur={duration} begin={`calc(${begin} + .3s)`} repeatCount="indefinite" {...(reverse ? { keyPoints: '1;0', keyTimes: '0;1', calcMode: 'linear' } : {})}><mpath href={`#${pathId}`} /></animateMotion></g>;
 }
 
 function OpeningCeremonyPage({ products }: { products: Product[] }) {
