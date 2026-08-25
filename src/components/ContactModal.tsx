@@ -11,9 +11,10 @@ interface ContactModalProps {
   productName?: string;
   serviceType?: string;
   addOnOptions?: Array<{ label: string; price: string }>;
+  priceOptions?: Array<{ label: string; price: string }>;
 }
 
-export default function ContactModal({ isOpen, onClose, productName, serviceType, addOnOptions = [] }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, productName, serviceType, addOnOptions = [], priceOptions = [] }: ContactModalProps) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: ''
   });
@@ -23,6 +24,8 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const [phoneError, setPhoneError] = useState('');
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [selectedPriceOption, setSelectedPriceOption] = useState('');
+  const [priceOptionError, setPriceOptionError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +37,12 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
       setError('請填寫所有必填欄位');
       setPhoneError('');
       setTimeout(() => setErrorFields([]), 500);
+      return;
+    }
+
+    if (priceOptions.length > 1 && !selectedPriceOption) {
+      setPriceOptionError('請選擇商品規格與價格');
+      setError('');
       return;
     }
 
@@ -54,8 +63,12 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     const selectedAddOnLines = addOnOptions
       .filter(option => selectedAddOns.includes(option.label))
       .map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`);
+    const chosenPriceOption = priceOptions.length === 1
+      ? priceOptions[0]
+      : priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption);
     const desc = [
       productName ? `【詢問商品】${productName}` : '',
+      chosenPriceOption ? `【選擇規格】${chosenPriceOption.label}${chosenPriceOption.price ? `｜${chosenPriceOption.price}` : ''}` : '',
       selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
       form.description,
     ].filter(Boolean).join('\n');
@@ -70,6 +83,8 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
         setSuccess(true);
         setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: '' });
         setSelectedAddOns([]);
+        setSelectedPriceOption('');
+        setPriceOptionError('');
       } else {
         setError('提交失敗，請稍後再試');
       }
@@ -86,6 +101,8 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     setErrorFields([]);
     setPhoneError('');
     setSelectedAddOns([]);
+    setSelectedPriceOption('');
+    setPriceOptionError('');
     onClose();
   };
 
@@ -192,6 +209,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
                   </select>
                   {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
+                {priceOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">{priceOptions.length > 1 ? '選擇商品規格與價格 *' : '商品規格與價格'}</p>{priceOptions.length === 1 ? <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"><span className="text-sm text-gray-700">{priceOptions[0].label}</span><span className="text-sm font-semibold text-[#AA7452]">{priceOptions[0].price || '洽詢'}</span></div> : <div className={`space-y-2 rounded-lg border p-3 ${priceOptionError ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>{priceOptions.map(option => { const value = `${option.label}｜${option.price}`; return <label key={value} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="radio" name="product-price-option" value={value} checked={selectedPriceOption === value} onChange={() => { setSelectedPriceOption(value); setPriceOptionError(''); }} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span><span className="text-sm font-medium text-[#AA7452]">{option.price || '洽詢'}</span></label>; })}</div>}{priceOptionError && <p className="mt-1 text-xs text-red-500">{priceOptionError}</p>}</div>}
                 {addOnOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">加購方案 <span className="font-normal text-gray-400">（可複選）</span></p><div className="space-y-2 rounded-lg border border-gray-200 p-3">{addOnOptions.map(option => <label key={option.label} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="checkbox" checked={selectedAddOns.includes(option.label)} onChange={event => setSelectedAddOns(current => event.target.checked ? [...current, option.label] : current.filter(label => label !== option.label))} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span>{option.price && <span className="text-sm font-medium text-[#AA7452]">{option.price}</span>}</label>)}</div></div>}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>

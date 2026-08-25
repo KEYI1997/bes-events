@@ -267,6 +267,7 @@ export default function ProductDetailPage() {
         productName={product.name}
         serviceType={serviceType}
         addOnOptions={parsed.addOns}
+        priceOptions={priceOptions}
       />
 
       {/* 圖片放大 Lightbox */}
