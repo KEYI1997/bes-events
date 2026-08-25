@@ -112,9 +112,9 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
           name: form.name.trim(),
           phone: form.phone.trim(),
           email: form.email.trim(),
-          service_type: `外派調酒 — ${planName}`,
+          service_type: '外派調酒',
           event_date: form.event_date,
-          description: `活動時間：${form.event_time}\n活動類型：${form.event_type}${form.note ? `\n備註：${form.note}` : ''}`,
+          description: `方案：${planName}\n活動時間：${form.event_time}\n活動類型：${form.event_type}${form.note ? `\n備註：${form.note}` : ''}`,
         }),
       });
 

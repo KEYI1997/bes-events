@@ -9,9 +9,10 @@ interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName?: string;
+  serviceType?: string;
 }
 
-export default function ContactModal({ isOpen, onClose, productName }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, productName, serviceType }: ContactModalProps) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: ''
   });
@@ -24,7 +25,8 @@ export default function ContactModal({ isOpen, onClose, productName }: ContactMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const missing = REQUIRED_FIELDS.filter(field => !form[field]);
+    const submissionForm = { ...form, service_type: serviceType || form.service_type };
+    const missing = REQUIRED_FIELDS.filter(field => !submissionForm[field]);
     if (missing.length > 0) {
       setErrorFields(missing);
       setError('請填寫所有必填欄位');
@@ -55,7 +57,7 @@ export default function ContactModal({ isOpen, onClose, productName }: ContactMo
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, description: desc }),
+        body: JSON.stringify({ ...submissionForm, description: desc }),
       });
       if (res.ok) {
         setSuccess(true);
@@ -171,13 +173,15 @@ export default function ContactModal({ isOpen, onClose, productName }: ContactMo
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">服務類型 *</label>
                   <select
-                    value={form.service_type}
+                    value={serviceType || form.service_type}
                     onChange={(e) => setForm({...form, service_type: e.target.value})}
-                    className={inputClass('service_type')}
+                    disabled={Boolean(serviceType)}
+                    className={`${inputClass('service_type')} ${serviceType ? 'cursor-not-allowed bg-gray-100 text-gray-600' : ''}`}
                   >
                     <option value="">請選擇</option>
                     {CONTACT_SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
+                  {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>

@@ -56,6 +56,7 @@ export default function ProductDetailPage() {
 
   const images = product.image_url ? product.image_url.split(',').filter(Boolean) : [];
   const parsed = parseDescription(product.description || '');
+  const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
     { title: '效果特色', lines: parseLines(parsed.features), tone: 'green', numbered: true },
@@ -258,6 +259,7 @@ export default function ProductDetailPage() {
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
         productName={product.name}
+        serviceType={serviceType}
       />
 
       {/* 圖片放大 Lightbox */}
