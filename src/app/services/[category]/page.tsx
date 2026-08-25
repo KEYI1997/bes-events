@@ -124,12 +124,12 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
   return (
     <main className="min-h-screen bg-[#fdfcfb] text-[#172039]">
       <section className="relative overflow-hidden border-b border-[#e2ded8]">
-        <div className="relative z-10 mx-auto max-w-[1400px] px-6 pb-28 pt-32 md:px-12 lg:px-20 lg:pb-36">
+        <div className="relative z-10 mx-auto max-w-[1400px] px-6 pb-16 pt-28 md:px-12 lg:px-20 lg:pb-20">
           <AnimateOnScroll>
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">OPENING CEREMONY</p>
             <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">啟動儀式</h1>
-            <p className="mt-5 text-2xl text-[#303746] md:text-3xl">讓開場成為活動最具記憶點的一刻</p>
-            <p className="mt-8 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">星辰運轉、全息投影、沙漏啟動等多種創意儀式，<br className="hidden md:block" />以精準節奏與現場執行，為品牌揭開精彩序幕。</p>
+            <p className="mt-3 text-2xl text-[#303746] md:text-3xl">讓開場成為活動最具記憶點的一刻</p>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">星辰運轉、全息投影、沙漏啟動等多種創意儀式，<br className="hidden md:block" />以精準節奏與現場執行，為品牌揭開精彩序幕。</p>
           </AnimateOnScroll>
         </div>
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none">
@@ -145,16 +145,17 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
           <path d="M-20 230 C130 196 238 264 376 214 C506 166 594 80 748 92 C910 104 1050 164 1230 96" stroke="#d8b67a" strokeWidth=".55" opacity=".2" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".42s" dur="2s" fill="freeze" /></path>
           <path d="M-20 412 C126 352 262 420 404 366 C548 312 658 394 810 338 C958 282 1068 338 1230 286" stroke="#c89b55" strokeWidth=".45" opacity=".18" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".55s" dur="2s" fill="freeze" /></path>
           <path d="M176 620 C286 520 394 582 472 496 C560 398 654 494 748 400 C846 304 970 402 1114 270" stroke="#d0a565" strokeWidth=".35" opacity=".16" strokeDasharray="1400" strokeDashoffset="1400"><animate attributeName="stroke-dashoffset" from="1400" to="0" begin=".7s" dur="2.1s" fill="freeze" /></path>
-          <GoldenGlow x={408} y={142} begin="1.95s" />
-          <GoldenGlow x={874} y={273} begin="2.1s" soft />
-          <GoldenGlow x={276} y={525} begin="2.25s" soft />
+          <GoldenGlow pathId="ceremony-line-1" begin="1.95s" motionBegin="2.25s" duration="13s" />
+          <GoldenGlow pathId="ceremony-line-2" begin="2.1s" motionBegin="2.4s" duration="16s" reverse soft />
+          <GoldenGlow pathId="ceremony-line-3" begin="2.25s" motionBegin="2.55s" duration="18s" soft />
         </svg>
       </section>
 
-      <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
+      <section className="relative mx-auto max-w-[1400px] px-6 py-20 md:px-12 lg:px-20 lg:py-24">
+        <CeremonyProductGlow />
         <SectionHeading title="啟動儀式方案" english="CEREMONY SOLUTIONS" />
         {products.length > 0 ? (
-          <div className="mt-16"><ServiceProductGrid products={products} /></div>
+          <div className="relative z-10 mt-12"><ServiceProductGrid products={products} /></div>
         ) : (
           <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}
@@ -163,15 +164,31 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
   );
 }
 
-function GoldenGlow({ x, y, begin, soft = false }: { x: number; y: number; begin: string; soft?: boolean }) {
+function GoldenGlow({ pathId, begin, motionBegin, duration, reverse = false, soft = false }: { pathId: string; begin: string; motionBegin: string; duration: string; reverse?: boolean; soft?: boolean }) {
   return (
-    <g transform={`translate(${x} ${y})`} opacity="0">
+    <g opacity="0">
       <animate attributeName="opacity" from="0" to="1" begin={begin} dur=".45s" fill="freeze" />
       <circle r={soft ? 28 : 24} fill="#d6a34a" opacity={soft ? ".06" : ".09"} filter="url(#ceremony-outer-glow)" />
       <circle r={soft ? 17 : 15} fill="#d8b067" opacity={soft ? ".15" : ".22"} filter="url(#ceremony-mid-glow)" />
       <circle r={soft ? 6 : 5} fill="#d6a34a" opacity=".72" filter="url(#ceremony-inner-glow)" />
       <circle r="1.15" fill="#fffdf7" opacity=".9" filter="url(#ceremony-core-soften)" />
+      <animateMotion dur={duration} begin={motionBegin} repeatCount="indefinite" {...(reverse ? { keyPoints: '1;0', keyTimes: '0;1', calcMode: 'linear' } : {})}><mpath href={`#${pathId}`} /></animateMotion>
     </g>
+  );
+}
+
+function CeremonyProductGlow() {
+  return (
+    <svg aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-20 z-20 h-[calc(100%-5rem)] w-full" viewBox="0 0 1200 700" preserveAspectRatio="none" fill="none">
+      <defs>
+        <filter id="ceremony-grid-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="9" /></filter>
+        <filter id="ceremony-grid-core" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation=".45" /></filter>
+      </defs>
+      <path id="ceremony-grid-line" d="M-40 180 C220 58 406 334 656 202 C850 100 996 254 1240 130" stroke="#d0a565" strokeWidth=".55" opacity=".15" />
+      <path id="ceremony-grid-line-2" d="M-20 490 C174 596 366 350 570 466 C756 570 960 420 1230 520" stroke="#c89b55" strokeWidth=".4" opacity=".12" />
+      <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin=".5s" dur=".45s" fill="freeze" /><circle r="25" fill="#d6a34a" opacity=".08" filter="url(#ceremony-grid-glow)" /><circle r="14" fill="#d8b067" opacity=".2" filter="url(#ceremony-grid-glow)" /><circle r="1.15" fill="#fffdf7" opacity=".9" filter="url(#ceremony-grid-core)" /><animateMotion dur="15s" begin=".8s" repeatCount="indefinite"><mpath href="#ceremony-grid-line" /></animateMotion></g>
+      <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin=".8s" dur=".45s" fill="freeze" /><circle r="28" fill="#d6a34a" opacity=".06" filter="url(#ceremony-grid-glow)" /><circle r="15" fill="#d8b067" opacity=".16" filter="url(#ceremony-grid-glow)" /><circle r="1.05" fill="#fffdf7" opacity=".82" filter="url(#ceremony-grid-core)" /><animateMotion dur="19s" begin="1.1s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#ceremony-grid-line-2" /></animateMotion></g>
+    </svg>
   );
 }
 
