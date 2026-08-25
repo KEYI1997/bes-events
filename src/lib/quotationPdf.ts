@@ -91,11 +91,11 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   const sectionY = noteTop + noteHeight + (relaxedLayout ? 16 : 11);
   doc.moveTo(MARGIN, sectionY - 5).lineTo(PAGE_WIDTH - MARGIN, sectionY - 5).lineWidth(0.8).strokeColor(BRAND).stroke();
   doc.fillColor(INK).fontSize(relaxedLayout ? 14 : 12).text('回簽前請詳閱說明', MARGIN, sectionY, { width: CONTENT_WIDTH, align: 'center' });
-  doc.fillColor(MUTED).fontSize(relaxedLayout ? 7.8 : 6.8).text('本頁為報價單之一部分，簽署或付款即表示同意以下約定。', MARGIN, sectionY + (relaxedLayout ? 22 : 18), { width: CONTENT_WIDTH, align: 'center' });
+  doc.fillColor(MUTED).fontSize(8).text('本頁為報價單之一部分，簽署或付款即表示同意以下約定。', MARGIN, sectionY + (relaxedLayout ? 22 : 18), { width: CONTENT_WIDTH, align: 'center' });
   const terms = ['本報價依目前需求提供，內容如有變更需另行報價，報價有效期限為 7 日。', '簽署或支付訂金後視為訂單成立，訂金 50%，尾款於活動前或當日結清。', '活動日前 30 日取消全額退款，14–30 日退 50%，14 日內取消恕不退款。', '改期以一次為限，需於活動日前 14 日提出。', '活動內容須於 7 日前確認，現場執行以報價單內容為準，新增需求另計。', '若因客戶因素（延遲、流程變更等）導致超時，將酌收延時費用。', '設備租借期間應妥善保管，如有損壞或遺失需照價賠償。', '客戶需準時提供資料，如延誤導致執行影響，本公司不負相關責任。', '天災等不可抗力因素，雙方另行協議處理。'];
   let termY = sectionY + (relaxedLayout ? 39 : 32);
-  const termStep = relaxedLayout ? 19 : 14;
-  const termFontSize = relaxedLayout ? 7.6 : 6.4;
+  const termStep = relaxedLayout ? 19 : 16;
+  const termFontSize = 8;
   terms.forEach((term, i) => { doc.fillColor(BRAND).fontSize(termFontSize).text(`${i + 1}.`, MARGIN, termY, { width: 17, align: 'right' }); doc.fillColor(INK).fontSize(termFontSize).text(term, MARGIN + 22, termY, { width: CONTENT_WIDTH - 22, lineGap: 0 }); termY += termStep; });
 
   const signatureTop = termY + (relaxedLayout ? 10 : 6); const signatureGap = 12; const signatureWidth = (CONTENT_WIDTH - signatureGap) / 2;
