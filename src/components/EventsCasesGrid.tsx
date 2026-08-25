@@ -27,9 +27,10 @@ export default function EventsCasesGrid({ cases, initialCategory }: EventsCasesG
       if (activeTab && container) {
         const containerRect = container.getBoundingClientRect();
         const tabRect = activeTab.getBoundingClientRect();
+        const underlineWidth = 28;
         setUnderlineStyle({
-          left: tabRect.left - containerRect.left,
-          width: tabRect.width,
+          left: tabRect.left - containerRect.left + (tabRect.width - underlineWidth) / 2,
+          width: underlineWidth,
         });
       }
     };
@@ -65,7 +66,8 @@ export default function EventsCasesGrid({ cases, initialCategory }: EventsCasesG
           ))}
           {/* 底部滑動線 */}
           <div
-            className="absolute -bottom-3 h-1 bg-cta rounded-full transition-all duration-500 ease-out"
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-3 h-0.5 rounded-full bg-cta transition-[left,width] duration-500 ease-out"
             style={{ left: underlineStyle.left, width: underlineStyle.width }}
           />
         </div>
