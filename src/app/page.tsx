@@ -1,4 +1,3 @@
-import Link from "next/link";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import ContactFormInline from "@/components/ContactFormInline";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -139,45 +138,6 @@ export default async function HomePage() {
 
       </section>
       </ScrollRevealSection>
-
-      <section className="border-b-2 border-gray-300 bg-gray-50 py-20">
-        <div className="mx-auto max-w-6xl px-4 md:px-16">
-          <AnimateOnScroll>
-            <div className="mb-10 max-w-3xl">
-              <h2 className="text-3xl font-bold text-primary md:text-4xl">境曜有限公司活動服務一覽</h2>
-              <p className="mt-4 text-lg leading-8 text-primary/70">
-                依活動目標快速比較服務內容，並前往各分頁查看方案、適用場合與實際案例。
-              </p>
-            </div>
-            <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
-              <table className="w-full min-w-[760px] border-collapse text-left">
-                <thead className="bg-primary text-white">
-                  <tr>
-                    <th className="px-5 py-4 font-semibold">服務項目</th>
-                    <th className="px-5 py-4 font-semibold">服務概要</th>
-                    <th className="px-5 py-4 font-semibold">常見需求</th>
-                    <th className="px-5 py-4 font-semibold">詳細介紹</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SERVICE_SEO_PAGES.map((service) => (
-                    <tr key={service.slug} className="border-t border-gray-200 align-top">
-                      <th scope="row" className="px-5 py-5 font-semibold text-primary">{service.name}</th>
-                      <td className="px-5 py-5 leading-7 text-primary/75">{service.summary}</td>
-                      <td className="px-5 py-5 leading-7 text-primary/75">{service.intents}</td>
-                      <td className="px-5 py-5">
-                        <Link className="font-semibold text-cta underline-offset-4 hover:underline" href={`/services/${service.slug}`}>
-                          查看服務分頁
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </AnimateOnScroll>
-        </div>
-      </section>
 
       {/* ── Section 4：聯絡我們 ── */}
       <ScrollRevealSection>
