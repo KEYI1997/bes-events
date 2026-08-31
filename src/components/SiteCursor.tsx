@@ -41,10 +41,8 @@ export default function SiteCursor() {
     const updateActiveState = (active: boolean) => {
       const cursor = cursorRef.current;
       if (!cursor) return;
-      const positioned = cursor.classList.contains('site-cursor--positioned');
       cursor.classList.toggle('site-cursor--visible', active);
       cursor.classList.toggle('site-cursor--active', active);
-      document.documentElement.classList.toggle('site-cursor-active', active && positioned);
     };
 
     const handleMove = (event: PointerEvent) => {
@@ -63,7 +61,6 @@ export default function SiteCursor() {
 
     return () => {
       document.documentElement.classList.remove('site-cursor-enabled');
-      document.documentElement.classList.remove('site-cursor-active');
       window.removeEventListener('pointermove', handleMove);
       document.removeEventListener('mouseleave', handleLeave);
     };

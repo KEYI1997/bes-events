@@ -29,16 +29,17 @@ body {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .site-cursor-active :is(
+  .site-cursor-enabled :is(
     a[href],
     button:not(:disabled),
     [role="button"]:not([aria-disabled="true"]),
+    [class*="cursor-pointer"],
     input[type="button"]:not(:disabled),
     input[type="submit"]:not(:disabled),
     input[type="reset"]:not(:disabled),
     summary
   ) {
-    cursor: none;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23654321' stroke-width='1.75'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23654321'/%3E%3C/svg%3E") 12 12, pointer;
   }
 }
 
