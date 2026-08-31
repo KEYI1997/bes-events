@@ -237,7 +237,6 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
                     type="text"
                     value={form.event_location}
                     onChange={(e) => setForm({...form, event_location: e.target.value})}
-                    required
                     className={inputClass('event_location')}
                     placeholder="請輸入活動地點"
                   />

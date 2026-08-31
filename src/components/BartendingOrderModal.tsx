@@ -280,7 +280,6 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
                 value={form.event_location}
                 onChange={e => handleChange('event_location', e.target.value)}
                 placeholder="請輸入活動地點"
-                required
                 className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
                   errors.event_location ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-cta'
                 }`}
