@@ -211,8 +211,29 @@ export default function Header() {
           <X size={32} />
         </button>
         <div className="absolute top-6 left-6 md:top-8 md:left-12">
-          <Link href="/" onClick={() => setFullNavOpen(false)}>
-            <Image src="/images/logo/logo-header.png" alt="境曜有限公司" width={140} height={140} className="w-auto h-10" unoptimized />
+          <Link
+            href="/"
+            onClick={() => setFullNavOpen(false)}
+            aria-label="返回首頁"
+            className="group relative block h-10 w-[116px] overflow-hidden rounded-[10px] outline-none transition-shadow duration-200 focus-visible:ring-2 focus-visible:ring-cta focus-visible:ring-offset-2"
+          >
+            <Image
+              src="/images/logo/logo-header.png"
+              alt="境曜有限公司"
+              fill
+              sizes="116px"
+              className="object-contain transition-opacity duration-200 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
+              unoptimized
+            />
+            <Image
+              src="/images/logo/logo-home-hover.png"
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="116px"
+              className="object-cover opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+              unoptimized
+            />
           </Link>
         </div>
         <div className="relative h-full overflow-y-auto pt-24 pb-12 px-6 md:px-12 lg:px-20">
