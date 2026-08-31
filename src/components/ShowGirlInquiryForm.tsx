@@ -77,7 +77,7 @@ export default function ShowGirlInquiryForm() {
           service_type: 'SHOW GIRL',
           event_date: eventDate,
           event_location: eventLocation,
-          description: `活動名稱：${eventName}\n需要人數：${headcount} 人\n身高範圍：${heightMin}～${heightMax} cm（含高跟鞋）\n服裝要求：${outfit}`,
+          description: `活動名稱：${eventName}\n需要人數：${headcount} 人\n身高範圍：${heightMin}～${heightMax} cm（含高跟鞋）\n工作及服裝要求：${outfit}`,
         }),
       });
       if (!response.ok) throw new Error('送出失敗');
@@ -157,9 +157,9 @@ export default function ShowGirlInquiryForm() {
         </div>
       </div>
 
-      {/* 服裝要求 */}
+      {/* 工作及服裝要求 */}
       <div>
-        <label className="block text-sm font-semibold text-primary mb-1.5">服裝要求</label>
+        <label className="block text-sm font-semibold text-primary mb-1.5">工作及服裝要求</label>
         <textarea
           value={outfit} onChange={e => setOutfit(e.target.value)}
           placeholder="例：正式禮服、休閒便服、主題服裝…"
