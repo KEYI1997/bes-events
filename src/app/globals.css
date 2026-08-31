@@ -65,20 +65,20 @@ body {
 .site-cursor__ring {
   width: 18px;
   height: 18px;
-  border: 1.5px solid #aa7452;
-  box-shadow: 0 2px 8px rgba(170, 116, 82, 0.18);
+  border: 1.75px solid #654321;
+  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.26);
 }
 
 .site-cursor__core {
   width: 3px;
   height: 3px;
-  background: #aa7452;
+  background: #654321;
 }
 
 .site-cursor__pulse {
   width: 18px;
   height: 18px;
-  border: 1px solid rgba(170, 116, 82, 0.58);
+  border: 1px solid rgba(101, 67, 33, 0.68);
   opacity: 0;
 }
 
