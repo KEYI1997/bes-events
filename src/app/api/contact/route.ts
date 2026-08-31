@@ -20,17 +20,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, phone, email, service_type, description, event_end_date, event_date, event_location } = body;
+    const location = typeof event_location === 'string' ? event_location.trim() : '';
 
-    if (!name || !phone) {
+    if (!name || !phone || !location) {
       return NextResponse.json(
-        { error: "姓名和電話為必填欄位" },
+        { error: "姓名、電話和活動地點為必填欄位" },
         { status: 400 }
       );
     }
 
     const normalizedPhone = normalizePhone(phone);
 
-    const location = typeof event_location === 'string' ? event_location.trim() : '';
     // 寫入 Supabase
     const { error } = await supabase.from("contacts").insert({
       name,

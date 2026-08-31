@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Send, CheckCircle, X } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
-const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date'] as const;
+const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
 interface ContactModalProps {
@@ -232,11 +232,12 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">活動地點</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">活動地點 *</label>
                   <input
                     type="text"
                     value={form.event_location}
                     onChange={(e) => setForm({...form, event_location: e.target.value})}
+                    required
                     className={inputClass('event_location')}
                     placeholder="請輸入活動地點"
                   />

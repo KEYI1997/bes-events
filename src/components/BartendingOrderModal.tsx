@@ -37,6 +37,7 @@ interface FormErrors {
   email?: string;
   event_date?: string;
   event_time?: string;
+  event_location?: string;
   event_type?: string;
 }
 
@@ -89,6 +90,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
 
     if (!form.event_date) newErrors.event_date = '請選擇活動日期';
     if (!form.event_time) newErrors.event_time = '請選擇活動時間';
+    if (!form.event_location.trim()) newErrors.event_location = '請填寫活動地點';
     if (!form.event_type) newErrors.event_type = '請選擇活動類型';
 
     setErrors(newErrors);
@@ -270,14 +272,20 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
 
             {/* 活動地點 */}
             <div>
-              <label className="block text-sm font-semibold text-primary mb-1.5">活動地點</label>
+              <label className="block text-sm font-semibold text-primary mb-1.5">
+                活動地點 <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={form.event_location}
                 onChange={e => handleChange('event_location', e.target.value)}
                 placeholder="請輸入活動地點"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none transition-colors focus:border-cta"
+                required
+                className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
+                  errors.event_location ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-cta'
+                }`}
               />
+              {errors.event_location && <p className="text-red-500 text-xs mt-1">{errors.event_location}</p>}
             </div>
 
             {/* 活動類型 */}

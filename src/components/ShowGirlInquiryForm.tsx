@@ -221,11 +221,12 @@ export default function ShowGirlInquiryForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-primary mb-1.5">活動地點</label>
+        <label className="block text-sm font-semibold text-primary mb-1.5">活動地點 *</label>
         <input
           type="text"
           value={eventLocation}
           onChange={e => setEventLocation(e.target.value)}
+          required
           placeholder="請輸入活動地點"
           className="w-full px-4 py-3 border-2 border-primary/20 rounded-xl focus:outline-none focus:border-cta transition text-sm"
         />
