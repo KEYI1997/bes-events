@@ -116,15 +116,17 @@ export default function Header() {
                 className="object-contain transition-opacity duration-200 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
                 unoptimized
               />
-              <Image
-                src="/images/logo/logo-home-hover.png"
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="180px"
-                className="object-contain opacity-0 [clip-path:inset(0_round_14px)] transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
-                unoptimized
-              />
+              <span className="absolute inset-y-0 left-1/2 w-[124px] -translate-x-1/2 overflow-hidden rounded-lg">
+                <Image
+                  src="/images/logo/logo-home-hover.png"
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  sizes="124px"
+                  className="object-cover opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+                  unoptimized
+                />
+              </span>
             </Link>
 
             <div className="flex items-center gap-7">
@@ -244,15 +246,17 @@ export default function Header() {
               className="object-contain transition-opacity duration-200 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
               unoptimized
             />
-            <Image
-              src="/images/logo/logo-home-hover.png"
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="116px"
-              className="object-cover opacity-0 [clip-path:inset(0_round_14px)] transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
-              unoptimized
-            />
+            <span className="absolute inset-y-0 left-1/2 w-[88px] -translate-x-1/2 overflow-hidden rounded-lg">
+              <Image
+                src="/images/logo/logo-home-hover.png"
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="88px"
+                className="object-cover opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+                unoptimized
+              />
+            </span>
           </Link>
         </div>
         <div className="relative h-full overflow-y-auto pt-24 pb-12 px-6 md:px-12 lg:px-20">
