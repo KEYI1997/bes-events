@@ -5,6 +5,22 @@ import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, 
 import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 
+function splitContactDescription(description?: string) {
+  const lines = (description || '').split('\n');
+  const locationIndex = lines.findIndex(line => line.startsWith('活動地點：'));
+  const eventLocation = locationIndex >= 0
+    ? lines[locationIndex].replace('活動地點：', '').trim()
+    : '';
+
+  return {
+    eventLocation,
+    description: lines
+      .filter((_, index) => index !== locationIndex)
+      .join('\n')
+      .replace(/^\n+|\n+$/g, ''),
+  };
+}
+
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,6 +51,7 @@ export default function ContactsPage() {
   const [converting, setConverting] = useState(false);
   const [convertSuccess, setConvertSuccess] = useState(false);
   const [convertError, setConvertError] = useState('');
+  const detailContent = detail ? splitContactDescription(detail.description) : null;
 
   const selectedService = getServiceDefinition(selectedServiceType);
   const availableProducts = products.filter(product =>
@@ -418,12 +435,13 @@ export default function ContactsPage() {
                 <div><p className="text-xs text-gray-500">服務類型</p><p className="font-medium">{detail.service_type}</p></div>
                 <div><p className="text-xs text-gray-500">活動起日</p><p className="font-medium">{detail.event_date}</p></div>
                 <div><p className="text-xs text-gray-500">活動迄日</p><p className="font-medium">{detail.event_end_date}</p></div>
+                {detailContent?.eventLocation && <div className="col-span-2"><p className="text-xs text-gray-500">活動地點</p><p className="font-medium">{detailContent.eventLocation}</p></div>}
               </div>
               
               {/* 客戶需求描述 */}
               <div>
                 <p className="text-xs text-gray-500 mb-1">客戶需求描述</p>
-                <p className="text-sm bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">{detail.description || '（無）'}</p>
+                <p className="text-sm bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">{detailContent?.description || '（無）'}</p>
               </div>
 
               {/* 工作人員備註 */}
