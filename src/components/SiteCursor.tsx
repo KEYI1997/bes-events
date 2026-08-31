@@ -45,9 +45,9 @@ export default function SiteCursor() {
       cursor.classList.toggle('site-cursor--active', active);
     };
 
-    const handleMove = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse') return;
-      const active = isActionable(event.target);
+    const handleMove = (event: MouseEvent) => {
+      const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
+      const active = isActionable(hoveredElement);
       const cursor = cursorRef.current;
       if (!cursor) return;
       cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
@@ -56,12 +56,12 @@ export default function SiteCursor() {
     };
     const handleLeave = () => updateActiveState(false);
 
-    window.addEventListener('pointermove', handleMove, { passive: true });
+    document.addEventListener('mousemove', handleMove, { passive: true, capture: true });
     document.addEventListener('mouseleave', handleLeave);
 
     return () => {
       document.documentElement.classList.remove('site-cursor-enabled');
-      window.removeEventListener('pointermove', handleMove);
+      document.removeEventListener('mousemove', handleMove, { capture: true });
       document.removeEventListener('mouseleave', handleLeave);
     };
   }, [pathname]);
