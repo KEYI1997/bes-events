@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer data-snap="true" className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-[0.75fr_0.85fr_0.9fr_1.9fr]">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-[220fr_250fr_250fr_560fr]">
           {/* 品牌 Logo */}
           <div>
             <img
