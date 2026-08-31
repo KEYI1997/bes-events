@@ -6,6 +6,7 @@ import FloatingButtons from "@/components/FloatingButtons";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import JsonLd from "@/components/JsonLd";
+import SiteCursor from "@/components/SiteCursor";
 import {
   DEFAULT_OG_IMAGE,
   SITE_DESCRIPTION,
@@ -107,6 +108,7 @@ export default function RootLayout({
         >
           {children}
         </LayoutWrapper>
+        <SiteCursor />
         <GoogleAnalytics />
       </body>
     </html>
