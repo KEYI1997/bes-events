@@ -65,7 +65,7 @@ export default function Footer() {
               </p>
               <p className="flex items-start gap-2 text-[16px] text-white/70">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>地址：104 臺北市中山區民權東路2段92巷6之1號</span>
+                <span>地址：235新北市中和區新南里圓通路52號</span>
               </p>
             </div>
             {/* 社群 */}
