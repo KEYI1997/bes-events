@@ -84,7 +84,6 @@ export default function Header() {
   // 決定用哪個 logo
   // 首頁未捲動 或 黑色膠囊 → 白色線條 logo
   // 其他（白底）→ 彩色 logo
-  const isWhiteBg = !isDarkScrollPage || (!scrolled && pathname !== '/');
   const logoSrc = (pathname === '/' && !scrolled) || (isDarkScrollPage && scrolled)
     ? '/images/logo/logo-header.png'
     : '/images/logo/logo-color.png';
@@ -104,8 +103,28 @@ export default function Header() {
               : 'bg-white shadow-sm'
         }`}>
           <div className="px-6 md:px-12 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center flex-shrink-0">
-              <Image src={logoSrc} alt="境曜有限公司" width={180} height={180} className="rounded-[8px] w-auto h-14" unoptimized />
+            <Link
+              href="/"
+              aria-label="返回首頁"
+              className="group relative block h-14 w-[180px] flex-shrink-0 overflow-hidden rounded-[10px] outline-none transition-shadow duration-200 focus-visible:ring-2 focus-visible:ring-cta focus-visible:ring-offset-2"
+            >
+              <Image
+                src={logoSrc}
+                alt="境曜有限公司"
+                fill
+                sizes="180px"
+                className="object-contain transition-opacity duration-200 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
+                unoptimized
+              />
+              <Image
+                src="/images/logo/logo-home-hover.png"
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="180px"
+                className="object-contain opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+                unoptimized
+              />
             </Link>
 
             <div className="flex items-center gap-7">
