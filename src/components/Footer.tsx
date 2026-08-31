@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer data-snap="true" className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-[0.75fr_0.85fr_0.9fr_1.9fr]">
           {/* 品牌 Logo */}
           <div>
             <img
@@ -65,7 +65,7 @@ export default function Footer() {
               </p>
               <p className="flex items-start gap-2 text-[16px] text-white/70">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>地址：235新北市中和區新南里圓通路52號</span>
+                <span className="lg:whitespace-nowrap">地址：235新北市中和區新南里圓通路52號</span>
               </p>
             </div>
             {/* 社群 */}
