@@ -19,7 +19,7 @@ function normalizePhone(phone: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, email, service_type, description, event_end_date, event_date } = body;
+    const { name, phone, email, service_type, description, event_end_date, event_date, event_location } = body;
 
     if (!name || !phone) {
       return NextResponse.json(
@@ -30,13 +30,19 @@ export async function POST(request: Request) {
 
     const normalizedPhone = normalizePhone(phone);
 
+    const location = typeof event_location === 'string' ? event_location.trim() : '';
+    const storedDescription = [
+      location ? `活動地點：${location}` : '',
+      description || '',
+    ].filter(Boolean).join('\n\n');
+
     // 寫入 Supabase
     const { error } = await supabase.from("contacts").insert({
       name,
       phone: normalizedPhone,
       email: email || null,
       service_type: service_type || null,
-      description: description || null,
+      description: storedDescription || null,
       event_end_date: event_end_date || null,
       event_date: event_date || null,
       status: "pending",
@@ -67,7 +73,7 @@ export async function POST(request: Request) {
           from: "境曜活動通知 <noreply@besevent.com>",
           to: notifyEmails,
           subject: `【新詢問單】${name}${service_type ? ` — ${service_type}` : ''}`,
-          html: contactEmailHtml({ name, phone: normalizedPhone, email, service_type, event_date, event_end_date, description }),
+          html: contactEmailHtml({ name, phone: normalizedPhone, email, service_type, event_date, event_end_date, event_location: location, description }),
         });
         if (emailError) {
           emailStatus = 'failed';
@@ -87,6 +93,7 @@ export async function POST(request: Request) {
       service_type ? `服務：${service_type}` : '',
       event_date ? `活動日期：${event_date}` : '',
       event_end_date ? `結束日期：${event_end_date}` : '',
+      location ? `活動地點：${location}` : '',
       description ? `需求：${String(description).slice(0, 2500)}` : '',
       '請至官網後臺查看完整詢問紀錄。',
     ].filter(Boolean).join('\n');

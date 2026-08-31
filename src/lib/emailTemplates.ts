@@ -69,6 +69,7 @@ export function contactEmailHtml(data: {
   service_type?: string;
   event_date?: string;
   event_end_date?: string;
+  event_location?: string;
   description?: string;
 }) {
   const rows = [
@@ -78,6 +79,7 @@ export function contactEmailHtml(data: {
     ...(data.service_type  ? [infoRow('服務類型', data.service_type,  true)]  : []),
     ...(data.event_date    ? [infoRow('活動起日', data.event_date,    false)] : []),
     ...(data.event_end_date? [infoRow('活動迄日', data.event_end_date,true)]  : []),
+    ...(data.event_location? [infoRow('活動地點', data.event_location, false)] : []),
     ...(data.description   ? [infoRow('需求說明', data.description.replace(/\n/g,'<br>'), false)] : []),
   ].join('');
 

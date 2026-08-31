@@ -26,6 +26,7 @@ interface FormState {
   email: string;
   event_date: string;
   event_time: string;
+  event_location: string;
   event_type: string;
   note: string;
 }
@@ -46,6 +47,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
     email: '',
     event_date: '',
     event_time: '',
+    event_location: '',
     event_type: '',
     note: '',
   });
@@ -115,6 +117,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
           email: form.email.trim(),
           service_type: '外派調酒',
           event_date: form.event_date,
+          event_location: form.event_location.trim(),
           description: `方案：${planName}\n活動時間：${form.event_time}\n活動類型：${form.event_type}${form.note ? `\n備註：${form.note}` : ''}`,
         }),
       });
@@ -263,6 +266,18 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
                 />
                 {errors.event_time && <p className="text-red-500 text-xs mt-1">{errors.event_time}</p>}
               </div>
+            </div>
+
+            {/* 活動地點 */}
+            <div>
+              <label className="block text-sm font-semibold text-primary mb-1.5">活動地點</label>
+              <input
+                type="text"
+                value={form.event_location}
+                onChange={e => handleChange('event_location', e.target.value)}
+                placeholder="請輸入活動地點"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none transition-colors focus:border-cta"
+              />
             </div>
 
             {/* 活動類型 */}

@@ -26,6 +26,7 @@ export default function ShowGirlInquiryForm() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [eventDate, setEventDate] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
   const [eventName, setEventName] = useState('');
   const [headcount, setHeadcount] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -75,6 +76,7 @@ export default function ShowGirlInquiryForm() {
           email,
           service_type: 'SHOW GIRL',
           event_date: eventDate,
+          event_location: eventLocation,
           description: `活動名稱：${eventName}\n需要人數：${headcount} 人\n身高範圍：${heightMin}～${heightMax} cm（含高跟鞋）\n服裝要求：${outfit}`,
         }),
       });
@@ -214,6 +216,17 @@ export default function ShowGirlInquiryForm() {
         <label className="block text-sm font-semibold text-primary mb-1.5">活動日期</label>
         <input
           type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
+          className="w-full px-4 py-3 border-2 border-primary/20 rounded-xl focus:outline-none focus:border-cta transition text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-primary mb-1.5">活動地點</label>
+        <input
+          type="text"
+          value={eventLocation}
+          onChange={e => setEventLocation(e.target.value)}
+          placeholder="請輸入活動地點"
           className="w-full px-4 py-3 border-2 border-primary/20 rounded-xl focus:outline-none focus:border-cta transition text-sm"
         />
       </div>

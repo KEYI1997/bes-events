@@ -11,7 +11,7 @@ const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
 export default function ContactFormInline({ submitLabel = '送出諮詢' }: { submitLabel?: string }) {
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: ''
+    name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -55,7 +55,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
       if (res.ok) {
         trackGoogleAdsLeadConversion();
         setSuccess(true);
-        setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', description: '' });
+        setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: '' });
       } else {
         setError('提交失敗，請稍後再試');
       }
@@ -155,6 +155,16 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
             value={form.event_end_date}
             onChange={(e) => setForm({...form, event_end_date: e.target.value})}
             className={inputClass('event_end_date')}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-primary mb-1">活動地點</label>
+          <input
+            type="text"
+            value={form.event_location}
+            onChange={(e) => setForm({...form, event_location: e.target.value})}
+            className={inputClass('event_location')}
+            placeholder="請輸入活動地點"
           />
         </div>
       </div>
