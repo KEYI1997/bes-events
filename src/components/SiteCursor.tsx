@@ -41,27 +41,30 @@ export default function SiteCursor() {
     const updateActiveState = (active: boolean) => {
       const cursor = cursorRef.current;
       if (!cursor) return;
+      const positioned = cursor.classList.contains('site-cursor--positioned');
       cursor.classList.toggle('site-cursor--visible', active);
       cursor.classList.toggle('site-cursor--active', active);
-      document.documentElement.classList.toggle('site-cursor-active', active);
+      document.documentElement.classList.toggle('site-cursor-active', active && positioned);
     };
 
-    const handleMove = (event: MouseEvent) => {
+    const handleMove = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return;
       const active = isActionable(event.target);
       const cursor = cursorRef.current;
       if (!cursor) return;
       cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+      cursor.classList.add('site-cursor--positioned');
       updateActiveState(active);
     };
     const handleLeave = () => updateActiveState(false);
 
-    window.addEventListener('mousemove', handleMove, { passive: true });
+    window.addEventListener('pointermove', handleMove, { passive: true });
     document.addEventListener('mouseleave', handleLeave);
 
     return () => {
       document.documentElement.classList.remove('site-cursor-enabled');
       document.documentElement.classList.remove('site-cursor-active');
-      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('pointermove', handleMove);
       document.removeEventListener('mouseleave', handleLeave);
     };
   }, [pathname]);
