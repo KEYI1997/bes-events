@@ -5,7 +5,7 @@ import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, 
 import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 
-function splitContactDescription(description?: string) {
+function splitContactDescription(description?: string, savedEventLocation?: string) {
   const lines = (description || '').split('\n');
   const locationIndex = lines.findIndex(line => line.startsWith('活動地點：'));
   const eventLocation = locationIndex >= 0
@@ -13,7 +13,7 @@ function splitContactDescription(description?: string) {
     : '';
 
   return {
-    eventLocation,
+    eventLocation: savedEventLocation?.trim() || eventLocation,
     description: lines
       .filter((_, index) => index !== locationIndex)
       .join('\n')
@@ -51,7 +51,7 @@ export default function ContactsPage() {
   const [converting, setConverting] = useState(false);
   const [convertSuccess, setConvertSuccess] = useState(false);
   const [convertError, setConvertError] = useState('');
-  const detailContent = detail ? splitContactDescription(detail.description) : null;
+  const detailContent = detail ? splitContactDescription(detail.description, detail.event_location) : null;
 
   const selectedService = getServiceDefinition(selectedServiceType);
   const availableProducts = products.filter(product =>

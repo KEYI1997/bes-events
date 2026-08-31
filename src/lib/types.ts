@@ -114,6 +114,7 @@ export interface Contact {
   description: string;
   event_date: string;
   event_end_date: string;
+  event_location?: string;
   read: boolean;
   status?: 'pending' | 'replied' | 'converted';  // 訂單/諮詢確認中 | 已回覆・未成立訂單 | 已轉訂單
   staff_note?: string;  // 工作人員備註

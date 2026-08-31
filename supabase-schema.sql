@@ -76,6 +76,7 @@ CREATE TABLE contacts (
   description TEXT,
   budget TEXT,
   event_date TEXT,
+  event_location TEXT,
   read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );

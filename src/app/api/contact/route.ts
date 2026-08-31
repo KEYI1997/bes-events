@@ -31,20 +31,16 @@ export async function POST(request: Request) {
     const normalizedPhone = normalizePhone(phone);
 
     const location = typeof event_location === 'string' ? event_location.trim() : '';
-    const storedDescription = [
-      location ? `活動地點：${location}` : '',
-      description || '',
-    ].filter(Boolean).join('\n\n');
-
     // 寫入 Supabase
     const { error } = await supabase.from("contacts").insert({
       name,
       phone: normalizedPhone,
       email: email || null,
       service_type: service_type || null,
-      description: storedDescription || null,
+      description: description || null,
       event_end_date: event_end_date || null,
       event_date: event_date || null,
+      event_location: location || null,
       status: "pending",
       read: false,
     });
