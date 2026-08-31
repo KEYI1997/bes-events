@@ -122,7 +122,7 @@ export default function Header() {
                 aria-hidden="true"
                 fill
                 sizes="180px"
-                className="object-contain opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="object-contain opacity-0 [clip-path:inset(0_round_14px)] transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
                 unoptimized
               />
             </Link>
@@ -250,7 +250,7 @@ export default function Header() {
               aria-hidden="true"
               fill
               sizes="116px"
-              className="object-cover opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+              className="object-cover opacity-0 [clip-path:inset(0_round_14px)] transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
               unoptimized
             />
           </Link>
