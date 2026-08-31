@@ -29,7 +29,7 @@ body {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .site-cursor-enabled :is(
+  .site-cursor-active :is(
     a[href],
     button:not(:disabled),
     [role="button"]:not([aria-disabled="true"]),
