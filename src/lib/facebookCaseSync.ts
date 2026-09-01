@@ -21,6 +21,11 @@ type FacebookPostsResponse = {
 
 type ProductReference = { name: string; category: string };
 
+type FacebookSyncMarker = {
+  caseId?: string;
+  postId?: string;
+};
+
 export type FacebookCaseSyncResult = {
   imported: number;
   skipped: number;
@@ -243,6 +248,17 @@ function collectImageSources(attachments: FacebookAttachment[] = []) {
   return [...sources];
 }
 
+function parseFacebookSyncMarker(value: string | null | undefined): FacebookSyncMarker {
+  if (!value) return {};
+
+  try {
+    const parsed = JSON.parse(value) as FacebookSyncMarker;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 async function copyFacebookImage(sourceUrl: string, postId: string, index: number) {
   const response = await fetch(sourceUrl);
   if (!response.ok) throw new Error(`圖片下載失敗（${response.status}）`);
@@ -300,12 +316,31 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
     const markerKey = `facebook_case_post_${post.id}`;
     const { data: existingMarker } = await supabase
       .from('site_content')
-      .select('id')
+      .select('id, value')
       .eq('key', markerKey)
       .maybeSingle();
     if (existingMarker) {
-      result.skipped += 1;
-      continue;
+      const marker = parseFacebookSyncMarker(existingMarker.value);
+      if (marker.caseId) {
+        const { data: existingCase } = await supabase
+          .from('cases')
+          .select('id')
+          .eq('id', marker.caseId)
+          .maybeSingle();
+        if (existingCase) {
+          result.skipped += 1;
+          continue;
+        }
+
+        // 案例可能已由後臺手動刪除；保留的同步標記不能阻止同一篇 FB 貼文重新建立。
+        await supabase
+          .from('site_content')
+          .delete()
+          .in('key', [markerKey, `facebook_case_detail_${marker.caseId}`]);
+      } else {
+        // 無法辨識舊版或損毀的標記時，將其視為失效，讓同步可以安全重建案例。
+        await supabase.from('site_content').delete().eq('key', markerKey);
+      }
     }
 
     try {
