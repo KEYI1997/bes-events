@@ -261,12 +261,12 @@ function EventPackagePage() {
   return (
     <main className="min-h-screen bg-[#fdfcfb] text-[#172039]">
       <section className="relative overflow-hidden border-b border-[#e2ded8]">
-        <div className="relative z-10 mx-auto max-w-[1400px] px-6 pb-28 pt-32 md:px-12 lg:px-20 lg:pb-36">
+        <div className="relative z-10 mx-auto max-w-[1280px] px-6 pb-24 pt-28 sm:px-8 md:px-12 lg:px-16 lg:pb-32 lg:pt-32">
           <AnimateOnScroll>
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">EVENT SOLUTION</p>
-            <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">活動策畫統包</h1>
-            <p className="mt-5 text-2xl text-[#303746] md:text-3xl">從概念到現場，一站到位</p>
-            <p className="mt-8 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">整合策略企劃、視覺設計、舞台技術與現場執行，<br className="hidden md:block" />為品牌打造專屬活動體驗，讓每一場活動都精彩且具價值。</p>
+            <h1 className="max-w-[10em] text-5xl font-medium leading-[1.16] tracking-tight md:text-6xl">活動策畫統包</h1>
+            <p className="mt-5 text-xl leading-relaxed text-[#303746] md:text-2xl">從概念到現場，一站到位</p>
+            <p className="mt-8 max-w-[42rem] text-base leading-8 text-[#4f535b] md:text-lg">整合策略企劃、視覺設計、舞台技術與現場執行，<br className="hidden md:block" />為品牌打造專屬活動體驗，讓每一場活動都精彩且具價值。</p>
             <a href="/contact" className="mt-9 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢專案規劃 →</a>
           </AnimateOnScroll>
         </div>
@@ -289,26 +289,26 @@ function EventPackagePage() {
         </svg>
       </section>
 
-      <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
+      <section className="mx-auto max-w-[1280px] px-6 py-20 sm:px-8 md:px-12 lg:px-16 lg:py-28">
         <SectionHeading title="我們提供的服務" english="OUR SERVICES" />
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
-          {services.map(([title, text], index) => <div key={title} className="border-b border-[#dedbd5] px-5 py-7 first:pl-0 md:border-b-0 md:border-r md:px-6 md:first:pl-0 md:last:border-r-0 lg:py-2"><p className="text-3xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</p><h2 className="mt-4 text-lg font-semibold">{title}</h2><p className="mt-3 text-sm leading-7 text-[#5b5e65]">{text}</p></div>)}
+        <div className="mt-14 grid grid-cols-1 divide-y divide-[#dedbd5] sm:grid-cols-2 sm:gap-x-10 sm:gap-y-10 sm:divide-y-0 lg:grid-cols-3 lg:gap-x-12 xl:grid-cols-6 xl:gap-x-0 xl:gap-y-0">
+          {services.map(([title, text], index) => <div key={title} className="py-8 sm:py-0 xl:min-h-[220px] xl:border-r xl:border-[#dedbd5] xl:px-6 xl:py-1 xl:first:pl-0 xl:last:border-r-0 xl:last:pr-0"><p className="text-3xl font-light leading-none text-[#b58445]">{String(index + 1).padStart(2, '0')}</p><h2 className="mt-5 text-xl font-semibold">{title}</h2><p className="mt-3 max-w-[19rem] text-[15px] leading-7 text-[#5b5e65] xl:max-w-none">{text}</p></div>)}
         </div>
       </section>
 
       <Divider />
-      <section className="mx-auto max-w-[1100px] px-6 py-24 md:px-12 lg:py-32">
+      <section className="mx-auto max-w-[1200px] px-6 py-20 sm:px-8 md:px-12 lg:py-28">
         <SectionHeading title="活動統包流程" english="OUR PROCESS" />
-        <div className="relative mt-20 hidden min-h-[720px] md:block">
-          <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 900 720" fill="none" preserveAspectRatio="none"><path d="M324 52 C324 105 576 104 576 157 C576 210 324 209 324 262 C324 315 576 314 576 367 C576 420 324 419 324 472 C324 525 576 524 576 577" stroke="#cda774" strokeWidth="1.5" /></svg>
-          {processes.map(([title, text], index) => { const left = index % 2 === 0; return <div key={title} className={`absolute flex w-[43%] items-center gap-6 ${left ? 'left-0 justify-end text-right' : 'right-0 flex-row-reverse justify-end text-left'}`} style={{ top: `${index * 105 + 12}px` }}><div className="max-w-[250px]"><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 text-[15px] leading-7 text-[#5b5e65]">{text}</p></div><div className="relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#cda774] bg-[#fdfcfb] text-2xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div></div>; })}
+        <div className="relative mt-16 hidden min-h-[700px] md:block">
+          <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 1000 700" fill="none" preserveAspectRatio="none"><path d="M420 50 C420 105 580 105 580 160 C580 215 420 215 420 270 C420 325 580 325 580 380 C580 435 420 435 420 490 C420 545 580 545 580 600" stroke="#cda774" strokeWidth="1.5" /></svg>
+          {processes.map(([title, text], index) => { const left = index % 2 === 0; return <div key={title} className={`absolute flex w-[47%] items-center gap-6 ${left ? 'left-0 justify-end text-right' : 'right-0 flex-row-reverse justify-end text-left'}`} style={{ top: `${index * 110 + 10}px` }}><div className="max-w-[260px]"><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 text-[15px] leading-7 text-[#5b5e65]">{text}</p></div><div className="relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#cda774] bg-[#fdfcfb] text-2xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div></div>; })}
         </div>
-        <div className="mt-16 space-y-8 md:hidden">{processes.map(([title, text], index) => <div key={title} className="flex gap-5 border-b border-[#e1ddd6] pb-8"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#cda774] text-xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div><div><h3 className="text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-7 text-[#5b5e65]">{text}</p></div></div>)}</div>
+        <div className="mt-14 space-y-7 md:hidden">{processes.map(([title, text], index) => <div key={title} className="flex gap-5 border-b border-[#e1ddd6] pb-7"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#cda774] text-xl font-light text-[#b58445]">{String(index + 1).padStart(2, '0')}</div><div><h3 className="text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-7 text-[#5b5e65]">{text}</p></div></div>)}</div>
       </section>
 
       <Divider />
-      <section className="mx-auto grid max-w-[1400px] gap-14 px-6 py-24 md:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:px-20 lg:py-32">
-        <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-sm text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
+      <section className="mx-auto grid max-w-[1280px] items-start gap-14 px-6 py-20 sm:px-8 md:px-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(25rem,0.85fr)] lg:gap-20 lg:px-16 lg:py-28">
+        <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-[15px] leading-7 text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
         <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">正在規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">告訴我們活動日期、規模與需求，<br />由專人協助您規劃最合適的方案。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢活動企劃 →</a></div>
       </section>
     </main>
