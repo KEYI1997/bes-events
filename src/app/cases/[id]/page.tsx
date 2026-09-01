@@ -7,7 +7,11 @@ import CaseGallery from './CaseGallery';
 import JsonLd from '@/components/JsonLd';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, SITE_NAME, SITE_URL, webPageJsonLd } from '@/lib/seo';
 
-type FacebookCaseDetail = { sourceUrl?: string; imageUrls?: string[] };
+type CaseMediaDetail = { sourceUrl?: string; imageUrls?: string[]; videoUrls?: string[] };
+
+function uniqueUrls(urls: Array<string | undefined>) {
+  return [...new Set(urls.map(url => url?.trim()).filter((url): url is string => Boolean(url)))];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -36,13 +40,17 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
     .select('value')
     .eq('key', `facebook_case_detail_${id}`)
     .maybeSingle();
-  let detail: FacebookCaseDetail = {};
+  let detail: CaseMediaDetail = {};
   try {
-    detail = detailRecord?.value ? JSON.parse(detailRecord.value) as FacebookCaseDetail : {};
+    detail = detailRecord?.value ? JSON.parse(detailRecord.value) as CaseMediaDetail : {};
   } catch {
     detail = {};
   }
-  const imageUrls = detail.imageUrls?.length ? detail.imageUrls : caseItem.image_url.split(',').map(url => url.trim()).filter(Boolean);
+  const imageUrls = uniqueUrls([
+    ...caseItem.image_url.split(',').map(url => url.trim()),
+    ...(detail.imageUrls || []),
+  ]);
+  const videoUrls = uniqueUrls(detail.videoUrls || []);
   const titleMatch = caseItem.title.match(/【([^】]+)】/);
   const activityTitle = titleMatch?.[1]?.trim() || caseItem.title.replace(/^【|】$/g, '').trim();
   const products = caseItem.used_products?.filter(Boolean).join(' | ');
@@ -91,7 +99,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         <div className="mx-auto mt-12 max-w-5xl border-l-2 border-[#b89a67] pl-5 text-base leading-[1.9] text-[#4d5159] sm:mt-14 sm:pl-7 md:text-lg">
           <div className="whitespace-pre-wrap">{articleText}</div>
         </div>
-        <CaseGallery images={imageUrls} title={displayTitle} />
+        <CaseGallery images={imageUrls} videos={videoUrls} title={displayTitle} />
         {(caseItem.used_services?.length || caseItem.used_products?.length || caseItem.applicable_occasions?.length) ? (
           <section className="mx-auto mt-14 grid max-w-5xl gap-10 rounded-[18px] border border-[#e5e1da] bg-[#f3f1ed] p-6 sm:p-8 md:grid-cols-2 md:gap-14 md:p-10">
             <div>

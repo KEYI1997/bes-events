@@ -22,6 +22,8 @@ const CATEGORY_DESC: Record<string, string> = {
   'bartending': '專業調酒師現場調製，為活動增添品味與儀式感。',
 };
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ category: string }>;
 };

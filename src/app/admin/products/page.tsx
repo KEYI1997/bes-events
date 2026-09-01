@@ -67,6 +67,11 @@ function parseProduct(p: ProductData) {
   return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns };
 }
 
+function getAllProductImages(p: ProductData): string[] {
+  const legacyImages = p.image_url?.split(',').map(url => url.trim()).filter(Boolean) || [];
+  return [...new Set([...(p.image_urls || []), ...legacyImages])];
+}
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +99,7 @@ export default function ProductsPage() {
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
-    const res = await fetch('/api/admin?table=products', { headers: getHeaders() });
+    const res = await fetch('/api/admin?table=products', { headers: getHeaders(), cache: 'no-store' });
     const json = await res.json();
     const loaded = (json.data || []) as ProductData[];
     setProducts(loaded.sort((a, b) => a.category.localeCompare(b.category, 'zh-Hant') || (a.sort_order ?? 0) - (b.sort_order ?? 0)));
@@ -128,7 +133,7 @@ export default function ProductsPage() {
       occasions: parsed.occasions,
       notice: parsed.notice,
       youtube_url: parsed.youtube || p.youtube_url || '',
-      image_url: getDisplayImage(p),
+      image_url: getAllProductImages(p).join(','),
       size_image_url: sizeUrl,
       ai_file_url: parsed.ai_file || p.ai_file_url || '',
       stock: p.stock ?? 1,

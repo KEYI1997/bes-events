@@ -1,30 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
-
-// 取得目前有效密碼（優先從 Supabase 讀取，沒有則用環境變數）
-async function getCurrentPassword() {
-  try {
-    const supabase = getServiceClient();
-    const { data } = await supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "admin_password")
-      .single();
-    
-    if (data?.value) {
-      return data.value;
-    }
-  } catch {
-    // 忽略錯誤，fallback 到環境變數
-  }
-  return process.env.ADMIN_PASSWORD || '';
-}
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
 // 簡易密碼驗證（header: x-admin-password）
 async function verifyAdmin(request: NextRequest) {
-  const password = request.headers.get("x-admin-password");
-  const currentPassword = await getCurrentPassword();
-  return password === currentPassword;
+  return verifyAdminRequest(request);
 }
 
 // GET /api/admin?table=xxx

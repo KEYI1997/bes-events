@@ -1,44 +1,64 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-export default function CaseGallery({ images, title }: { images: string[]; title: string }) {
+type CaseMedia = { type: 'image' | 'video'; url: string };
+
+export default function CaseGallery({ images, videos = [], title }: { images: string[]; videos?: string[]; title: string }) {
+  const media = useMemo<CaseMedia[]>(() => [
+    ...images.map(url => ({ type: 'image' as const, url })),
+    ...videos.map(url => ({ type: 'video' as const, url })),
+  ], [images, videos]);
   const [active, setActive] = useState(0);
+  const activeIndex = Math.min(active, Math.max(media.length - 1, 0));
 
   useEffect(() => {
-    if (images.length < 2) return;
-    const timer = window.setInterval(() => setActive(current => (current + 1) % images.length), 3000);
+    if (media.length < 2 || media[activeIndex]?.type !== 'image') return;
+    const timer = window.setInterval(() => {
+      setActive(current => {
+        for (let offset = 1; offset <= media.length; offset += 1) {
+          const next = (current + offset) % media.length;
+          if (media[next]?.type === 'image') return next;
+        }
+        return current;
+      });
+    }, 3000);
     return () => window.clearInterval(timer);
-  }, [images.length]);
+  }, [activeIndex, media]);
+
+  if (media.length === 0) return null;
+  const activeMedia = media[activeIndex];
 
   return (
-    <section aria-label="案例照片" className="mx-auto mt-10 max-w-5xl">
+    <section aria-label="案例媒體" className="mx-auto mt-10 max-w-5xl">
       <div className="relative mx-auto aspect-[16/9] w-full max-w-4xl overflow-hidden rounded-[14px] bg-[#eeece8]">
-        {images.map((image, index) => (
+        {activeMedia.type === 'image' ? (
           <Image
-            key={`${image}-${index}`}
-            src={image}
-            alt={`${title} 活動照片 ${index + 1}`}
+            src={activeMedia.url}
+            alt={`${title} 活動照片 ${images.indexOf(activeMedia.url) + 1}`}
             fill
             sizes="(max-width: 768px) 100vw, 900px"
-            className={`object-cover transition-opacity duration-500 ${index === active ? 'opacity-100' : 'opacity-0'}`}
-            priority={index === 0}
+            className="object-cover"
+            priority={activeIndex === 0}
           />
-        ))}
+        ) : (
+          <video src={activeMedia.url} controls preload="metadata" className="h-full w-full object-cover">此瀏覽器不支援影片播放。</video>
+        )}
       </div>
-      <div className="mt-5 flex gap-3 overflow-x-auto pb-2" role="tablist" aria-label="選擇案例照片">
-        {images.map((image, index) => (
+      <div className="mt-5 flex gap-3 overflow-x-auto pb-2" role="tablist" aria-label="選擇案例媒體">
+        {media.map((item, index) => (
           <button
-            key={`${image}-thumb-${index}`}
+            key={`${item.url}-thumb-${index}`}
             type="button"
             role="tab"
-            aria-selected={index === active}
-            aria-label={`顯示第 ${index + 1} 張照片`}
+            aria-selected={index === activeIndex}
+            aria-label={item.type === 'video' ? `播放第 ${index + 1 - images.length} 部影片` : `顯示第 ${index + 1} 張照片`}
             onClick={() => setActive(index)}
-            className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-md border-2 transition-colors sm:h-24 sm:w-36 ${index === active ? 'border-[#b89a67]' : 'border-[#e0ddd7]'}`}
+            className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-md border-2 transition-colors sm:h-24 sm:w-36 ${index === activeIndex ? 'border-[#b89a67]' : 'border-[#e0ddd7]'}`}
           >
-            <Image src={image} alt="" fill sizes="144px" className="object-cover" />
+            {item.type === 'image' ? <Image src={item.url} alt="" fill sizes="144px" className="object-cover" /> : <video src={item.url} muted preload="metadata" className="h-full w-full object-cover" />}
+            {item.type === 'video' && <span className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-xs font-medium text-white">影片</span>}
           </button>
         ))}
       </div>

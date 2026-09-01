@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
-  const password = request.headers.get("x-admin-password");
-  if (password !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+  if (!await verifyAdminRequest(request)) {
     return NextResponse.json({ error: "未授權" }, { status: 401 });
   }
 

@@ -37,14 +37,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+    setError('');
+    try {
+      const response = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'x-admin-password': inputPassword },
+      });
+      if (!response.ok) {
+        setError('密碼錯誤');
+        return;
+      }
       localStorage.setItem('admin_password', inputPassword);
       setIsLoggedIn(true);
-      setError('');
-    } else {
-      setError('密碼錯誤');
+    } catch {
+      setError('暫時無法驗證密碼，請稍後再試');
     }
   };
 

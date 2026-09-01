@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, RefreshCw, Video } from 'lucide-react';
 import {
   closestCenter,
   DndContext,
@@ -19,13 +19,14 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableTableRow } from '@/components/admin/SortableTableRow';
 import type { Case } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
 
 const CATEGORIES = ['開幕典禮', '記者會', '新品發表會', '展覽攤位', '政府活動', '春酒尾牙', '典禮節慶'] as const;
 const SERVICE_TYPES = ['活動策劃統包', '啟動儀式', '活動特效', '燈光音響舞台', '外派調酒', 'SHOW GIRL', '其他'] as const;
 
 const EMPTY_CASE = {
   title: '', category: '開幕典禮' as string, service_type: '',
-  description: '', image_url: '', client_name: '', event_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
+  description: '', image_url: '', video_urls: [] as string[], client_name: '', event_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
 };
 
 function toList(value: string) {
@@ -36,6 +37,10 @@ function imageList(value: string) {
   return value.split(',').map(item => item.trim()).filter(Boolean);
 }
 
+function uniqueUrls(urls: string[]) {
+  return [...new Set(urls.map(url => url.trim()).filter(Boolean))];
+}
+
 export default function CasesPage() {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +48,9 @@ export default function CasesPage() {
   const [editing, setEditing] = useState<Case | null>(null);
   const [form, setForm] = useState(EMPTY_CASE);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
   const [syncingFacebook, setSyncingFacebook] = useState(false);
@@ -54,7 +62,7 @@ export default function CasesPage() {
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
-    const res = await fetch('/api/admin?table=cases', { headers: getHeaders() });
+    const res = await fetch('/api/admin?table=cases', { headers: getHeaders(), cache: 'no-store' });
     const json = await res.json();
     const sorted = (json.data || []).sort((a: Case, b: Case) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     setCases(sorted);
@@ -67,21 +75,39 @@ export default function CasesPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setUploadError('');
+    setSaveError('');
     const maxOrder = cases.length > 0 ? Math.max(...cases.map(c => c.sort_order ?? 0)) + 1 : 1;
     setForm({ ...EMPTY_CASE, sort_order: maxOrder });
     setShowModal(true);
   };
 
-  const openEdit = (c: Case) => {
+  const openEdit = async (c: Case) => {
     setEditing(c);
-    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, client_name: c.client_name, event_date: c.event_date, used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
+    setUploadError('');
+    setSaveError('');
+    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, video_urls: [], client_name: c.client_name, event_date: c.event_date, used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
     setShowModal(true);
+    try {
+      const response = await fetch(`/api/admin/case-media?caseId=${encodeURIComponent(c.id)}`, { headers: getHeaders() });
+      if (!response.ok) throw new Error('無法讀取案例媒體資料');
+      const json = await response.json();
+      const media = json.data || {};
+      setForm(current => ({
+        ...current,
+        image_url: uniqueUrls(media.imageUrls?.length ? media.imageUrls : imageList(c.image_url)).join(','),
+        video_urls: uniqueUrls(media.videoUrls || []),
+      }));
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : '無法讀取案例媒體資料');
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setUploading(true);
+    setUploadError('');
     try {
       const uploaded = await Promise.all(files.map(async file => {
         const fd = new FormData();
@@ -89,10 +115,43 @@ export default function CasesPage() {
         fd.append('folder', 'cases');
         const res = await fetch('/api/upload', { method: 'POST', headers: getHeaders(), body: fd });
         const json = await res.json();
-        return res.ok && json.url ? json.url as string : null;
+        if (!res.ok) throw new Error(json.error || `${file.name} 上傳失敗`);
+        return json.url as string;
       }));
       const urls = uploaded.filter((url): url is string => Boolean(url));
-      if (urls.length) setForm(f => ({ ...f, image_url: [...imageList(f.image_url), ...urls].join(',') }));
+      if (urls.length) setForm(f => ({ ...f, image_url: uniqueUrls([...imageList(f.image_url), ...urls]).join(',') }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : '圖片上傳失敗，請稍後再試');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    setUploadError('');
+    try {
+      const uploaded = await Promise.all(files.map(async file => {
+        if (!file.type.startsWith('video/')) throw new Error(`${file.name} 不是影片檔案`);
+        const signResponse = await fetch('/api/upload/video', {
+          method: 'POST',
+          headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: file.name, contentType: file.type }),
+        });
+        const signed = await signResponse.json();
+        if (!signResponse.ok) throw new Error(signed.error || `${file.name} 無法準備上傳`);
+        const { error } = await supabase.storage
+          .from('images')
+          .uploadToSignedUrl(signed.path, signed.token, file, { contentType: file.type, upsert: false });
+        if (error) throw new Error(`${file.name} 上傳失敗：${error.message}`);
+        return signed.url as string;
+      }));
+      setForm(current => ({ ...current, video_urls: uniqueUrls([...current.video_urls, ...uploaded]) }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : '影片上傳失敗，請稍後再試');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -101,14 +160,32 @@ export default function CasesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaveError('');
+    setSaving(true);
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
-    if (editing) {
-      await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: editing.id, record: form }) });
-    } else {
-      await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'cases', record: form }) });
+    const { video_urls, ...record } = form;
+    try {
+      const response = editing
+        ? await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: editing.id, record }) })
+        : await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'cases', record }) });
+      const json = await response.json();
+      if (!response.ok || !json.data?.id) throw new Error(json.error || '案例儲存失敗');
+
+      const mediaResponse = await fetch('/api/admin/case-media', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ caseId: json.data.id, imageUrls: imageList(record.image_url), videoUrls: video_urls }),
+      });
+      const mediaJson = await mediaResponse.json();
+      if (!mediaResponse.ok) throw new Error(mediaJson.error || '案例媒體儲存失敗');
+
+      setShowModal(false);
+      await fetchData();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : '案例儲存失敗，請稍後再試');
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
-    fetchData();
   };
 
   const handleDelete = async () => {
@@ -289,7 +366,7 @@ export default function CasesPage() {
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="活動簡介..." />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">圖片</label>
+                <label className="block text-sm font-medium mb-1">活動圖片</label>
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-2 px-4 py-2 border border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                     <Upload className="w-4 h-4" />
@@ -297,8 +374,20 @@ export default function CasesPage() {
                     <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
                   </label>
                 </div>
-                {imageList(form.image_url).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{imageList(form.image_url).map((url, index) => <div key={`${url}-${index}`} className="relative"><img src={url} alt={`preview-${index + 1}`} className="h-16 w-16 rounded-lg object-cover" /><button type="button" onClick={() => setForm(f => ({ ...f, image_url: imageList(f.image_url).filter((_, imageIndex) => imageIndex !== index).join(',') }))} className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 text-xs text-white" aria-label={`移除第 ${index + 1} 張圖片`}>×</button></div>)}</div>}
+                {imageList(form.image_url).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{imageList(form.image_url).map((url, index) => <div key={`${url}-${index}`} className="relative"><img src={url} alt={`預覽圖片 ${index + 1}`} className="h-16 w-16 rounded-lg object-cover" /><button type="button" onClick={() => setForm(f => ({ ...f, image_url: imageList(f.image_url).filter((_, imageIndex) => imageIndex !== index).join(',') }))} className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 text-xs text-white" aria-label={`移除第 ${index + 1} 張圖片`}>×</button></div>)}</div>}
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">活動影片</label>
+                <p className="mb-2 text-xs leading-5 text-gray-500">影片會在前台由訪客自行播放，不會自動播放。</p>
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                  <Video className="w-4 h-4" />
+                  <span className="text-sm">{uploading ? '上傳中...' : '選擇影片（可複選）'}</span>
+                  <input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" />
+                </label>
+                {form.video_urls.length > 0 && <div className="mt-3 grid gap-3 sm:grid-cols-2">{form.video_urls.map((url, index) => <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 p-2"><video src={url} controls preload="metadata" className="aspect-video w-full rounded object-cover">此瀏覽器不支援影片播放。</video><button type="button" onClick={() => setForm(f => ({ ...f, video_urls: f.video_urls.filter((_, videoIndex) => videoIndex !== index) }))} className="absolute right-1 top-1 rounded-full bg-red-500 px-1.5 text-xs text-white" aria-label={`移除第 ${index + 1} 部影片`}>×</button></div>)}</div>}
+              </div>
+              {uploadError && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{uploadError}</p>}
+              {saveError && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{saveError}</p>}
               <div className="flex items-center">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.visible} onChange={e => setForm(f => ({ ...f, visible: e.target.checked }))} className="w-4 h-4 rounded" />
@@ -307,7 +396,7 @@ export default function CasesPage() {
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">取消</button>
-                <button type="submit" className="px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90" style={{ backgroundColor: '#AA7452' }}>{editing ? '更新' : '新增'}</button>
+                <button type="submit" disabled={saving || uploading} className="px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" style={{ backgroundColor: '#AA7452' }}>{saving ? '儲存中...' : editing ? '更新' : '新增'}</button>
               </div>
             </form>
           </div>

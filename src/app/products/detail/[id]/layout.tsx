@@ -24,6 +24,8 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 function summarizeProduct(product: ProductSeoRecord) {
   const summary = product.description
     ?.replace(/【[^】]+】/g, ' ')
