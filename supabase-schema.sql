@@ -25,7 +25,10 @@ CREATE TABLE cases (
   description TEXT,
   image_url TEXT NOT NULL,
   client_name TEXT,
+  -- Facebook / 文章發佈日期
   event_date DATE,
+  -- 實際活動當日日期；由後臺手動填寫
+  activity_date DATE,
   used_services TEXT[] NOT NULL DEFAULT '{}',
   used_products TEXT[] NOT NULL DEFAULT '{}',
   applicable_occasions TEXT[] NOT NULL DEFAULT '{}',

@@ -10,6 +10,11 @@ ALTER TABLE products
   CHECK (category IN ('AI互動道具', '專案企劃', '啟動儀式', '活動特效', '燈光音響舞台', '外派調酒', 'Show Girl'));
 `;
 
+const CASE_ACTIVITY_DATE_MIGRATION = `
+ALTER TABLE cases ADD COLUMN IF NOT EXISTS activity_date DATE;
+COMMENT ON COLUMN cases.activity_date IS 'Actual event date entered manually by admins.';
+`;
+
 const BARTENDING_PLAN_DATA = [
   ['A', 50, '15 人以內', 'NT$13,500', 'NT$13,000', 'NT$260／杯'],
   ['B', 80, '30 人以內', 'NT$21,000', 'NT$20,000', 'NT$250／杯'],
@@ -82,7 +87,7 @@ export async function GET() {
 
   // 舊版環境可能缺少 ai_file_url；與產品分類限制一起做成可重複執行的固定遷移。
   const { error } = await supabase.from('products').select('ai_file_url').limit(1);
-  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}`;
+  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}${CASE_ACTIVITY_DATE_MIGRATION}`;
   const result = await runSql(sql);
   const migrationWarning = result.ok ? null : await result.text();
 

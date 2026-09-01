@@ -26,7 +26,7 @@ const SERVICE_TYPES = ['活動策劃統包', '啟動儀式', '活動特效', '�
 
 const EMPTY_CASE = {
   title: '', category: '開幕典禮' as string, service_type: '',
-  description: '', image_url: '', video_urls: [] as string[], client_name: '', event_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
+  description: '', image_url: '', video_urls: [] as string[], client_name: '', event_date: '', activity_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
 };
 
 function toList(value: string) {
@@ -86,7 +86,7 @@ export default function CasesPage() {
     setEditing(c);
     setUploadError('');
     setSaveError('');
-    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, video_urls: [], client_name: c.client_name, event_date: c.event_date, used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
+    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, video_urls: [], client_name: c.client_name, event_date: c.event_date, activity_date: c.activity_date || '', used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
     setShowModal(true);
     try {
       const response = await fetch(`/api/admin/case-media?caseId=${encodeURIComponent(c.id)}`, { headers: getHeaders() });
@@ -272,6 +272,7 @@ export default function CasesPage() {
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">服務項目</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">主辦方</th>
                   <th className="px-4 py-3 text-left text-gray-500 font-medium">文章日期</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium whitespace-nowrap">活動當日日期</th>
                   <th className="px-4 py-3 text-center text-gray-500 font-medium">狀態</th>
                   <th className="px-4 py-3 text-center text-gray-500 font-medium">操作</th>
                 </tr>
@@ -298,6 +299,7 @@ export default function CasesPage() {
                     <td className="px-4 py-3 text-gray-600">{c.service_type || '—'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.client_name || '—'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.event_date || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{c.activity_date || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       {c.visible ? <Eye className="w-4 h-4 text-green-500 mx-auto" /> : <EyeOff className="w-4 h-4 text-gray-400 mx-auto" />}
                     </td>
@@ -309,7 +311,7 @@ export default function CasesPage() {
                     </td>
                   </SortableTableRow>
                 ))}
-                {cases.length === 0 && <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400">尚無案例資料</td></tr>}
+                {cases.length === 0 && <tr><td colSpan={10} className="px-4 py-12 text-center text-gray-400">尚無案例資料</td></tr>}
                   </tbody>
                 </SortableContext>
               </DndContext>
@@ -362,6 +364,10 @@ export default function CasesPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">文章日期</label>
                 <input type="date" value={form.event_date} onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">活動當日日期</label>
+                <input type="date" value={form.activity_date} onChange={e => setForm(f => ({ ...f, activity_date: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">描述</label>

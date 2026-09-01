@@ -66,6 +66,7 @@ export interface Case {
   image_url: string;
   client_name: string;
   event_date: string;
+  activity_date?: string | null;
   service_type: string;
   used_services: string[];
   used_products: string[];

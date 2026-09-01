@@ -111,8 +111,8 @@ export default function EventsCasesGrid({ cases, initialCategory }: EventsCasesG
                   {c.client_name && (
                     <span>主辦：{c.client_name}</span>
                   )}
-                  {c.event_date && (
-                    <span>{c.event_date}</span>
+                  {(c.activity_date || c.event_date) && (
+                    <span>{c.activity_date || c.event_date}</span>
                   )}
                 </div>
               </div>

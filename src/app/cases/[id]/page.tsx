@@ -93,7 +93,12 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           <p className="mb-5 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#aa8a56]">CASE STUDY</p>
           <h1 className="whitespace-nowrap text-[1.8rem] font-semibold leading-[1.18] tracking-[-0.02em] text-[#252b3a] sm:text-5xl md:text-[3.5rem]">{displayTitle}</h1>
           <div className="my-6 h-px w-14 bg-[#b89a67]" />
-          {caseItem.event_date && <p className="text-sm tracking-[0.08em] text-[#85827d]">{caseItem.event_date.replace(/-/g, '.')}</p>}
+          {(caseItem.event_date || caseItem.activity_date) && (
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm tracking-[0.08em] text-[#85827d]">
+              {caseItem.event_date && <p>文章日期：{caseItem.event_date.replace(/-/g, '.')}</p>}
+              {caseItem.activity_date && <p>活動當日日期：{caseItem.activity_date.replace(/-/g, '.')}</p>}
+            </div>
+          )}
         </header>
 
         <div className="mx-auto mt-12 max-w-5xl border-l-2 border-[#b89a67] pl-5 text-base leading-[1.9] text-[#4d5159] sm:mt-14 sm:pl-7 md:text-lg">
