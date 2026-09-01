@@ -2,7 +2,9 @@ import { getServiceClient } from '@/lib/supabase';
 
 type FacebookAttachment = {
   media_type?: string;
-  media?: { image?: { src?: string } };
+  media?: { image?: { src?: string }; source?: string };
+  target?: { id?: string };
+  url?: string;
   subattachments?: { data?: FacebookAttachment[] };
 };
 
@@ -10,6 +12,7 @@ type FacebookPost = {
   id: string;
   message?: string;
   created_time?: string;
+  updated_time?: string;
   permalink_url?: string;
   attachments?: { data?: FacebookAttachment[] };
 };
@@ -29,7 +32,22 @@ type FacebookSyncMarker = {
 export type FacebookCaseSyncResult = {
   imported: number;
   skipped: number;
+  videosImported: number;
+  videosFailed: number;
   failed: Array<{ postId: string; reason: string }>;
+};
+
+type FacebookCaseMedia = {
+  sourceUrl?: string;
+  imageUrls?: string[];
+  videoUrls?: string[];
+  facebookVideoIds?: string[];
+};
+
+type CopiedFacebookVideos = {
+  urls: string[];
+  videoIds: string[];
+  failed: number;
 };
 
 const FACEBOOK_PAGE_ID = (process.env.FACEBOOK_PAGE_ID || '').trim();
@@ -248,6 +266,39 @@ function collectImageSources(attachments: FacebookAttachment[] = []) {
   return [...sources];
 }
 
+function collectVideoAttachments(attachments: FacebookAttachment[] = []) {
+  const videos: FacebookAttachment[] = [];
+  const visit = (attachment: FacebookAttachment) => {
+    if (attachment.media_type?.toLowerCase() === 'video') videos.push(attachment);
+    attachment.subattachments?.data?.forEach(visit);
+  };
+  attachments.forEach(visit);
+  return videos;
+}
+
+function cleanUrls(value: unknown) {
+  return Array.isArray(value)
+    ? [...new Set(value.filter((url): url is string => typeof url === 'string' && /^https:\/\//.test(url)).map(url => url.trim()))]
+    : [];
+}
+
+function cleanVideoIds(value: unknown) {
+  return Array.isArray(value)
+    ? [...new Set(value.filter((id): id is string => typeof id === 'string' && id.trim().length > 0).map(id => id.trim()))]
+    : [];
+}
+
+function parseCaseMedia(value: string | null | undefined): FacebookCaseMedia {
+  if (!value) return {};
+
+  try {
+    const parsed = JSON.parse(value) as FacebookCaseMedia;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 function parseFacebookSyncMarker(value: string | null | undefined): FacebookSyncMarker {
   if (!value) return {};
 
@@ -280,13 +331,111 @@ async function copyFacebookImage(sourceUrl: string, postId: string, index: numbe
   return supabase.storage.from('images').getPublicUrl(objectPath).data.publicUrl;
 }
 
+async function getFacebookVideoSource(attachment: FacebookAttachment) {
+  if (attachment.media?.source && /^https:\/\//.test(attachment.media.source)) return attachment.media.source;
+  const videoId = attachment.target?.id;
+  if (!videoId) return '';
+
+  const params = new URLSearchParams({ fields: 'source', access_token: FACEBOOK_PAGE_ACCESS_TOKEN });
+  const response = await fetch(`https://graph.facebook.com/${FACEBOOK_GRAPH_API_VERSION}/${videoId}?${params.toString()}`, { cache: 'no-store' });
+  const payload = (await response.json()) as { source?: string; error?: { message?: string } };
+  if (!response.ok || payload.error) throw new Error(payload.error?.message || `影片來源讀取失敗（${response.status}）`);
+  return payload.source && /^https:\/\//.test(payload.source) ? payload.source : '';
+}
+
+async function copyFacebookVideo(sourceUrl: string, postId: string, index: number) {
+  const response = await fetch(sourceUrl, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`影片下載失敗（${response.status}）`);
+
+  const contentType = response.headers.get('content-type') || 'video/mp4';
+  if (!contentType.startsWith('video/')) throw new Error('貼文附件不是可儲存的影片');
+
+  const declaredSize = Number(response.headers.get('content-length') || 0);
+  const maxVideoBytes = 100 * 1024 * 1024;
+  if (declaredSize > maxVideoBytes) throw new Error('影片檔案超過 100MB，無法自動備份');
+
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.byteLength > maxVideoBytes) throw new Error('影片檔案超過 100MB，無法自動備份');
+
+  const extension = contentType.includes('webm') ? 'webm' : contentType.includes('quicktime') ? 'mov' : 'mp4';
+  const safePostId = postId.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const objectPath = `facebook-case-videos/${safePostId}/${Date.now()}-${index}.${extension}`;
+  const supabase = getServiceClient();
+  const { error } = await supabase.storage.from('images').upload(objectPath, bytes, {
+    contentType,
+    upsert: false,
+  });
+  if (error) throw new Error(`影片儲存失敗：${error.message}`);
+
+  return supabase.storage.from('images').getPublicUrl(objectPath).data.publicUrl;
+}
+
+async function copyNewFacebookVideos(attachments: FacebookAttachment[] | undefined, postId: string, knownVideoIds: string[] = []): Promise<CopiedFacebookVideos> {
+  const urls: string[] = [];
+  const videoIds: string[] = [];
+  let failed = 0;
+  const known = new Set(knownVideoIds);
+
+  for (const [index, attachment] of collectVideoAttachments(attachments).entries()) {
+    const sourceKey = attachment.target?.id || attachment.media?.source || `attachment-${index}`;
+    if (known.has(sourceKey)) continue;
+
+    try {
+      const sourceUrl = await getFacebookVideoSource(attachment);
+      if (!sourceUrl) throw new Error('Facebook 未提供可下載的影片來源');
+      urls.push(await copyFacebookVideo(sourceUrl, postId, index));
+      videoIds.push(sourceKey);
+      known.add(sourceKey);
+    } catch {
+      failed += 1;
+    }
+  }
+
+  return { urls, videoIds, failed };
+}
+
+async function readCaseMedia(caseId: string) {
+  const supabase = getServiceClient();
+  const { data } = await supabase
+    .from('site_content')
+    .select('value')
+    .eq('key', `facebook_case_detail_${caseId}`)
+    .maybeSingle();
+  return parseCaseMedia(data?.value);
+}
+
+async function syncExistingCaseVideos(post: FacebookPost, caseId: string) {
+  const existing = await readCaseMedia(caseId);
+  const copied = await copyNewFacebookVideos(post.attachments?.data, post.id, cleanVideoIds(existing.facebookVideoIds));
+  if (copied.urls.length || copied.videoIds.length) {
+    const value: FacebookCaseMedia = {
+      ...existing,
+      sourceUrl: existing.sourceUrl || post.permalink_url || '',
+      imageUrls: cleanUrls(existing.imageUrls),
+      videoUrls: cleanUrls([...(existing.videoUrls || []), ...copied.urls]),
+      facebookVideoIds: cleanVideoIds([...(existing.facebookVideoIds || []), ...copied.videoIds]),
+    };
+    const { error } = await getServiceClient().from('site_content').upsert({
+      key: `facebook_case_detail_${caseId}`,
+      value: JSON.stringify(value),
+    }, { onConflict: 'key' });
+    if (error) throw new Error(`影片資料儲存失敗：${error.message}`);
+  }
+  return copied;
+}
+
+function facebookPostUpdatedAt(post: FacebookPost) {
+  const timestamp = Date.parse(post.updated_time || post.created_time || '');
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncResult> {
   if (!FACEBOOK_PAGE_ID || !FACEBOOK_PAGE_ACCESS_TOKEN) {
     throw new Error('尚未設定 Facebook 粉專同步環境變數');
   }
 
   const params = new URLSearchParams({
-    fields: 'id,message,created_time,permalink_url,attachments.limit(10){media_type,media,subattachments.limit(10){media_type,media}}',
+    fields: 'id,message,created_time,updated_time,permalink_url,attachments.limit(10){media_type,media,target,url,subattachments.limit(10){media_type,media,target,url}}',
     limit: String(Math.min(Math.max(limit, 1), 20)),
     access_token: FACEBOOK_PAGE_ACCESS_TOKEN,
   });
@@ -298,21 +447,23 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
   }
 
   const supabase = getServiceClient();
-  const result: FacebookCaseSyncResult = { imported: 0, skipped: 0, failed: [] };
+  const result: FacebookCaseSyncResult = { imported: 0, skipped: 0, videosImported: 0, videosFailed: 0, failed: [] };
   const { data: productReferences } = await supabase
     .from('products')
     .select('name, category')
     .eq('visible', true);
   const products = (productReferences || []) as ProductReference[];
-  const { data: newestCase } = await supabase
+  const posts = [...(payload.data || [])].sort((a, b) => facebookPostUpdatedAt(b) - facebookPostUpdatedAt(a));
+  const { data: earliestCase } = await supabase
     .from('cases')
     .select('sort_order')
-    .order('sort_order', { ascending: false })
+    .order('sort_order', { ascending: true })
     .limit(1)
     .maybeSingle();
-  let nextSortOrder = Number(newestCase?.sort_order || 0) + 1;
+  // 新同步的貼文使用既有最前排序之前的值；既有案例的手動排序完全不變。
+  let nextSortOrder = Number(earliestCase?.sort_order || 0) - posts.length - 1;
 
-  for (const post of payload.data || []) {
+  for (const post of posts) {
     const markerKey = `facebook_case_post_${post.id}`;
     const { data: existingMarker } = await supabase
       .from('site_content')
@@ -329,6 +480,13 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
           .maybeSingle();
         if (existingCase) {
           result.skipped += 1;
+          try {
+            const copiedVideos = await syncExistingCaseVideos(post, marker.caseId);
+            result.videosImported += copiedVideos.urls.length;
+            result.videosFailed += copiedVideos.failed;
+          } catch {
+            result.videosFailed += collectVideoAttachments(post.attachments?.data).length;
+          }
           continue;
         }
 
@@ -354,6 +512,9 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
         imageSources.slice(0, 8).map((sourceUrl, index) => copyFacebookImage(sourceUrl, post.id, index)),
       )).filter(Boolean);
       if (imageUrls.length === 0) throw new Error('貼文沒有可用圖片');
+      const copiedVideos = await copyNewFacebookVideos(post.attachments?.data, post.id);
+      result.videosImported += copiedVideos.urls.length;
+      result.videosFailed += copiedVideos.failed;
 
       const rawMessage = post.message || '';
       // 分類與摘要只根據清理後的案例正文，避免粉專固定服務文案影響判斷。
@@ -388,7 +549,12 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
         { key: markerKey, value: JSON.stringify({ caseId: createdCase.id, postId: post.id }) },
         {
           key: `facebook_case_detail_${createdCase.id}`,
-          value: JSON.stringify({ sourceUrl: post.permalink_url || '', imageUrls }),
+          value: JSON.stringify({
+            sourceUrl: post.permalink_url || '',
+            imageUrls,
+            videoUrls: copiedVideos.urls,
+            facebookVideoIds: copiedVideos.videoIds,
+          }),
         },
       ], { onConflict: 'key' });
       result.imported += 1;

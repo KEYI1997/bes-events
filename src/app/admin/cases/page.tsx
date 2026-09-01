@@ -205,7 +205,9 @@ export default function CasesPage() {
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || 'Facebook 同步失敗');
       const failedMessage = json.failed?.length ? `\n${json.failed.length} 篇圖片或資料處理失敗，可稍後再試。` : '';
-      alert(`Facebook 同步完成：新增 ${json.imported} 筆案例、略過 ${json.skipped} 筆既有或無圖片貼文。${failedMessage}`);
+      const videoMessage = json.videosImported ? `\n已自動備份 ${json.videosImported} 部 Facebook 影片。` : '';
+      const videoFailedMessage = json.videosFailed ? `\n${json.videosFailed} 部影片無法備份，案例其他資料仍已完成同步。` : '';
+      alert(`Facebook 同步完成：新增 ${json.imported} 筆案例、略過 ${json.skipped} 筆既有或無圖片貼文。${videoMessage}${videoFailedMessage}${failedMessage}`);
       await fetchData();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Facebook 同步失敗');
