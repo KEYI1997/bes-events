@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Send, CheckCircle, X } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import ProductExtrasSelection from '@/components/ProductExtrasSelection';
+import { formatProductAmount, optionKey, productExtraTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -10,12 +12,16 @@ interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName?: string;
+  productId?: string;
   serviceType?: string;
-  addOnOptions?: Array<{ label: string; price: string }>;
+  addOnOptions?: ProductOptionRow[];
+  choiceOptions?: ProductOptionRow[];
+  initialExtraSelection?: ProductExtraSelection;
+  onExtraSelectionChange?: (value: ProductExtraSelection) => void;
   priceOptions?: Array<{ label: string; price: string }>;
 }
 
-export default function ContactModal({ isOpen, onClose, productName, serviceType, addOnOptions = [], priceOptions = [] }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, productName, productId, serviceType, addOnOptions = [], choiceOptions = [], initialExtraSelection, onExtraSelectionChange, priceOptions = [] }: ContactModalProps) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: ''
   });
@@ -24,7 +30,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
   const [error, setError] = useState('');
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const [phoneError, setPhoneError] = useState('');
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [extras, setExtras] = useState<ProductExtraSelection>(initialExtraSelection || { addOns: [], choices: [] });
   const [selectedPriceOption, setSelectedPriceOption] = useState('');
   const [priceOptionError, setPriceOptionError] = useState('');
 
@@ -62,8 +68,9 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
 
     // 把產品名稱加到描述中
     const selectedAddOnLines = addOnOptions
-      .filter(option => selectedAddOns.includes(option.label))
+      .filter((option, index) => extras.addOns.includes(optionKey(option, index)))
       .map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`);
+    const selectedChoiceLines = choiceOptions.filter((option, index) => extras.choices.includes(optionKey(option, index))).map(option => `${option.label}｜不加價`);
     const chosenPriceOption = priceOptions.length === 1
       ? priceOptions[0]
       : priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption);
@@ -71,6 +78,8 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
       productName ? `【詢問商品】${productName}` : '',
       chosenPriceOption ? `【選擇規格】${chosenPriceOption.label}${chosenPriceOption.price ? `｜${chosenPriceOption.price}` : ''}` : '',
       selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
+      selectedChoiceLines.length ? `【選購商品】\n${selectedChoiceLines.join('\n')}` : '',
+      (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(chosenPriceOption?.price || '', addOnOptions, extras.addOns); return `【預估金額】加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
       form.description,
     ].filter(Boolean).join('\n');
 
@@ -78,17 +87,20 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...submissionForm, description: desc }),
+        body: JSON.stringify({ ...submissionForm, description: productId ? form.description : desc,
+          ...(productId ? { product_selection: { productId, priceKey: chosenPriceOption ? optionKey(chosenPriceOption, priceOptions.indexOf(chosenPriceOption)) : '', ...extras } } : {}),
+        }),
       });
       if (res.ok) {
         trackGoogleAdsLeadConversion();
         setSuccess(true);
         setForm({ name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: '' });
-        setSelectedAddOns([]);
+        setExtras({ addOns: [], choices: [] });
         setSelectedPriceOption('');
         setPriceOptionError('');
       } else {
-        setError('提交失敗，請稍後再試');
+        const result = await res.json().catch(() => null);
+        setError(result?.error || '提交失敗，請稍後再試');
       }
     } catch {
       setError('網路錯誤，請稍後再試');
@@ -102,7 +114,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     setError('');
     setErrorFields([]);
     setPhoneError('');
-    setSelectedAddOns([]);
+    setExtras({ addOns: [], choices: [] });
     setSelectedPriceOption('');
     setPriceOptionError('');
     onClose();
@@ -118,7 +130,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
     }`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
@@ -212,7 +224,7 @@ export default function ContactModal({ isOpen, onClose, productName, serviceType
                   {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
                 {priceOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">{priceOptions.length > 1 ? '選擇商品規格與價格 *' : '商品規格與價格'}</p>{priceOptions.length === 1 ? <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"><span className="text-sm text-gray-700">{priceOptions[0].label}</span><span className="text-sm font-semibold text-[#AA7452]">{priceOptions[0].price || '洽詢'}</span></div> : <div className={`space-y-2 rounded-lg border p-3 ${priceOptionError ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>{priceOptions.map(option => { const value = `${option.label}｜${option.price}`; return <label key={value} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="radio" name="product-price-option" value={value} checked={selectedPriceOption === value} onChange={() => { setSelectedPriceOption(value); setPriceOptionError(''); }} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span><span className="text-sm font-medium text-[#AA7452]">{option.price || '洽詢'}</span></label>; })}</div>}{priceOptionError && <p className="mt-1 text-xs text-red-500">{priceOptionError}</p>}</div>}
-                {addOnOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">加購方案 <span className="font-normal text-gray-400">（可複選）</span></p><div className="space-y-2 rounded-lg border border-gray-200 p-3">{addOnOptions.map(option => <label key={option.label} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="checkbox" checked={selectedAddOns.includes(option.label)} onChange={event => setSelectedAddOns(current => event.target.checked ? [...current, option.label] : current.filter(label => label !== option.label))} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span>{option.price && <span className="text-sm font-medium text-[#AA7452]">{option.price}</span>}</label>)}</div></div>}
+                <div className="md:col-span-2"><ProductExtrasSelection addOns={addOnOptions} choices={choiceOptions} selection={extras} onChange={value => { setExtras(value); onExtraSelectionChange?.(value); }} basePrice={priceOptions.length === 1 ? priceOptions[0].price : priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption)?.price || ''} /></div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>
                   <input

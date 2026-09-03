@@ -19,7 +19,8 @@ import {
 } from '@dnd-kit/sortable';
 import { PRODUCT_CATEGORIES } from '@/lib/services';
 import { SortableTableRow } from '@/components/admin/SortableTableRow';
-import { parseProductOptionRows, serializeProductOptionRows, type ProductOptionRow } from '@/lib/productOptions';
+import ProductExtraEditor from '@/components/admin/ProductExtraEditor';
+import { parseProductOptionRows, productPriceAmount, serializeProductOptionRows, type ProductOptionRow } from '@/lib/productOptions';
 
 interface ProductData {
   id: string;
@@ -54,8 +55,9 @@ function getDisplayImage(p: ProductData): string {
 function parseProduct(p: ProductData) {
   const priceOptions = parseProductOptionRows(p.description || '', '價格選項');
   const addOns = parseProductOptionRows(p.description || '', '加購方案');
+  const choices = parseProductOptionRows(p.description || '', '選購商品');
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns };
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns, choices };
   }
   const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
@@ -64,7 +66,7 @@ function parseProduct(p: ProductData) {
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns };
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns, choices };
 }
 
 function getAllProductImages(p: ProductData): string[] {
@@ -79,12 +81,13 @@ export default function ProductsPage() {
   const [showDetail, setShowDetail] = useState<ProductData | null>(null);
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [form, setForm] = useState({
-    name: '', category: '啟動儀式', price_note: '', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[],
+    name: '', category: '啟動儀式', price_note: '', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[], choices: [] as ProductOptionRow[],
     service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
     image_url: '', size_image_url: '', ai_file_url: '',
     stock: 1, visible: true,
   });
   const [uploading, setUploading] = useState<string | null>(null);
+  const [extraUploading, setExtraUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,7 +115,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_note: '', price_options: [], add_ons: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
+    setForm({ name: '', category: '啟動儀式', price_note: '', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
     setShowModal(true);
   };
 
@@ -127,7 +130,8 @@ export default function ProductsPage() {
       category: p.category,
       price_note: p.price_note || '',
       price_options: parsed.priceOptions,
-      add_ons: parsed.addOns,
+      add_ons: parsed.addOns.map(row => ({ ...row, id: row.id || crypto.randomUUID() })),
+      choices: parsed.choices.map(row => ({ ...row, id: row.id || crypto.randomUUID(), price: '0' })),
       service_content: parsed.service,
       features: parsed.features,
       occasions: parsed.occasions,
@@ -189,12 +193,22 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (extraUploading || uploading) return;
+    if (form.add_ons.some(row => !row.label.trim() || (productPriceAmount(row.price) ?? 0) <= 0)) {
+      alert('請填寫每個加購商品的名稱與大於 0 的確定金額，例如：3000 或 NT$3,000。');
+      return;
+    }
+    if (form.choices.some(row => !row.label.trim())) {
+      alert('請填寫每個選購商品的名稱。');
+      return;
+    }
     const adminPwd = localStorage.getItem('admin_password') || '';
     // 組合為舊schema格式存入（兼容）
     const description = [
       form.service_content ? `${form.category === '活動特效' ? '【效果介紹】' : '【服務內容】'}\n${form.service_content}` : '',
       form.price_options.length ? `【價格選項】\n${serializeProductOptionRows(form.price_options)}` : '',
       form.add_ons.length ? `【加購方案】\n${serializeProductOptionRows(form.add_ons)}` : '',
+      form.choices.length ? `【選購商品】\n${serializeProductOptionRows(form.choices.map(row => ({ ...row, price: '0' })))}` : '',
       form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
       form.occasions ? `【適用場合】\n${form.occasions}` : '',
@@ -535,10 +549,14 @@ export default function ProductsPage() {
                 <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="單一價格說明（沒有價格選項時使用），例如：NT$36,000" className="mt-3 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" />
               </div>
 
-              <div className="rounded-xl border border-gray-200 p-4">
-                <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">加購方案</label><p className="mt-0.5 text-xs text-gray-500">前臺建立訂單時，客戶可勾選這些加購項目。</p></div><button type="button" onClick={() => addOptionRow('add_ons')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增加購列</button></div>
-                {form.add_ons.length > 0 ? <div className="space-y-2">{form.add_ons.map((row, index) => <div key={`addon-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('add_ons', index, 'label', e.target.value)} placeholder="加購項目名稱" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('add_ons', index, 'price', e.target.value)} placeholder="加購價格，例如：NT$3,000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><button type="button" onClick={() => removeOptionRow('add_ons', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此加購列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未設定加購方案。</div>}
-              </div>
+              {(['add_ons', 'choices'] as const).map(field => (
+                <ProductExtraEditor key={field} title={field === 'add_ons' ? '加購商品' : '選購商品'} free={field === 'choices'}
+                  rows={form[field]} busy={extraUploading} onBusy={setExtraUploading}
+                  onAdd={() => setForm(current => ({ ...current, [field]: [...current[field], { id: crypto.randomUUID(), label: '', price: field === 'choices' ? '0' : '', imageUrl: '' }] }))}
+                  onUpdate={(id, key, value) => setForm(current => ({ ...current, [field]: current[field].map(row => row.id === id ? { ...row, [key]: value } : row) }))}
+                  onRemove={id => setForm(current => ({ ...current, [field]: current[field].filter(row => row.id !== id) }))}
+                />
+              ))}
 
               {/* 服務內容 */}
               <div>
@@ -646,7 +664,7 @@ export default function ProductsPage() {
 
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">取消</button>
-                <button type="submit" className="px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90" style={{ backgroundColor: '#AA7452' }}>{editing ? '更新' : '新增'}</button>
+                <button type="submit" disabled={extraUploading || !!uploading} className="px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: '#AA7452' }}>{editing ? '更新' : '新增'}</button>
               </div>
             </form>
           </div>

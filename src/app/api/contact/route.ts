@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Resend } from "resend";
 import { contactEmailHtml } from "@/lib/emailTemplates";
 import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
+import { productSelectionSummary } from '@/lib/productSelectionSummary';
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,8 @@ function normalizePhone(phone: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, email, service_type, description, event_end_date, event_date, event_location } = body;
+    const { name, phone, email, service_type, event_end_date, event_date, event_location } = body;
+    let description = typeof body.description === 'string' ? body.description : '';
     const location = typeof event_location === 'string' ? event_location.trim() : '';
 
     if (!name || !phone || !location) {
@@ -30,6 +32,19 @@ export async function POST(request: Request) {
     }
 
     const normalizedPhone = normalizePhone(phone);
+
+    // Rebuild the product snapshot from current catalog data; never accept client prices.
+    if (body.product_selection !== undefined) {
+      const productId = body.product_selection?.productId;
+      if (typeof productId !== 'string' || productId.length > 100) return NextResponse.json({ error: '商品選擇格式錯誤' }, { status: 400 });
+      const { data: product, error: productError } = await supabase.from('products').select('name,description,price_note').eq('id', productId).eq('visible', true).maybeSingle();
+      if (productError || !product) return NextResponse.json({ error: '商品已變更或無法讀取，請重新整理後再試。' }, { status: 400 });
+      try {
+        description = [productSelectionSummary(product, body.product_selection), description ? `【其他需求】\n${description}` : ''].filter(Boolean).join('\n');
+      } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : '商品選擇格式錯誤' }, { status: 400 });
+      }
+    }
 
     // 寫入 Supabase
     const { error } = await supabase.from("contacts").insert({

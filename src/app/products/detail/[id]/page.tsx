@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
 import { parseProductOptionRows } from '@/lib/productOptions';
+import { type ProductExtraSelection } from '@/lib/productOptions';
+import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 
 interface ProductDetail {
   id: string;
@@ -26,7 +28,7 @@ function parseDescription(desc: string) {
   const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const sizeImg = desc.match(/【尺寸圖】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
-  return { service, features, notice, occasions, youtube, sizeImg, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案') };
+  return { service, features, notice, occasions, youtube, sizeImg, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案'), choices: parseProductOptionRows(desc, '選購商品') };
 }
 
 function parseLines(text: string): string[] {
@@ -42,11 +44,14 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [contactOpen, setContactOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [extras, setExtras] = useState<ProductExtraSelection>({ addOns: [], choices: [] });
 
   useEffect(() => {
     async function fetchProduct() {
       const { data } = await supabase.from('products').select('*').eq('id', productId).eq('visible', true).maybeSingle();
       setProduct(data);
+      setExtras({ addOns: [], choices: [] });
+      setContactOpen(false);
       setLoading(false);
     }
     if (productId) fetchProduct();
@@ -197,6 +202,12 @@ export default function ProductDetailPage() {
       </section>
 
       {/* ===== 產品說明：依資料顯示效果介紹、特色、注意事項與適用場合 ===== */}
+      {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <section className="max-w-[1504px] mx-auto px-6 md:px-12 pt-8">
+        <div className="rounded-2xl bg-white p-5 md:p-8">
+          <ProductExtrasSelection addOns={parsed.addOns} choices={parsed.choices} selection={extras} onChange={setExtras} basePrice={priceOptions.length === 1 ? priceOptions[0].price : ''} />
+          <button type="button" onClick={() => setContactOpen(true)} className="mt-5 rounded-full bg-[#AA7452] px-6 py-3 font-semibold text-white hover:bg-[#8F5F43]">確認選擇，建立訂單</button>
+        </div>
+      </section>}
       {detailSections.length > 0 && (
         <section className="max-w-[1504px] mx-auto px-12 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -261,14 +272,19 @@ export default function ProductDetailPage() {
       )}
 
       {/* 聯絡表單 Modal */}
-      <ContactModal
+      {contactOpen && <ContactModal
+        key={product.id}
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
         productName={product.name}
+        productId={product.id}
         serviceType={serviceType}
         addOnOptions={parsed.addOns}
+        choiceOptions={parsed.choices}
+        initialExtraSelection={extras}
+        onExtraSelectionChange={setExtras}
         priceOptions={priceOptions}
-      />
+      />}
 
       {/* 圖片放大 Lightbox */}
       {lightboxOpen && images.length > 0 && (
