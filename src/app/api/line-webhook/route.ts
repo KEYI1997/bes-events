@@ -601,19 +601,10 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    // 已綁定的客戶點選其他文字選單時，不再重複要求輸入電話。
+    // 一般文字訊息交由客服人員處理，不要每次都回覆綁定狀態。
+    // 圖文選單指令已在前面個別處理；只有電話格式才進入綁定流程。
     const phonePattern = /^[\d\s\-\+\(\)]{8,15}$/;
     if (!phonePattern.test(text)) {
-      const existingBinding = await findBoundCustomer(userId);
-
-      await replyMessage(replyToken, [
-        {
-          type: "text",
-          text: existingBinding?.phone
-            ? "您的電話已完成綁定，不需要再次輸入。\n\n請使用下方圖文選單選擇功能；如有其他需求，也可以直接留言給我們。"
-            : "請傳送您的手機號碼來綁定帳號。\n\n例如：0912345678\n\n如有其他問題請直接留言，我們會盡快回覆您。",
-        },
-      ]);
       continue;
     }
 
