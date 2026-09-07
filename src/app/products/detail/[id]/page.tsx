@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
-import { parseProductOptionRows } from '@/lib/productOptions';
-import { type ProductExtraSelection } from '@/lib/productOptions';
+import { formatProductAmount, optionKey, parseProductOptionRows, productExtraTotals, type ProductExtraSelection } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 
 interface ProductDetail {
@@ -20,6 +19,7 @@ interface ProductDetail {
   image_urls?: string[];
   price_note?: string;
   ai_file_url?: string;
+  stock?: number;
 }
 
 function parseDescription(desc: string) {
@@ -46,12 +46,19 @@ export default function ProductDetailPage() {
   const [contactOpen, setContactOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [extras, setExtras] = useState<ProductExtraSelection>({ addOns: [], choices: [] });
+  const [selectedPriceOption, setSelectedPriceOption] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [priceSelectionError, setPriceSelectionError] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
       const { data } = await supabase.from('products').select('*').eq('id', productId).eq('visible', true).maybeSingle();
       setProduct(data);
       setExtras({ addOns: [], choices: [] });
+      setCurrentSlide(0);
+      setSelectedPriceOption('');
+      setQuantity(1);
+      setPriceSelectionError(false);
       setContactOpen(false);
       setLoading(false);
     }
@@ -69,12 +76,49 @@ export default function ProductDetailPage() {
     ? parsed.priceOptions
     : product.price_note ? [{ label: '價格', price: product.price_note }] : [];
   const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
+  const isEquipmentProduct = ['活動特效', '啟動儀式'].includes(product.category);
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
     { title: '效果特色', lines: parseLines(parsed.features), tone: 'green', numbered: true },
     { title: '注意事項', lines: parseLines(parsed.notice), tone: 'orange', numbered: true },
     { title: '適用場合', lines: parseLines(parsed.occasions), tone: 'purple', numbered: true },
   ].filter(section => section.lines.length > 0);
+
+  const openEquipmentOrder = () => {
+    if (priceOptions.length > 1 && !selectedPriceOption) {
+      setPriceSelectionError(true);
+      return;
+    }
+    setContactOpen(true);
+  };
+
+  if (isEquipmentProduct) {
+    return <EquipmentProductDetail
+      product={product}
+      images={images}
+      parsed={parsed}
+      priceOptions={priceOptions}
+      detailSections={detailSections}
+      currentSlide={currentSlide}
+      selectedPriceOption={selectedPriceOption}
+      quantity={quantity}
+      extras={extras}
+      priceSelectionError={priceSelectionError}
+      contactOpen={contactOpen}
+      lightboxOpen={lightboxOpen}
+      serviceType={serviceType}
+      onPreviousImage={() => setCurrentSlide(previous => (previous - 1 + images.length) % images.length)}
+      onNextImage={() => setCurrentSlide(previous => (previous + 1) % images.length)}
+      onSelectImage={setCurrentSlide}
+      onOpenLightbox={() => setLightboxOpen(true)}
+      onCloseLightbox={() => setLightboxOpen(false)}
+      onSelectPrice={value => { setSelectedPriceOption(value); setPriceSelectionError(false); }}
+      onExtrasChange={setExtras}
+      onQuantityChange={setQuantity}
+      onOpenOrder={openEquipmentOrder}
+      onCloseOrder={() => setContactOpen(false)}
+    />;
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F9F7F0' }}>
@@ -298,5 +342,131 @@ export default function ProductDetailPage() {
         />
       )}
     </div>
+  );
+}
+
+function EquipmentProductDetail({
+  product,
+  images,
+  parsed,
+  priceOptions,
+  detailSections,
+  currentSlide,
+  selectedPriceOption,
+  quantity,
+  extras,
+  priceSelectionError,
+  contactOpen,
+  lightboxOpen,
+  serviceType,
+  onPreviousImage,
+  onNextImage,
+  onSelectImage,
+  onOpenLightbox,
+  onCloseLightbox,
+  onSelectPrice,
+  onExtrasChange,
+  onQuantityChange,
+  onOpenOrder,
+  onCloseOrder,
+}: {
+  product: ProductDetail;
+  images: string[];
+  parsed: ReturnType<typeof parseDescription>;
+  priceOptions: Array<{ label: string; price: string }>;
+  detailSections: Array<{ title: string; lines: string[]; tone: string; numbered: boolean }>;
+  currentSlide: number;
+  selectedPriceOption: string;
+  quantity: number;
+  extras: ProductExtraSelection;
+  priceSelectionError: boolean;
+  contactOpen: boolean;
+  lightboxOpen: boolean;
+  serviceType?: string;
+  onPreviousImage: () => void;
+  onNextImage: () => void;
+  onSelectImage: (index: number) => void;
+  onOpenLightbox: () => void;
+  onCloseLightbox: () => void;
+  onSelectPrice: (value: string) => void;
+  onExtrasChange: (value: ProductExtraSelection) => void;
+  onQuantityChange: (value: number) => void;
+  onOpenOrder: () => void;
+  onCloseOrder: () => void;
+}) {
+  const descriptionLines = parseLines(parsed.service).slice(0, 2);
+  const selectedSpecification = priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption) || (priceOptions.length === 1 ? priceOptions[0] : undefined);
+  const totals = productExtraTotals(selectedSpecification?.price || '', parsed.addOns, extras.addOns);
+  const updateExtra = (field: 'addOns' | 'choices', value: string, checked: boolean) => onExtrasChange({
+    ...extras,
+    [field]: checked ? [...extras[field], value] : extras[field].filter(item => item !== value),
+  });
+
+  return (
+    <main className="min-h-screen bg-[#fcfaf7] px-5 pb-16 pt-28 text-[#3f3f3d] sm:px-8 md:pt-32 lg:px-12 lg:pb-24">
+      <div className="mx-auto max-w-[1360px]">
+        <button onClick={() => history.back()} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#6c6863] transition-colors hover:text-[#aa7452]">
+          <ChevronLeft size={17} /> 返回產品列表
+        </button>
+
+        <section className="rounded-[20px] border border-[#ebe5dc] bg-[#fffdf9] p-5 shadow-[0_14px_36px_rgba(70,57,43,0.045)] md:p-8 lg:p-10">
+          <div className="grid items-start gap-9 lg:grid-cols-[minmax(0,1.1fr)_minmax(390px,0.9fr)] lg:gap-12">
+            <div className="min-w-0">
+              {images.length > 0 ? <>
+                <div className="group relative aspect-[4/5] overflow-hidden rounded-[14px] bg-[#f2eee8]">
+                  <button type="button" onClick={onOpenLightbox} className="absolute inset-0 z-10 cursor-zoom-in" aria-label="放大檢視商品圖片" />
+                  <Image src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動服務圖片`} fill priority className="object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
+                  {images.length > 1 && <>
+                    <button type="button" onClick={onPreviousImage} aria-label="上一張圖片" className="absolute left-4 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#e4ddd3] bg-white/95 text-[#6d6257] transition-colors hover:border-[#aa7452] hover:text-[#aa7452]"><ChevronLeft size={18} /></button>
+                    <button type="button" onClick={onNextImage} aria-label="下一張圖片" className="absolute right-4 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#e4ddd3] bg-white/95 text-[#6d6257] transition-colors hover:border-[#aa7452] hover:text-[#aa7452]"><ChevronRight size={18} /></button>
+                  </>}
+                </div>
+                {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-3">{images.slice(0, 4).map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => onSelectImage(index)} className={`relative aspect-square overflow-hidden rounded-[10px] border bg-[#f4f0ea] transition-colors ${currentSlide === index ? 'border-[#aa7452]' : 'border-transparent hover:border-[#cdbcae]'}`} aria-label={`檢視第 ${index + 1} 張圖片`}><Image src={image} alt={`${product.name} 縮圖 ${index + 1}`} fill sizes="(max-width: 1024px) 22vw, 130px" className="object-cover" /></button>)}</div>}
+              </> : <div className="flex aspect-[4/5] items-center justify-center rounded-[14px] bg-[#f2eee8] text-sm text-[#8a837a]">暫無圖片</div>}
+            </div>
+
+            <div className="min-w-0 py-1 lg:py-3">
+              <p className="text-[13px] font-semibold tracking-[0.12em] text-[#aa7452]">{product.category}</p>
+              <h1 className="mt-3 text-[32px] font-bold leading-tight tracking-[-0.025em] text-[#3f3f3d] md:text-[36px]">{product.name}</h1>
+              {descriptionLines.length > 0 && <p className="mt-4 max-w-[34rem] text-[15px] leading-7 text-[#74706a]">{descriptionLines.join(' ')}</p>}
+
+              <div className="mt-8 space-y-3">
+                {priceOptions.length > 0 ? <fieldset>
+                  <legend className="mb-3 text-sm font-semibold text-[#4a4947]">選擇規格{priceOptions.length > 1 ? ' *' : ''}</legend>
+                  <div className="space-y-3">{priceOptions.map((option, index) => {
+                    const value = `${option.label}｜${option.price}`;
+                    const checked = selectedSpecification === option;
+                    return <label key={value} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}>
+                      <span className="flex min-w-0 items-center gap-3"><input type="radio" name="equipment-price-option" value={value} checked={checked} onChange={() => onSelectPrice(value)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span>
+                      <span className="shrink-0 text-sm font-semibold text-[#aa7452]">{option.price || '洽詢'}</span>
+                    </label>;
+                  })}</div>
+                  {priceSelectionError && <p className="mt-2 text-sm text-red-600">請先選擇商品規格。</p>}
+                </fieldset> : <div className="rounded-xl border border-[#e6e1da] bg-white px-4 py-4 text-sm font-medium text-[#6f6961]">價格依活動需求報價</div>}
+              </div>
+
+              {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7 space-y-6">
+                {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">+ {option.price || '洽詢'}</span></label>; })}</div></fieldset>}
+                {parsed.choices.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">選購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.choices.map((option, index) => { const key = optionKey(option, index); const checked = extras.choices.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('choices', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#8c867d]">不加價</span></label>; })}</div></fieldset>}
+                {selectedSpecification && (parsed.addOns.length > 0 || parsed.choices.length > 0) && <p className="text-sm text-[#706a62]">{totals.total === null ? '完整金額以正式報價為準。' : `預估合計：${formatProductAmount(totals.total)}`}</p>}
+              </div>}
+
+              <div className="mt-7"><p className="mb-3 text-sm font-semibold text-[#4a4947]">數量</p><div className="inline-flex items-center rounded-lg border border-[#e4ded6] bg-white"><button type="button" aria-label="減少數量" onClick={() => onQuantityChange(Math.max(1, quantity - 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Minus size={16} /></button><span className="w-10 text-center text-sm font-semibold tabular-nums text-[#4a4947]">{quantity}</span><button type="button" aria-label="增加數量" onClick={() => onQuantityChange(Math.min(99, quantity + 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Plus size={16} /></button></div></div>
+
+              <button type="button" onClick={onOpenOrder} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#aa7452] px-6 py-4 text-base font-bold text-white transition-colors hover:bg-[#935e40]"><ShoppingCart size={18} strokeWidth={1.8} /> 加入訂單</button>
+              {product.ai_file_url && <a href={product.ai_file_url} download className="mt-4 inline-flex text-sm font-semibold text-[#6d6257] underline decoration-[#cbb59e] underline-offset-4 transition-colors hover:text-[#aa7452]">下載 AI 完稿範例</a>}
+            </div>
+          </div>
+        </section>
+
+        {detailSections.length > 0 && <section className="mt-14 grid gap-x-12 md:grid-cols-2">{detailSections.map(section => <section key={section.title} className="border-t border-[#e6dfd6] py-7"><h2 className="text-lg font-bold text-[#4a4947]">{section.title}</h2><div className="mt-4 space-y-3">{section.lines.map((line, index) => <p key={`${section.title}-${index}`} className="text-[15px] leading-7 text-[#706c66]">{line}</p>)}</div></section>)}</section>}
+
+        {parsed.sizeImg && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">尺寸說明</h2><div className="relative mt-5 aspect-[3/2] max-w-4xl overflow-hidden rounded-xl bg-white"><Image src={parsed.sizeImg} alt="尺寸圖" fill className="object-contain" /></div></section>}
+        {parsed.youtube && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">影片介紹</h2><div className="mt-5 aspect-video overflow-hidden rounded-xl"><iframe src={`https://www.youtube.com/embed/${parsed.youtube.match(/[?&]v=([^&]+)/)?.[1] || parsed.youtube.split('/').pop()}`} className="h-full w-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" /></div></section>}
+      </div>
+
+      {contactOpen && <ContactModal key={`${product.id}-${selectedPriceOption}-${quantity}`} isOpen={contactOpen} onClose={onCloseOrder} productName={product.name} productId={product.id} serviceType={serviceType} addOnOptions={parsed.addOns} choiceOptions={parsed.choices} initialExtraSelection={extras} onExtraSelectionChange={onExtrasChange} priceOptions={priceOptions} initialPriceOptionValue={selectedPriceOption} orderQuantity={quantity} />}
+      {lightboxOpen && images.length > 0 && <ImageLightbox src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動方案圖片`} onClose={onCloseLightbox} />}
+    </main>
   );
 }

@@ -19,9 +19,11 @@ interface ContactModalProps {
   initialExtraSelection?: ProductExtraSelection;
   onExtraSelectionChange?: (value: ProductExtraSelection) => void;
   priceOptions?: Array<{ label: string; price: string }>;
+  initialPriceOptionValue?: string;
+  orderQuantity?: number;
 }
 
-export default function ContactModal({ isOpen, onClose, productName, productId, serviceType, addOnOptions = [], choiceOptions = [], initialExtraSelection, onExtraSelectionChange, priceOptions = [] }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, productName, productId, serviceType, addOnOptions = [], choiceOptions = [], initialExtraSelection, onExtraSelectionChange, priceOptions = [], initialPriceOptionValue = '', orderQuantity }: ContactModalProps) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: ''
   });
@@ -31,7 +33,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const [phoneError, setPhoneError] = useState('');
   const [extras, setExtras] = useState<ProductExtraSelection>(initialExtraSelection || { addOns: [], choices: [] });
-  const [selectedPriceOption, setSelectedPriceOption] = useState('');
+  const [selectedPriceOption, setSelectedPriceOption] = useState(initialPriceOptionValue);
   const [priceOptionError, setPriceOptionError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,7 +90,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...submissionForm, description: productId ? form.description : desc,
-          ...(productId ? { product_selection: { productId, priceKey: chosenPriceOption ? optionKey(chosenPriceOption, priceOptions.indexOf(chosenPriceOption)) : '', ...extras } } : {}),
+          ...(productId ? { product_selection: { productId, priceKey: chosenPriceOption ? optionKey(chosenPriceOption, priceOptions.indexOf(chosenPriceOption)) : '', ...extras, ...(orderQuantity ? { quantity: orderQuantity } : {}) } } : {}),
         }),
       });
       if (res.ok) {
@@ -223,7 +225,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                   </select>
                   {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
-                {priceOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-gray-700">{priceOptions.length > 1 ? '選擇商品規格與價格 *' : '商品規格與價格'}</p>{priceOptions.length === 1 ? <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"><span className="text-sm text-gray-700">{priceOptions[0].label}</span><span className="text-sm font-semibold text-[#AA7452]">{priceOptions[0].price || '洽詢'}</span></div> : <div className={`space-y-2 rounded-lg border p-3 ${priceOptionError ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>{priceOptions.map(option => { const value = `${option.label}｜${option.price}`; return <label key={value} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="radio" name="product-price-option" value={value} checked={selectedPriceOption === value} onChange={() => { setSelectedPriceOption(value); setPriceOptionError(''); }} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-gray-700">{option.label}</span></span><span className="text-sm font-medium text-[#AA7452]">{option.price || '洽詢'}</span></label>; })}</div>}{priceOptionError && <p className="mt-1 text-xs text-red-500">{priceOptionError}</p>}</div>}
+                {priceOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-[#4A4947]">{priceOptions.length > 1 ? '選擇商品規格與價格 *' : '商品規格與價格'}</p>{priceOptions.length === 1 ? <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"><span className="text-sm text-[#4A4947]">{priceOptions[0].label}</span><span className="text-sm font-semibold text-[#AA7452]">{priceOptions[0].price || '洽詢'}</span></div> : <div className={`space-y-2 rounded-lg border p-3 ${priceOptionError ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>{priceOptions.map(option => { const value = `${option.label}｜${option.price}`; return <label key={value} className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-gray-50"><span className="flex items-center gap-2"><input type="radio" name="product-price-option" value={value} checked={selectedPriceOption === value} onChange={() => { setSelectedPriceOption(value); setPriceOptionError(''); }} className="h-4 w-4 accent-[#AA7452]" /><span className="text-sm text-[#4A4947]">{option.label}</span></span><span className="text-sm font-medium text-[#AA7452]">{option.price || '洽詢'}</span></label>; })}</div>}{priceOptionError && <p className="mt-1 text-xs text-red-500">{priceOptionError}</p>}</div>}
                 <div className="md:col-span-2"><ProductExtrasSelection addOns={addOnOptions} choices={choiceOptions} selection={extras} onChange={value => { setExtras(value); onExtraSelectionChange?.(value); }} basePrice={priceOptions.length === 1 ? priceOptions[0].price : priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption)?.price || ''} /></div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>
