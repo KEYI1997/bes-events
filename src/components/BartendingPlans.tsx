@@ -19,8 +19,12 @@ function getPlanValue(lines: string[], label: string) {
   return line?.replace(new RegExp(`^${label}[：:]\\s*`), '') || '';
 }
 
-function getPlanImage(productName: string, index: number) {
-  const code = productName.match(/PLAN\s*([A-G])/i)?.[1]?.toLowerCase() || String.fromCharCode(97 + index);
+function getPlanImage(product: Product, index: number) {
+  // 外派調酒的方案圖片以後台「產品管理」的上傳內容為準；舊資料未設定時，才沿用既有的 A–G 預設圖片。
+  const managedImage = product.image_urls?.[0] || product.image_url?.split(',')[0]?.trim();
+  if (managedImage) return managedImage;
+
+  const code = product.name.match(/PLAN\s*([A-G])/i)?.[1]?.toLowerCase() || String.fromCharCode(97 + index);
   return /^[a-g]$/.test(code)
     ? `/images/services/bartending-plans/plan-${code}.png`
     : '/images/services/bartending-plans-2026.jpg';
@@ -97,7 +101,7 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
               const sale = getPlanValue(lines, '優惠價') || product.price_note;
               const extra = getPlanValue(lines, '現場加點估價');
               return <div key={product.id} className="h-full"><AnimateOnScroll delay={index * 100}><article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#e8e1d8] bg-white shadow-[0_10px_30px_rgba(23,32,57,0.06)]">
-                <div className="relative aspect-square overflow-hidden"><Image src={getPlanImage(product.name, index)} alt={`${product.name} 方案圖片`} fill className="object-cover" /></div>
+                <div className="relative aspect-square overflow-hidden"><Image src={getPlanImage(product, index)} alt={`${product.name} 方案圖片`} fill className="object-cover" /></div>
                 <div className="flex flex-1 flex-col p-5 md:p-6"><p className="font-serif text-xl tracking-wide text-[#172039]">{product.name.split('｜')[0]}</p><h3 className="mt-2 text-lg font-medium text-[#303746]">{cups || product.name.split('｜')[1] || '調酒方案'}</h3>
                   <div className="mt-5 space-y-3 text-sm leading-6 text-[#5b5e65]"><p>建議人數：{people || '依活動需求評估'}</p>{original && <p>原價：{original}</p>}{sale && <p className="font-semibold text-[#b58445]">優惠價：{sale}</p>}{extra && <p>現場加點：{extra}</p>}</div>
                   <button type="button" onClick={() => setOrderPlan(product.name)} className="mt-auto inline-flex items-center justify-center gap-2 rounded-md border border-[#b58445] px-4 py-2.5 text-sm font-medium text-[#9a6c31] transition hover:bg-[#b58445] hover:text-white">立即預訂 <ArrowRight size={15} /></button>

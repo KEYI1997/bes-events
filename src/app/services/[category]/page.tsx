@@ -8,6 +8,9 @@ import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, SERVICE_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
 
+// 服務頁直接讀取後台產品資料，避免產品文字或圖片仍顯示建置時的舊快取。
+export const dynamic = 'force-dynamic';
+
 const CATEGORY_MAP: Record<string, string> = {
   'ai-interactive-props': 'AI 互動道具',
   'event-package': '活動策劃統包',
