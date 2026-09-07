@@ -17,6 +17,7 @@ interface ProductDetail {
   category: string;
   description?: string;
   image_url?: string;
+  image_urls?: string[];
   price_note?: string;
   ai_file_url?: string;
 }
@@ -60,7 +61,9 @@ export default function ProductDetailPage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500">載入中...</div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-gray-500">找不到此產品</div>;
 
-  const images = product.image_url ? product.image_url.split(',').filter(Boolean) : [];
+  const images = product.image_url
+    ? product.image_url.split(',').map(url => url.trim()).filter(Boolean)
+    : (product.image_urls || []);
   const parsed = parseDescription(product.description || '');
   const priceOptions = parsed.priceOptions.length > 0
     ? parsed.priceOptions

@@ -21,7 +21,7 @@ function getPlanValue(lines: string[], label: string) {
 
 function getPlanImage(product: Product, index: number) {
   // 外派調酒的方案圖片以後台「產品管理」的上傳內容為準；舊資料未設定時，才沿用既有的 A–G 預設圖片。
-  const managedImage = product.image_urls?.[0] || product.image_url?.split(',')[0]?.trim();
+  const managedImage = product.image_url?.split(',')[0]?.trim() || product.image_urls?.[0];
   if (managedImage) return managedImage;
 
   const code = product.name.match(/PLAN\s*([A-G])/i)?.[1]?.toLowerCase() || String.fromCharCode(97 + index);

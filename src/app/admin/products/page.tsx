@@ -46,8 +46,9 @@ const CATEGORIES = PRODUCT_CATEGORIES.filter(category => category !== '燈光音
 
 // 取得展示圖片（兼容新舊schema + 逗號分隔）
 function getDisplayImage(p: ProductData): string {
-  if (p.image_urls && p.image_urls.length > 0) return p.image_urls[0];
+  // 產品管理目前儲存的欄位為 image_url，優先使用它以避免舊 image_urls 蓋掉後台剛更新的封面。
   if (p.image_url) return p.image_url.split(',')[0];
+  if (p.image_urls && p.image_urls.length > 0) return p.image_urls[0];
   return '';
 }
 
@@ -71,7 +72,7 @@ function parseProduct(p: ProductData) {
 
 function getAllProductImages(p: ProductData): string[] {
   const legacyImages = p.image_url?.split(',').map(url => url.trim()).filter(Boolean) || [];
-  return [...new Set([...(p.image_urls || []), ...legacyImages])];
+  return [...new Set([...legacyImages, ...(p.image_urls || [])])];
 }
 
 export default function ProductsPage() {
@@ -176,7 +177,8 @@ export default function ProductsPage() {
     setForm(f => {
       const existing = f[field as keyof typeof f] as string;
       const existingUrls = existing ? existing.split(',').filter(Boolean) : [];
-      return { ...f, [field]: [...existingUrls, ...newUrls].join(',') };
+      // 最新上傳的圖片放在最前面，所有前台產品卡片便會立即以它做為封面。
+      return { ...f, [field]: [...newUrls, ...existingUrls].join(',') };
     });
     setUploading(null);
     e.target.value = '';

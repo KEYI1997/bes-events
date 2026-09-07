@@ -95,7 +95,7 @@ export default async function ProductCategoryPage({ params }: Props) {
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full flex flex-col transition-transform duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
-                      src={product.image_urls?.[0] || product.image_url?.split(',')[0] || '/images/placeholder.jpg'}
+                      src={product.image_url?.split(',')[0]?.trim() || product.image_urls?.[0] || '/images/placeholder.jpg'}
                       alt={`${product.name}－${categoryName}活動方案`}
                       fill
                       className="object-cover"

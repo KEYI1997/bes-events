@@ -14,8 +14,8 @@ export default function ServiceProductGrid({ products }: ServiceProductGridProps
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product, index) => {
         const imgSrc =
+          product.image_url?.split(',')[0]?.trim() ||
           product.image_urls?.[0] ||
-          product.image_url?.split(',')[0] ||
           '/images/placeholder.jpg';
 
         return (
