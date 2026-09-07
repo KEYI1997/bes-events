@@ -136,12 +136,12 @@ export default function ProductDetailPage() {
           <div className="w-full lg:w-[64.4%] flex flex-col">
             {images.length > 0 ? (
               <>
-                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-[#f7f4ef] shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
                   <Image
                     src={images[currentSlide] || images[0]}
                     alt={`${product.name}－${product.category}活動服務圖片`}
                     fill
-                    className="object-cover"
+                    className="object-contain object-center"
                   />
                   {/* Hover 放大 icon */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
@@ -415,13 +415,13 @@ function EquipmentProductDetail({
               {images.length > 0 ? <>
                 <div className="group relative aspect-[4/5] overflow-hidden rounded-[14px] bg-[#f2eee8]">
                   <button type="button" onClick={onOpenLightbox} className="absolute inset-0 z-10 cursor-zoom-in" aria-label="放大檢視商品圖片" />
-                  <Image src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動服務圖片`} fill priority className="object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
+                  <Image src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動服務圖片`} fill priority className="object-contain object-center" />
                   {images.length > 1 && <>
                     <button type="button" onClick={onPreviousImage} aria-label="上一張圖片" className="absolute left-4 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#e4ddd3] bg-white/95 text-[#6d6257] transition-colors hover:border-[#aa7452] hover:text-[#aa7452]"><ChevronLeft size={18} /></button>
                     <button type="button" onClick={onNextImage} aria-label="下一張圖片" className="absolute right-4 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#e4ddd3] bg-white/95 text-[#6d6257] transition-colors hover:border-[#aa7452] hover:text-[#aa7452]"><ChevronRight size={18} /></button>
                   </>}
                 </div>
-                {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-3">{images.slice(0, 4).map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => onSelectImage(index)} className={`relative aspect-square overflow-hidden rounded-[10px] border bg-[#f4f0ea] transition-colors ${currentSlide === index ? 'border-[#aa7452]' : 'border-transparent hover:border-[#cdbcae]'}`} aria-label={`檢視第 ${index + 1} 張圖片`}><Image src={image} alt={`${product.name} 縮圖 ${index + 1}`} fill sizes="(max-width: 1024px) 22vw, 130px" className="object-cover" /></button>)}</div>}
+                {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-3">{images.slice(0, 4).map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => onSelectImage(index)} className={`relative aspect-square overflow-hidden rounded-[10px] border bg-[#f4f0ea] transition-colors ${currentSlide === index ? 'border-[#aa7452]' : 'border-transparent hover:border-[#cdbcae]'}`} aria-label={`檢視第 ${index + 1} 張圖片`}><Image src={image} alt={`${product.name} 縮圖 ${index + 1}`} fill sizes="(max-width: 1024px) 22vw, 130px" className="object-contain object-center" /></button>)}</div>}
               </> : <div className="flex aspect-[4/5] items-center justify-center rounded-[14px] bg-[#f2eee8] text-sm text-[#8a837a]">暫無圖片</div>}
             </div>
 

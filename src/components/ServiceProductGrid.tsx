@@ -24,12 +24,12 @@ export default function ServiceProductGrid({ products }: ServiceProductGridProps
               href={`/products/detail/${product.id}`}
               className="group bg-white rounded-2xl overflow-hidden shadow-sm h-full flex flex-col transition-transform duration-300 hover:scale-105 hover:shadow-lg block"
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#f7f4ef]">
                 <Image
                   src={imgSrc}
                   alt={product.name}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="object-contain object-center"
                 />
               </div>
               <div className="p-6 flex flex-col flex-1">

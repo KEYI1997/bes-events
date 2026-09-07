@@ -418,7 +418,7 @@ export default function ProductsPage() {
                       >
                     <td className="px-4 py-3">
                       {getDisplayImage(p) ? (
-                        <img src={getDisplayImage(p)} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />
+                        <img src={getDisplayImage(p)} alt={p.name} className="h-12 w-12 rounded-lg bg-gray-50 object-contain object-center" />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center"><ImageIcon className="w-5 h-5 text-gray-300" /></div>
                       )}
@@ -460,7 +460,7 @@ export default function ProductsPage() {
               </div>
               <div className="p-6 space-y-5">
                 {getDisplayImage(showDetail) && (
-                  <img src={getDisplayImage(showDetail)} alt={showDetail.name} className="w-full max-h-64 object-cover rounded-xl" />
+                  <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl bg-gray-50"><img src={getDisplayImage(showDetail)} alt={showDetail.name} className="h-full w-full object-contain object-center" /></div>
                 )}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-gray-50 rounded-lg p-3">
@@ -604,7 +604,7 @@ export default function ProductsPage() {
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.image_url.split(',').filter(Boolean).map((url, idx) => (
                       <div key={idx} className="relative group">
-                        <img src={url} alt={`展示圖${idx+1}`} className="w-16 h-16 rounded-lg object-cover" />
+                        <img src={url} alt={`展示圖${idx+1}`} className="h-16 w-16 rounded-lg bg-gray-50 object-contain object-center" />
                         <button type="button" onClick={() => removeImage('image_url', idx)} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
                       </div>
                     ))}
@@ -624,7 +624,7 @@ export default function ProductsPage() {
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.size_image_url.split(',').filter(Boolean).map((url, idx) => (
                       <div key={idx} className="relative group">
-                        <img src={url} alt={`尺寸圖${idx+1}`} className="w-16 h-16 rounded-lg object-cover" />
+                        <img src={url} alt={`尺寸圖${idx+1}`} className="h-16 w-16 rounded-lg bg-gray-50 object-contain object-center" />
                         <button type="button" onClick={() => removeImage('size_image_url', idx)} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
                       </div>
                     ))}
