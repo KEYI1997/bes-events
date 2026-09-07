@@ -59,6 +59,8 @@ npm run dev
 | `NEXT_PUBLIC_ADMIN_PASSWORD` | 後台管理密碼（自訂） |
 | `NEXT_PUBLIC_SITE_URL` | 正式網站網址（https://besevent.com） |
 | `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | GA4 Measurement ID（選填，例如 G-XXXXXXXXXX） |
+| `GA4_PROPERTY_ID` | GA4 Property ID（僅數字，例如 123456789；後台讀取報表使用） |
+| `GA4_SERVICE_ACCOUNT_JSON` | GA4 Data API 服務帳戶 JSON（建議以單行 JSON 儲存，不可使用 `NEXT_PUBLIC_` 前綴） |
 | `GOOGLE_SITE_VERIFICATION` | Google Search Console HTML 標記驗證碼（選填） |
 
 5. Deploy！
