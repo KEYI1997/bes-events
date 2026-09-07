@@ -125,6 +125,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const accessToken = await getAccessToken(credentials);
+    const months = buildMonthKeys();
+    const firstMonth = months[0].key;
+    const monthlyStartDate = `${firstMonth.slice(0, 4)}-${firstMonth.slice(4, 6)}-01`;
     const [overviewRows, sourceRows, monthlyRows, pageRows] = await Promise.all([
       runReport(accessToken, propertyId, {
         dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
@@ -137,7 +140,7 @@ export async function GET(request: NextRequest) {
         limit: '100',
       }),
       runReport(accessToken, propertyId, {
-        dateRanges: [{ startDate: '11monthsAgo', endDate: 'today' }],
+        dateRanges: [{ startDate: monthlyStartDate, endDate: 'today' }],
         dimensions: [{ name: 'yearMonth' }],
         metrics: [{ name: 'screenPageViews' }],
         limit: '24',
@@ -172,7 +175,7 @@ export async function GET(request: NextRequest) {
         sessions: Number(overview?.metricValues?.[2]?.value || 0),
       },
       sources: sourceSessions,
-      monthly: buildMonthKeys().map(month => ({ label: month.label, pageViews: monthlyTotals.get(month.key) || 0 })),
+      monthly: months.map(month => ({ label: month.label, pageViews: monthlyTotals.get(month.key) || 0 })),
       topPages: pageRows.map(row => ({
         path: row.dimensionValues?.[0]?.value || '/',
         pageViews: numericValue(row),
