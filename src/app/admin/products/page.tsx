@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Eye, EyeOff, ImageIcon, Search, CheckCircle } from 'lucide-react';
 import {
   closestCenter,
   DndContext,
@@ -93,8 +93,10 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [savingOrder, setSavingOrder] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const orderSaveQueue = useRef<Promise<void>>(Promise.resolve());
   const orderSaveVersion = useRef(0);
+  const updateSuccessTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -113,6 +115,9 @@ export default function ProductsPage() {
   // 管理員憑證只存在瀏覽器，頁面掛載後載入一次。
   // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, []);
+  useEffect(() => () => {
+    if (updateSuccessTimer.current) clearTimeout(updateSuccessTimer.current);
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -130,7 +135,7 @@ export default function ProductsPage() {
       name: p.name,
       category: p.category,
       price_note: p.price_note || '',
-      price_options: parsed.priceOptions,
+      price_options: parsed.priceOptions.map(row => ({ ...row, id: row.id || crypto.randomUUID() })),
       add_ons: parsed.addOns.map(row => ({ ...row, id: row.id || crypto.randomUUID() })),
       choices: parsed.choices.map(row => ({ ...row, id: row.id || crypto.randomUUID(), price: '0' })),
       service_content: parsed.service,
@@ -264,15 +269,21 @@ export default function ProductsPage() {
       alert(`操作失敗: ${err}`);
       return;
     }
+    const wasEditing = Boolean(editing);
     setShowModal(false);
     fetchData();
+    if (wasEditing) {
+      setUpdateSuccess(true);
+      if (updateSuccessTimer.current) clearTimeout(updateSuccessTimer.current);
+      updateSuccessTimer.current = setTimeout(() => setUpdateSuccess(false), 2400);
+    }
   };
 
   const addOptionRow = (field: 'price_options' | 'add_ons') => {
-    setForm(current => ({ ...current, [field]: [...current[field], { label: '', price: '' }] }));
+    setForm(current => ({ ...current, [field]: [...current[field], { id: crypto.randomUUID(), label: '', price: '' }] }));
   };
 
-  const updateOptionRow = (field: 'price_options' | 'add_ons', index: number, key: keyof ProductOptionRow, value: string) => {
+  const updateOptionRow = (field: 'price_options' | 'add_ons', index: number, key: keyof ProductOptionRow, value: string | boolean) => {
     setForm(current => ({ ...current, [field]: current[field].map((row, rowIndex) => rowIndex === index ? { ...row, [key]: value } : row) }));
   };
 
@@ -546,8 +557,8 @@ export default function ProductsPage() {
               </div>
 
               <div className="rounded-xl border border-gray-200 p-4">
-                <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">價格選項</label><p className="mt-0.5 text-xs text-gray-500">可新增不同種類、規格或數量的價格。</p></div><button type="button" onClick={() => addOptionRow('price_options')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增價格列</button></div>
-                {form.price_options.length > 0 ? <div className="space-y-2">{form.price_options.map((row, index) => <div key={`price-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('price_options', index, 'label', e.target.value)} placeholder="項目／規格，例如：四頭" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('price_options', index, 'price', e.target.value)} placeholder="價格，例如：NT$12,000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><button type="button" onClick={() => removeOptionRow('price_options', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此價格列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未新增價格選項。若僅需要一個價格，可直接填寫下方的單一價格說明。</div>}
+                <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">價格選項</label><p className="mt-0.5 text-xs text-gray-500">可新增不同種類、規格或數量的價格；勾選必選後，前台訂單會固定帶入該項目。</p></div><button type="button" onClick={() => addOptionRow('price_options')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增價格列</button></div>
+                {form.price_options.length > 0 ? <div className="space-y-2">{form.price_options.map((row, index) => <div key={row.id || `price-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('price_options', index, 'label', e.target.value)} placeholder="項目／規格，例如：四頭" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('price_options', index, 'price', e.target.value)} placeholder="價格，例如：NT$12,000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><label className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#D6C1B0] bg-[#FCF8F4] px-2.5 text-sm font-medium text-[#6B5140] focus-within:ring-2 focus-within:ring-[#AA7452]" title="勾選後，前台訂單必須包含此項目與價格"><input type="checkbox" checked={Boolean(row.locked)} onChange={e => updateOptionRow('price_options', index, 'locked', e.target.checked)} className="h-4 w-4 accent-[#AA7452]" /><span>鎖定必選</span></label><button type="button" onClick={() => removeOptionRow('price_options', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此價格列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未新增價格選項。若僅需要一個價格，可直接填寫下方的單一價格說明。</div>}
                 <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="單一價格說明（沒有價格選項時使用），例如：NT$36,000" className="mt-3 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" />
               </div>
 
@@ -672,6 +683,11 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
+
+      {updateSuccess && <div role="status" aria-live="polite" className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-xl border border-[#DCC9B8] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(83,61,42,0.14)] animate-[fadeUp_240ms_cubic-bezier(0.16,1,0.3,1)]">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7EFE7] text-[#AA7452]"><CheckCircle className="h-5 w-5" /></span>
+        <span><span className="block text-sm font-semibold text-[#4A4947]">更新完成</span><span className="mt-0.5 block text-xs text-[#7B746D]">商品資料已儲存</span></span>
+      </div>}
 
       {/* Delete Confirm */}
       {deleteId && (

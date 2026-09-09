@@ -1,4 +1,4 @@
-export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string };
+export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean };
 export type ProductExtraSelection = { addOns: string[]; choices: string[] };
 
 export const optionKey = (row: ProductOptionRow, index: number) => row.id || `${index}:${row.label}:${row.price}`;
@@ -13,10 +13,14 @@ export function productPriceAmount(price: string): number | null {
 
 export const formatProductAmount = (amount: number) => `NT$${amount.toLocaleString('zh-TW', { maximumFractionDigits: 2 })}`;
 
-export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[]) {
-  const amounts = addOns.filter((row, index) => selected.includes(optionKey(row, index))).map(row => productPriceAmount(row.price));
+export function productOptionTotals(rows: ProductOptionRow[]) {
+  const amounts = rows.map(row => productPriceAmount(row.price));
   const knownSubtotal = Math.round(amounts.reduce<number>((sum, amount) => sum + (amount ?? 0), 0) * 100) / 100;
-  const hasQuotedAddOn = amounts.includes(null);
+  return { knownSubtotal, hasQuotedItem: amounts.includes(null) };
+}
+
+export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[]) {
+  const { knownSubtotal, hasQuotedItem: hasQuotedAddOn } = productOptionTotals(addOns.filter((row, index) => selected.includes(optionKey(row, index))));
   const base = productPriceAmount(basePrice);
   return { knownSubtotal, hasQuotedAddOn, total: base === null || hasQuotedAddOn ? null : Math.round((base + knownSubtotal) * 100) / 100 };
 }
@@ -32,6 +36,7 @@ export function parseProductOptionRows(description: string, sectionTitle: string
         price: typeof row.price === 'string' ? row.price.trim() : '',
         ...(typeof row.id === 'string' ? { id: row.id } : {}),
         ...(typeof row.imageUrl === 'string' && /^(https?:\/\/|\/(?!\/))/.test(row.imageUrl) ? { imageUrl: row.imageUrl } : {}),
+        ...(row.locked === true ? { locked: true } : {}),
       }));
     } catch { return []; }
   }
@@ -47,7 +52,7 @@ export function parseProductOptionRows(description: string, sectionTitle: string
 }
 
 export function serializeProductOptionRows(rows: ProductOptionRow[]) {
-  if (rows.some(row => row.id || row.imageUrl)) {
+  if (rows.some(row => row.id || row.imageUrl || row.locked)) {
     return JSON.stringify(rows.filter(row => row.label.trim()).map(row => ({ ...row, label: row.label.trim(), price: row.price.trim() }))).replace(/【/g, '\\u3010');
   }
   return rows

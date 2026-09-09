@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-rea
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
-import { formatProductAmount, optionKey, parseProductOptionRows, productExtraTotals, type ProductExtraSelection } from '@/lib/productOptions';
+import { formatProductAmount, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 
 interface ProductDetail {
@@ -77,6 +77,7 @@ export default function ProductDetailPage() {
     : product.price_note ? [{ label: '價格', price: product.price_note }] : [];
   const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
   const isEquipmentProduct = ['活動特效', '啟動儀式'].includes(product.category);
+  const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
     { title: '效果特色', lines: parseLines(parsed.features), tone: 'green', numbered: true },
@@ -85,7 +86,7 @@ export default function ProductDetailPage() {
   ].filter(section => section.lines.length > 0);
 
   const openEquipmentOrder = () => {
-    if (priceOptions.length > 1 && !selectedPriceOption) {
+    if (!hasLockedPriceOption && priceOptions.length > 1 && !selectedPriceOption) {
       setPriceSelectionError(true);
       return;
     }
@@ -136,7 +137,7 @@ export default function ProductDetailPage() {
           <div className="w-full lg:w-[64.4%] flex flex-col">
             {images.length > 0 ? (
               <>
-                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-[#f7f4ef] shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                <div className="relative w-full flex-1 min-h-[440px] rounded-2xl overflow-hidden bg-white shadow-sm group cursor-pointer" onClick={() => setLightboxOpen(true)}>
                   <Image
                     src={images[currentSlide] || images[0]}
                     alt={`${product.name}－${product.category}活動服務圖片`}
@@ -373,7 +374,7 @@ function EquipmentProductDetail({
   product: ProductDetail;
   images: string[];
   parsed: ReturnType<typeof parseDescription>;
-  priceOptions: Array<{ label: string; price: string }>;
+  priceOptions: ProductOptionRow[];
   detailSections: Array<{ title: string; lines: string[]; tone: string; numbered: boolean }>;
   currentSlide: number;
   selectedPriceOption: string;
@@ -395,8 +396,13 @@ function EquipmentProductDetail({
   onCloseOrder: () => void;
 }) {
   const descriptionLines = parseLines(parsed.service).slice(0, 2);
-  const selectedSpecification = priceOptions.find(option => `${option.label}｜${option.price}` === selectedPriceOption) || (priceOptions.length === 1 ? priceOptions[0] : undefined);
-  const totals = productExtraTotals(selectedSpecification?.price || '', parsed.addOns, extras.addOns);
+  const hasLockedPriceOption = priceOptions.some(option => option.locked);
+  const selectedRegularSpecification = priceOptions.find((option, index) => optionKey(option, index) === selectedPriceOption || `${option.label}｜${option.price}` === selectedPriceOption);
+  const selectedSpecifications = hasLockedPriceOption
+    ? priceOptions.filter((option, index) => option.locked || optionKey(option, index) === selectedPriceOption)
+    : (priceOptions.length === 1 ? priceOptions : selectedRegularSpecification ? [selectedRegularSpecification] : []);
+  const selectedPriceTotal = productOptionTotals(selectedSpecifications);
+  const totals = productExtraTotals(selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal), parsed.addOns, extras.addOns);
   const updateExtra = (field: 'addOns' | 'choices', value: string, checked: boolean) => onExtrasChange({
     ...extras,
     [field]: checked ? [...extras[field], value] : extras[field].filter(item => item !== value),
@@ -413,7 +419,7 @@ function EquipmentProductDetail({
           <div className="grid items-start gap-9 lg:grid-cols-[minmax(0,1.1fr)_minmax(390px,0.9fr)] lg:gap-12">
             <div className="min-w-0">
               {images.length > 0 ? <>
-                <div className="group relative aspect-[4/5] overflow-hidden rounded-[14px] bg-[#f2eee8]">
+                <div className="group relative aspect-[4/5] overflow-hidden rounded-[14px] bg-white">
                   <button type="button" onClick={onOpenLightbox} className="absolute inset-0 z-10 cursor-zoom-in" aria-label="放大檢視商品圖片" />
                   <Image src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動服務圖片`} fill priority className="object-contain object-center" />
                   {images.length > 1 && <>
@@ -432,12 +438,12 @@ function EquipmentProductDetail({
 
               <div className="mt-8 space-y-3">
                 {priceOptions.length > 0 ? <fieldset>
-                  <legend className="mb-3 text-sm font-semibold text-[#4a4947]">選擇規格{priceOptions.length > 1 ? ' *' : ''}</legend>
+                  <legend className="mb-3 text-sm font-semibold text-[#4a4947]">{hasLockedPriceOption ? '商品細項與價格' : `選擇規格${priceOptions.length > 1 ? ' *' : ''}`}</legend>
                   <div className="space-y-3">{priceOptions.map((option, index) => {
-                    const value = `${option.label}｜${option.price}`;
-                    const checked = selectedSpecification === option;
-                    return <label key={value} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}>
-                      <span className="flex min-w-0 items-center gap-3"><input type="radio" name="equipment-price-option" value={value} checked={checked} onChange={() => onSelectPrice(value)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span>
+                    const key = optionKey(option, index);
+                    const checked = option.locked || selectedSpecifications.includes(option);
+                    return <label key={key} className={`flex min-h-14 items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${option.locked ? 'cursor-default border-[#d9c8b8] bg-[#fcf8f4]' : 'cursor-pointer'} ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}>
+                      <span className="flex min-w-0 items-center gap-3"><input type={hasLockedPriceOption ? 'checkbox' : 'radio'} name={hasLockedPriceOption ? undefined : 'equipment-price-option'} checked={checked} disabled={option.locked} onChange={event => onSelectPrice(event.target.checked ? key : '')} className="h-4 w-4 shrink-0 accent-[#aa7452] disabled:opacity-100" /><span className="font-medium text-[#4a4947]">{option.label}</span>{option.locked && <span className="rounded-full bg-[#f1e5d7] px-2 py-0.5 text-[11px] font-medium text-[#805e45]">必選</span>}</span>
                       <span className="shrink-0 text-sm font-semibold text-[#aa7452]">{option.price || '洽詢'}</span>
                     </label>;
                   })}</div>
@@ -448,7 +454,7 @@ function EquipmentProductDetail({
               {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7 space-y-6">
                 {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">+ {option.price || '洽詢'}</span></label>; })}</div></fieldset>}
                 {parsed.choices.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">選購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.choices.map((option, index) => { const key = optionKey(option, index); const checked = extras.choices.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('choices', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#8c867d]">不加價</span></label>; })}</div></fieldset>}
-                {selectedSpecification && (parsed.addOns.length > 0 || parsed.choices.length > 0) && <p className="text-sm text-[#706a62]">{totals.total === null ? '完整金額以正式報價為準。' : `預估合計：${formatProductAmount(totals.total)}`}</p>}
+                {selectedSpecifications.length > 0 && (parsed.addOns.length > 0 || parsed.choices.length > 0) && <p className="text-sm text-[#706a62]">{totals.total === null ? '完整金額以正式報價為準。' : `預估合計：${formatProductAmount(totals.total)}`}</p>}
               </div>}
 
               <div className="mt-7"><p className="mb-3 text-sm font-semibold text-[#4a4947]">數量</p><div className="inline-flex items-center rounded-lg border border-[#e4ded6] bg-white"><button type="button" aria-label="減少數量" onClick={() => onQuantityChange(Math.max(1, quantity - 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Minus size={16} /></button><span className="w-10 text-center text-sm font-semibold tabular-nums text-[#4a4947]">{quantity}</span><button type="button" aria-label="增加數量" onClick={() => onQuantityChange(Math.min(99, quantity + 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Plus size={16} /></button></div></div>
