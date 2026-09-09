@@ -460,7 +460,7 @@ function EquipmentProductDetail({
               <div className="mt-7"><p className="mb-3 text-sm font-semibold text-[#4a4947]">數量</p><div className="inline-flex items-center rounded-lg border border-[#e4ded6] bg-white"><button type="button" aria-label="減少數量" onClick={() => onQuantityChange(Math.max(1, quantity - 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Minus size={16} /></button><span className="w-10 text-center text-sm font-semibold tabular-nums text-[#4a4947]">{quantity}</span><button type="button" aria-label="增加數量" onClick={() => onQuantityChange(Math.min(99, quantity + 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Plus size={16} /></button></div></div>
 
               <button type="button" onClick={onOpenOrder} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#aa7452] px-6 py-4 text-base font-bold text-white transition-colors hover:bg-[#935e40]"><ShoppingCart size={18} strokeWidth={1.8} /> 加入訂單</button>
-              {product.ai_file_url && <a href={product.ai_file_url} download className="mt-4 inline-flex text-sm font-semibold text-[#6d6257] underline decoration-[#cbb59e] underline-offset-4 transition-colors hover:text-[#aa7452]">下載 AI 完稿範例</a>}
+              {product.ai_file_url && <a href={product.ai_file_url} download className="mt-3 w-full inline-flex items-center justify-center rounded-full border border-[#aa7452] px-6 py-3 text-sm font-semibold text-[#aa7452] transition-colors hover:bg-[#fcf5ef] hover:text-[#935e40]">下載 AI 完稿範例</a>}
             </div>
           </div>
         </section>
