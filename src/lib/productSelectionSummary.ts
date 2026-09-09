@@ -1,4 +1,4 @@
-import { formatProductAmount, optionKey, parseProductOptionRows, productOptionTotals, type ProductOptionRow } from './productOptions';
+import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, optionKey, parseProductOptionRows, productOptionTotals, type ProductOptionRow } from './productOptions';
 
 export function productSelectionSummary(product: { name: string; description?: string | null; price_note?: string | null }, input: unknown) {
   if (!input || typeof input !== 'object') throw new Error('商品選擇格式錯誤');
@@ -32,9 +32,9 @@ export function productSelectionSummary(product: { name: string; description?: s
   const total = specTotals.hasQuotedItem || addOnTotals.hasQuotedItem ? null : Math.round((specTotals.knownSubtotal + addOnTotals.knownSubtotal) * 100) / 100;
   return [
     `【詢問商品】${product.name}`,
-    selectedSpecs.length ? `【選擇規格】\n${selectedSpecs.map(row => `${row.label}｜${row.price || '洽詢'}`).join('\n')}` : '',
+    selectedSpecs.length ? `【選擇規格】\n${selectedSpecs.map(row => `${row.label}｜${formatProductPrice(row.price) || '洽詢'}`).join('\n')}` : '',
     quantity !== undefined ? `【數量】${quantity}` : '',
-    selectedAddOns.length ? `【加購商品】\n${selectedAddOns.map(row => `${row.label}｜${row.price || '洽詢'}`).join('\n')}` : '',
+    selectedAddOns.length ? `【加購商品】\n${selectedAddOns.map(row => `${row.label}｜${formatProductAddOnPrice(row.price)}`).join('\n')}` : '',
     selectedChoices.length ? `【選購商品】\n${selectedChoices.map(row => `${row.label}｜不加價`).join('\n')}` : '',
     addOns.length || choices.length ? `【預估金額】加購小計 ${formatProductAmount(addOnTotals.knownSubtotal)}${addOnTotals.hasQuotedItem ? '（另有洽詢項目）' : ''}；${total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(total)}`}。選購商品不加價，金額以正式報價為準。` : '',
   ].filter(Boolean).join('\n');

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatProductAmount, optionKey, productExtraTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 
 export default function ProductExtrasSelection({ addOns, choices, selection, onChange, basePrice = '' }: {
   addOns: ProductOptionRow[];
@@ -26,7 +26,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={row.imageUrl} alt={row.label} loading="lazy" className="h-full w-full object-contain" />
               </div>}
-              <span className="min-w-0 break-words text-sm text-[#4A4947]"><span className="block font-medium">{row.label}</span><span className="mt-1 block">{group.field === 'choices' ? '不加價' : `+ ${row.price || '洽詢'}`}</span></span>
+              <span className="min-w-0 break-words text-sm text-[#4A4947]"><span className="block font-medium">{row.label}</span><span className="mt-1 block">{group.field === 'choices' ? '不加價' : formatProductAddOnPrice(row.price)}</span></span>
             </label>;
           })}
         </div>

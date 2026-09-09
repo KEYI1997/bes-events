@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-rea
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
-import { formatProductAmount, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 
 interface ProductDetail {
@@ -200,7 +200,7 @@ export default function ProductDetailPage() {
               <h1 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#4A4947' }}>{product.name}</h1>
               <hr className="border-gray-200 mb-6" />
               <div className="mb-8 space-y-2">
-                {priceOptions.length > 0 ? priceOptions.map((option, index) => <div key={`${option.label}-${index}`} className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2 last:border-b-0"><span className="text-sm font-medium text-gray-600">{option.label}</span><span className="text-xl font-bold text-right" style={{ color: '#AA7452' }}>{option.price || '洽詢'}</span></div>) : <p className="text-3xl font-bold" style={{ color: '#AA7452' }}>洽詢</p>}
+                {priceOptions.length > 0 ? priceOptions.map((option, index) => <div key={`${option.label}-${index}`} className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2 last:border-b-0"><span className="text-sm font-medium text-gray-600">{option.label}</span><span className="text-xl font-bold text-right" style={{ color: '#AA7452' }}>{formatProductPrice(option.price) || '洽詢'}</span></div>) : <p className="text-3xl font-bold" style={{ color: '#AA7452' }}>洽詢</p>}
               </div>
 
               {/* 建立訂單 */}
@@ -444,7 +444,7 @@ function EquipmentProductDetail({
                     const checked = option.locked || selectedSpecifications.includes(option);
                     return <label key={key} className={`flex min-h-14 items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${option.locked ? 'cursor-default border-[#d9c8b8] bg-[#fcf8f4]' : 'cursor-pointer'} ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}>
                       <span className="flex min-w-0 items-center gap-3"><input type={hasLockedPriceOption ? 'checkbox' : 'radio'} name={hasLockedPriceOption ? undefined : 'equipment-price-option'} checked={checked} disabled={option.locked} onChange={event => onSelectPrice(event.target.checked ? key : '')} className="h-4 w-4 shrink-0 accent-[#aa7452] disabled:opacity-100" /><span className="font-medium text-[#4a4947]">{option.label}</span>{option.locked && <span className="rounded-full bg-[#f1e5d7] px-2 py-0.5 text-[11px] font-medium text-[#805e45]">必選</span>}</span>
-                      <span className="shrink-0 text-sm font-semibold text-[#aa7452]">{option.price || '洽詢'}</span>
+                      <span className="shrink-0 text-sm font-semibold text-[#aa7452]">{formatProductPrice(option.price) || '洽詢'}</span>
                     </label>;
                   })}</div>
                   {priceSelectionError && <p className="mt-2 text-sm text-red-600">請先選擇商品規格。</p>}
@@ -452,7 +452,7 @@ function EquipmentProductDetail({
               </div>
 
               {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7 space-y-6">
-                {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">+ {option.price || '洽詢'}</span></label>; })}</div></fieldset>}
+                {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">{formatProductAddOnPrice(option.price)}</span></label>; })}</div></fieldset>}
                 {parsed.choices.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">選購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.choices.map((option, index) => { const key = optionKey(option, index); const checked = extras.choices.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('choices', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#8c867d]">不加價</span></label>; })}</div></fieldset>}
                 {selectedSpecifications.length > 0 && (parsed.addOns.length > 0 || parsed.choices.length > 0) && <p className="text-sm text-[#706a62]">{totals.total === null ? '完整金額以正式報價為準。' : `預估合計：${formatProductAmount(totals.total)}`}</p>}
               </div>}

@@ -5,13 +5,40 @@ export const optionKey = (row: ProductOptionRow, index: number) => row.id || `${
 
 // Only exact amounts are calculable; ranges, per-day prices and quotes remain unknown.
 export function productPriceAmount(price: string): number | null {
-  const normalized = price.trim().replace(/^(?:NT\$|NTD|TWD|\$)\s*/i, '').replace(/\s*元$/, '');
+  const normalized = price.trim().replace(/^(?:NT\s*\$|\$\s*NT|NTD|TWD|\$)\s*/i, '').replace(/\s*元$/, '');
   if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/.test(normalized)) return null;
   const amount = Number(normalized.replace(/,/g, ''));
   return Number.isFinite(amount) && amount <= 1e9 ? amount : null;
 }
 
-export const formatProductAmount = (amount: number) => `NT$${amount.toLocaleString('zh-TW', { maximumFractionDigits: 2 })}`;
+export const formatProductAmount = (amount: number) => `$NT${amount.toLocaleString('zh-TW', { maximumFractionDigits: 2 })}`;
+
+export function formatProductPrice(price: string): string {
+  const value = price.trim();
+  if (!value) return '';
+  const amount = productPriceAmount(value);
+  return amount === null ? value : formatProductAmount(amount);
+}
+
+export function formatProductAddOnPrice(price: string): string {
+  const value = price.trim();
+  if (!value) return '洽詢';
+  const amount = productPriceAmount(value.replace(/^\+\s*/, ''));
+  return amount === null ? value : `+${formatProductAmount(amount)}`;
+}
+
+export function formatProductPriceText(text: string): string {
+  return text.split('\n').map(line => {
+    const value = line.trim();
+    if (!value) return '';
+    const directAmount = productPriceAmount(value);
+    if (directAmount !== null) return formatProductAmount(directAmount);
+
+    const labelledAmount = value.match(/^(.+?)(\s*[:：]\s*|\s+)((?:(?:NT\s*\$|\$\s*NT|NTD|TWD|\$)\s*)?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?\s*元?)$/i);
+    if (!labelledAmount) return value;
+    return `${labelledAmount[1]}${labelledAmount[2]}${formatProductPrice(labelledAmount[3])}`;
+  }).join('\n');
+}
 
 export function productOptionTotals(rows: ProductOptionRow[]) {
   const amounts = rows.map(row => productPriceAmount(row.price));

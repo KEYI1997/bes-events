@@ -40,7 +40,7 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
       {rows.map(row => <div key={row.id} className="space-y-2 border-b border-gray-200 pb-4">
         <div className="flex flex-wrap gap-2">
           <input aria-label={`${title}名稱`} required value={row.label} onChange={event => onUpdate(row.id!, 'label', event.target.value)} placeholder="商品名稱" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />
-          {!free && <input aria-label={`${title}加價金額`} required value={row.price} onChange={event => onUpdate(row.id!, 'price', event.target.value)} placeholder="例如：3000 或 NT$3,000" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />}
+          {!free && <input aria-label={`${title}加價金額`} required value={row.price} onChange={event => onUpdate(row.id!, 'price', event.target.value)} placeholder="有價格請輸入數字，例如：3000" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />}
           <button type="button" onClick={() => onRemove(row.id!)} className="px-3 py-2 text-sm text-red-700" aria-label={`移除${row.label || title}`}>移除</button>
         </div>
         <div className="flex flex-wrap items-center gap-3">

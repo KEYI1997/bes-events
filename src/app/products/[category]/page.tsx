@@ -6,6 +6,7 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 import JsonLd from '@/components/JsonLd';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
+import { formatProductPriceText } from '@/lib/productOptions';
 import { breadcrumbJsonLd, createPageMetadata, itemListJsonLd, PRODUCT_CATEGORY_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
 
 const CATEGORY_MAP: Record<string, string> = {
@@ -109,7 +110,7 @@ export default async function ProductCategoryPage({ params }: Props) {
                     <div className="flex items-end justify-between">
                       {product.price_note && (
                         <p className="text-base font-bold leading-relaxed whitespace-pre-line" style={{ color: '#AA7452' }}>
-                          {product.price_note.replace(/\s*[/／]\s*/g, '\n')}
+                          {formatProductPriceText(product.price_note.replace(/\s*[/／]\s*/g, '\n'))}
                         </p>
                       )}
                       <Link

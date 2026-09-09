@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { Product } from '@/lib/types';
+import { formatProductPriceText } from '@/lib/productOptions';
 
 interface ServiceProductGridProps {
   products: Product[];
@@ -40,7 +41,7 @@ export default function ServiceProductGrid({ products }: ServiceProductGridProps
                     className="text-base font-bold leading-relaxed whitespace-pre-line"
                     style={{ color: '#AA7452' }}
                   >
-                    {product.price_note.replace(/\s*[/／]\s*/g, '\n')}
+                    {formatProductPriceText(product.price_note.replace(/\s*[/／]\s*/g, '\n'))}
                   </p>
                 )}
               </div>
