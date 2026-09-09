@@ -60,7 +60,7 @@ function parseProduct(p: ProductData) {
     ? parsedPriceOptions
     : (p.price_note?.trim() ? [{ label: '價格', price: p.price_note.trim() }] : []);
   const addOns = parseProductOptionRows(p.description || '', '加購方案');
-  const choices = parseProductOptionRows(p.description || '', '選購商品');
+  const choices = parseProductOptionRows(p.description || '', '選配商品');
   const singlePurchaseOnly = isSinglePurchaseOnly(p.description);
   const standardVideo = (p.description || '').match(/【公版影片】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
   if (p.service_content !== undefined && p.service_content !== '') {
@@ -213,7 +213,7 @@ export default function ProductsPage() {
       return;
     }
     if (form.choices.some(row => !row.label.trim())) {
-      alert('請填寫每個選購商品的名稱。');
+      alert('請填寫每個選配商品的名稱。');
       return;
     }
     const adminPwd = localStorage.getItem('admin_password') || '';
@@ -222,7 +222,7 @@ export default function ProductsPage() {
       form.service_content ? `${form.category === '活動特效' ? '【效果介紹】' : '【服務內容】'}\n${form.service_content}` : '',
       form.price_options.length ? `【價格選項】\n${serializeProductOptionRows(form.price_options)}` : '',
       form.add_ons.length ? `【加購方案】\n${serializeProductOptionRows(form.add_ons)}` : '',
-      form.choices.length ? `【選購商品】\n${serializeProductOptionRows(form.choices.map(row => ({ ...row, price: '0' })))}` : '',
+      form.choices.length ? `【選配商品】\n${serializeProductOptionRows(form.choices.map(row => ({ ...row, price: '0' })))}` : '',
       serializePurchaseLimit(form.single_purchase_only),
       form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
@@ -570,7 +570,7 @@ export default function ProductsPage() {
               </div>
 
               {(['add_ons', 'choices'] as const).map(field => (
-                <ProductExtraEditor key={field} title={field === 'add_ons' ? '加購商品' : '選購商品'} free={field === 'choices'}
+                <ProductExtraEditor key={field} title={field === 'add_ons' ? '加購商品' : '選配商品'} free={field === 'choices'}
                   rows={form[field]} busy={extraUploading} onBusy={setExtraUploading}
                   onAdd={() => setForm(current => ({ ...current, [field]: [...current[field], { id: crypto.randomUUID(), label: '', price: field === 'choices' ? '0' : '', imageUrl: '' }] }))}
                   onUpdate={(id, key, value) => setForm(current => ({ ...current, [field]: current[field].map(row => row.id === id ? { ...row, [key]: value } : row) }))}

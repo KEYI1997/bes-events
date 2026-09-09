@@ -3,6 +3,8 @@ export type ProductExtraSelection = { addOns: string[]; choices: string[] };
 
 const SINGLE_PURCHASE_SECTION = '購買數量限制';
 const SINGLE_PURCHASE_VALUE = '單件限定';
+const LEGACY_CHOICE_SECTION = '選購商品';
+const CHOICE_SECTION = '選配商品';
 
 export const optionKey = (row: ProductOptionRow, index: number) => row.id || `${index}:${row.label}:${row.price}`;
 
@@ -73,7 +75,12 @@ export function serializePurchaseLimit(singlePurchaseOnly: boolean) {
 }
 
 export function parseProductOptionRows(description: string, sectionTitle: string): ProductOptionRow[] {
-  const section = description.match(new RegExp(`【${sectionTitle}】\\n?([\\s\\S]*?)(?=\\n*【|$)`))?.[1] || '';
+  // Older product records used 「選購商品」. Read them under the new 「選配商品」 label
+  // so existing catalog data stays available while all newly saved data uses the new wording.
+  const sectionTitles = sectionTitle === CHOICE_SECTION ? [CHOICE_SECTION, LEGACY_CHOICE_SECTION] : [sectionTitle];
+  const section = sectionTitles
+    .map(title => description.match(new RegExp(`【${title}】\\n?([\\s\\S]*?)(?=\\n*【|$)`))?.[1])
+    .find((value): value is string => value !== undefined) || '';
   if (section.trim().startsWith('[')) {
     try {
       const rows: unknown = JSON.parse(section.trim());

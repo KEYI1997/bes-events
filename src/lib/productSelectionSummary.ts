@@ -10,7 +10,7 @@ export function productSelectionSummary(product: { name: string; description?: s
   const specs = parseProductOptionRows(description, '價格選項');
   if (!specs.length && product.price_note) specs.push({ label: '價格', price: product.price_note });
   const addOns = parseProductOptionRows(description, '加購方案');
-  const choices = parseProductOptionRows(description, '選購商品');
+  const choices = parseProductOptionRows(description, '選配商品');
   function selectedRows(rows: ProductOptionRow[], value: unknown) {
     if (!Array.isArray(value) || value.length > rows.length || value.some(key => typeof key !== 'string') || new Set(value).size !== value.length) throw new Error('商品選擇格式錯誤');
     if (value.some(key => !rows.some((row, index) => optionKey(row, index) === key))) throw new Error('商品選項已更新，請重新整理頁面後選擇。');
@@ -37,7 +37,7 @@ export function productSelectionSummary(product: { name: string; description?: s
     selectedSpecs.length ? `【選擇規格】\n${selectedSpecs.map(row => `${row.label}｜${formatProductPrice(row.price) || '洽詢'}`).join('\n')}` : '',
     `【數量】${quantity}`,
     selectedAddOns.length ? `【加購商品】\n${selectedAddOns.map(row => `${row.label}｜${formatProductAddOnPrice(row.price)}`).join('\n')}` : '',
-    selectedChoices.length ? `【選購商品】\n${selectedChoices.map(row => `${row.label}｜不加價`).join('\n')}` : '',
-    selectedSpecs.length ? `【預估金額】${productSubtotal === null ? '商品小計待報價確認' : `商品小計 ${formatProductAmount(productSubtotal)}`}；加購小計 ${formatProductAmount(addOnTotals.knownSubtotal)}${addOnTotals.hasQuotedItem ? '（另有洽詢項目）' : ''}；${total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(total)}`}。選購商品不加價，金額以正式報價為準。` : '',
+    selectedChoices.length ? `【選配商品】\n${selectedChoices.map(row => `${row.label}｜不加價`).join('\n')}` : '',
+    selectedSpecs.length ? `【預估金額】${productSubtotal === null ? '商品小計待報價確認' : `商品小計 ${formatProductAmount(productSubtotal)}`}；加購小計 ${formatProductAmount(addOnTotals.knownSubtotal)}${addOnTotals.hasQuotedItem ? '（另有洽詢項目）' : ''}；${total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(total)}`}。選配商品不加價，金額以正式報價為準。` : '',
   ].filter(Boolean).join('\n');
 }

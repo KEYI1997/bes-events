@@ -13,7 +13,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   if (!addOns.length && !choices.length) return null;
   const totals = productExtraTotals(basePrice, addOns, selection.addOns, quantity);
   return <div className="space-y-6">
-    {([{ title: '加購商品', field: 'addOns', rows: addOns }, { title: '選購商品', field: 'choices', rows: choices }] as const).map(group => group.rows.length > 0 && (
+    {([{ title: '加購商品', field: 'addOns', rows: addOns }, { title: '選配商品', field: 'choices', rows: choices }] as const).map(group => group.rows.length > 0 && (
       <fieldset key={group.field}>
         <legend className="mb-3 font-semibold text-[#4A4947]">{group.title}<span className="ml-2 text-sm font-normal">{group.field === 'choices' ? '不加價・可複選' : '另計費用・可複選'}</span></legend>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -36,7 +36,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
     <div aria-live="polite" className="space-y-1 border-t border-gray-200 pt-4 text-sm text-[#4A4947]">
       {addOns.length > 0 && <p>加購小計：{formatProductAmount(totals.knownSubtotal)}{totals.hasQuotedAddOn ? '（另有需洽詢項目）' : ''}</p>}
       {totals.total !== null ? <p className="text-lg font-semibold">預估合計：{formatProductAmount(totals.total)}</p> : <p>商品價格或部分項目待確認，完整金額以報價為準。</p>}
-      <p>免費選購不增加費用；每個勾選項目計一次。</p>
+      <p>免費選配不增加費用；每個勾選項目計一次。</p>
     </div>
   </div>;
 }

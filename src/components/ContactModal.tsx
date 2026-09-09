@@ -91,7 +91,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
       productName ? `【詢問商品】${productName}` : '',
       selectedPriceOptions.length ? `【選擇規格】\n${selectedPriceOptions.map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`).join('\n')}` : '',
       selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
-      selectedChoiceLines.length ? `【選購商品】\n${selectedChoiceLines.join('\n')}` : '',
+      selectedChoiceLines.length ? `【選配商品】\n${selectedChoiceLines.join('\n')}` : '',
       (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity); return `【預估金額】商品數量 ${quantity}；加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
       form.description,
     ].filter(Boolean).join('\n');
