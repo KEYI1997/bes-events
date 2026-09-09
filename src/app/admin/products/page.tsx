@@ -52,7 +52,7 @@ function getDisplayImage(p: ProductData): string {
   return '';
 }
 
-// 從 description 解析服務內容、注意事項、YouTube、AI圖檔
+// 從 description 解析服務內容、注意事項、YouTube、下載檔案
 function parseProduct(p: ProductData) {
   const parsedPriceOptions = parseProductOptionRows(p.description || '', '價格選項');
   // 舊資料若只有 price_note，於編輯器中轉成新版單一價格列；儲存時即可完成遷移。
@@ -62,17 +62,18 @@ function parseProduct(p: ProductData) {
   const addOns = parseProductOptionRows(p.description || '', '加購方案');
   const choices = parseProductOptionRows(p.description || '', '選購商品');
   const singlePurchaseOnly = isSinglePurchaseOnly(p.description);
+  const standardVideo = (p.description || '').match(/【公版影片】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns, choices, singlePurchaseOnly };
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
   }
-  const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
+  const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【公版影片】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const features = desc.match(/【效果特色】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns, choices, singlePurchaseOnly };
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
 }
 
 function getAllProductImages(p: ProductData): string[] {
@@ -89,7 +90,7 @@ export default function ProductsPage() {
   const [form, setForm] = useState({
     name: '', category: '啟動儀式', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[], choices: [] as ProductOptionRow[],
     service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
-    image_url: '', size_image_url: '', ai_file_url: '',
+    image_url: '', size_image_url: '', ai_file_url: '', standard_video_url: '',
     stock: 1, visible: true, single_purchase_only: false,
   });
   const [uploading, setUploading] = useState<string | null>(null);
@@ -126,7 +127,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true, single_purchase_only: false });
+    setForm({ name: '', category: '啟動儀式', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', standard_video_url: '', stock: 1, visible: true, single_purchase_only: false });
     setShowModal(true);
   };
 
@@ -150,6 +151,7 @@ export default function ProductsPage() {
       image_url: getAllProductImages(p).join(','),
       size_image_url: sizeUrl,
       ai_file_url: parsed.ai_file || p.ai_file_url || '',
+      standard_video_url: parsed.standardVideo,
       stock: p.stock ?? 1,
       visible: p.visible,
       single_purchase_only: parsed.singlePurchaseOnly,
@@ -228,6 +230,7 @@ export default function ProductsPage() {
       form.youtube_url ? `【YouTube】\n${form.youtube_url}` : '',
       form.size_image_url ? `【尺寸圖】\n${form.size_image_url}` : '',
       form.ai_file_url ? `【AI圖檔】\n${form.ai_file_url}` : '',
+      form.standard_video_url ? `【公版影片】\n${form.standard_video_url}` : '',
     ].filter(Boolean).join('\n\n');
 
     const record: Record<string, unknown> = {
@@ -660,6 +663,23 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2">
                       <a href={form.ai_file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">已上傳 ✓</a>
                       <button type="button" onClick={() => setForm(f => ({ ...f, ai_file_url: '' }))} className="text-xs text-red-500 hover:underline">移除</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">公版影片下載</label>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm">{uploading === 'standard_video_url' ? '上傳中...' : '選擇公版影片'}</span>
+                    <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={e => handleUpload(e, 'standard_video_url')} className="hidden" />
+                  </label>
+                  {form.standard_video_url && (
+                    <div className="flex items-center gap-2">
+                      <a href={form.standard_video_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">已上傳 ✓</a>
+                      <button type="button" onClick={() => setForm(f => ({ ...f, standard_video_url: '' }))} className="text-xs text-red-500 hover:underline">移除</button>
                     </div>
                   )}
                 </div>
