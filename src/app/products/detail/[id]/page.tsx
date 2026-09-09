@@ -419,7 +419,7 @@ function EquipmentProductDetail({
           <div className="grid items-start gap-9 lg:grid-cols-[minmax(0,1.1fr)_minmax(390px,0.9fr)] lg:gap-12">
             <div className="min-w-0">
               {images.length > 0 ? <>
-                <div className="group relative aspect-[4/5] overflow-hidden rounded-[14px] bg-white">
+                <div className="group relative mx-auto aspect-square w-full max-h-[520px] overflow-hidden rounded-[14px] bg-white md:aspect-[4/3]">
                   <button type="button" onClick={onOpenLightbox} className="absolute inset-0 z-10 cursor-zoom-in" aria-label="放大檢視商品圖片" />
                   <Image src={images[currentSlide] || images[0]} alt={`${product.name}－${product.category}活動服務圖片`} fill priority className="object-contain object-center" />
                   {images.length > 1 && <>
@@ -428,7 +428,7 @@ function EquipmentProductDetail({
                   </>}
                 </div>
                 {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-3">{images.slice(0, 4).map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => onSelectImage(index)} className={`relative aspect-square overflow-hidden rounded-[10px] border bg-[#f4f0ea] transition-colors ${currentSlide === index ? 'border-[#aa7452]' : 'border-transparent hover:border-[#cdbcae]'}`} aria-label={`檢視第 ${index + 1} 張圖片`}><Image src={image} alt={`${product.name} 縮圖 ${index + 1}`} fill sizes="(max-width: 1024px) 22vw, 130px" className="object-contain object-center" /></button>)}</div>}
-              </> : <div className="flex aspect-[4/5] items-center justify-center rounded-[14px] bg-[#f2eee8] text-sm text-[#8a837a]">暫無圖片</div>}
+              </> : <div className="flex aspect-square w-full max-h-[520px] items-center justify-center rounded-[14px] bg-[#f2eee8] text-sm text-[#8a837a] md:aspect-[4/3]">暫無圖片</div>}
             </div>
 
             <div className="min-w-0 py-1 lg:py-3">
