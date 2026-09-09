@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { X, ClipboardList } from 'lucide-react';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import OrderPriceSummary from '@/components/OrderPriceSummary';
+import { productPriceAmount } from '@/lib/productOptions';
 
 const EVENT_TYPES = [
   '婚宴 / 婚禮',
@@ -17,6 +19,7 @@ const EVENT_TYPES = [
 
 interface BartendingOrderModalProps {
   planName: string;
+  price?: string;
   onClose: () => void;
 }
 
@@ -41,7 +44,7 @@ interface FormErrors {
   event_type?: string;
 }
 
-export default function BartendingOrderModal({ planName, onClose }: BartendingOrderModalProps) {
+export default function BartendingOrderModal({ planName, price = '', onClose }: BartendingOrderModalProps) {
   const [form, setForm] = useState<FormState>({
     name: '',
     phone: '',
@@ -55,6 +58,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const planAmount = productPriceAmount(price);
 
   // 鎖定背景捲動
   useEffect(() => {
@@ -146,7 +150,7 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Modal 本體 */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className={`relative w-full ${planAmount === null ? 'max-w-lg' : 'max-w-5xl'} max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl`}>
         {/* Header */}
         <div className="sticky top-0 bg-primary px-6 py-5 rounded-t-2xl flex items-start justify-between z-10">
           <div>
@@ -184,7 +188,8 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
           </div>
         ) : (
           /* 表單 */
-          <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className={planAmount === null ? 'space-y-5 px-6 py-6' : 'flex flex-col gap-6 p-6 lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6'} noValidate>
+            <div className={planAmount === null ? 'space-y-5' : 'order-2 space-y-5 lg:order-1'}>
 
             {/* 姓名 */}
             <div>
@@ -346,6 +351,8 @@ export default function BartendingOrderModal({ planName, onClose }: BartendingOr
             <p className="text-center text-xs text-primary/40">
               送出後我們將於 1 個工作日內與您聯繫確認
             </p>
+            </div>
+            {planAmount !== null && <div className="order-1 lg:order-2 lg:sticky lg:top-4"><OrderPriceSummary productItems={[{ label: planName, price }]} total={planAmount} /></div>}
           </form>
         )}
       </div>
