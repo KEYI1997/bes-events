@@ -1,5 +1,5 @@
 import { Info, ReceiptText } from 'lucide-react';
-import { formatProductAmount, formatProductPrice, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, type ProductOptionRow } from '@/lib/productOptions';
 
 type OrderPriceSummaryProps = {
   productItems: ProductOptionRow[];
@@ -10,14 +10,14 @@ type OrderPriceSummaryProps = {
 
 const ESTIMATE_NOTE = '此為預估金額，實際費用將依活動內容、場地條件及服務需求調整，車馬費另計，最終費用以正式報價為準，詳情請參閱報價單。';
 
-function SummaryRows({ items, emptyMessage }: { items: ProductOptionRow[]; emptyMessage: string }) {
+function SummaryRows({ items, emptyMessage, addOn = false }: { items: ProductOptionRow[]; emptyMessage: string; addOn?: boolean }) {
   if (!items.length) return <p className="rounded-lg bg-white/70 px-3 py-2 text-sm text-[#7b746c]">{emptyMessage}</p>;
 
   return <div className="space-y-2">
     {items.map((item, index) => (
       <div key={`${item.id || item.label}-${index}`} className="flex items-start justify-between gap-3 rounded-lg bg-white/70 px-3 py-2">
         <span className="min-w-0 text-sm font-medium text-[#4A4947]">{item.label}</span>
-        <span className="shrink-0 text-sm font-semibold text-[#8f5d3f]">{formatProductPrice(item.price) || '洽詢'}</span>
+        <span className="shrink-0 text-sm font-semibold text-[#8f5d3f]">{addOn ? formatProductAddOnPrice(item.price) : formatProductPrice(item.price) || '洽詢'}</span>
       </div>
     ))}
   </div>;
@@ -43,7 +43,7 @@ export default function OrderPriceSummary({ productItems, addOnItems = [], total
 
       {addOnItems.length > 0 && <section className="mt-5">
         <h3 className="mb-2 text-sm font-bold">加購商品</h3>
-        <SummaryRows items={addOnItems} emptyMessage="尚未選擇加購商品" />
+        <SummaryRows items={addOnItems} emptyMessage="尚未選擇加購商品" addOn />
       </section>}
 
       <section className="mt-5 rounded-xl bg-[#F0E4D8] p-4">
