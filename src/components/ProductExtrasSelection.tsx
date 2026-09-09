@@ -2,15 +2,16 @@
 
 import { formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 
-export default function ProductExtrasSelection({ addOns, choices, selection, onChange, basePrice = '' }: {
+export default function ProductExtrasSelection({ addOns, choices, selection, onChange, basePrice = '', quantity = 1 }: {
   addOns: ProductOptionRow[];
   choices: ProductOptionRow[];
   selection: ProductExtraSelection;
   onChange: (value: ProductExtraSelection) => void;
   basePrice?: string;
+  quantity?: number;
 }) {
   if (!addOns.length && !choices.length) return null;
-  const totals = productExtraTotals(basePrice, addOns, selection.addOns);
+  const totals = productExtraTotals(basePrice, addOns, selection.addOns, quantity);
   return <div className="space-y-6">
     {([{ title: '加購商品', field: 'addOns', rows: addOns }, { title: '選購商品', field: 'choices', rows: choices }] as const).map(group => group.rows.length > 0 && (
       <fieldset key={group.field}>

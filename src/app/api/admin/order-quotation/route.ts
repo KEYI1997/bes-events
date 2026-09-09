@@ -71,7 +71,7 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
   if (!product?.name) throw new Error('找不到訂單產品資料');
   const quotationItems = stored
     ? normalizeQuotationItems(stored.items)
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note);
   const pdf = await buildQuotationPdf({
     orderCode: order.order_code,
     customerName: order.customer_name,

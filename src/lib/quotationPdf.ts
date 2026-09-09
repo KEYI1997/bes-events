@@ -62,7 +62,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     drawCell(doc, v2, MARGIN + labelW * 2 + valueW, y, valueW, infoH, { fontSize: 7.5 }); y += infoH;
   }
   y += 8;
-  const quotationItems = order.quotationItems ? normalizeQuotationItems(order.quotationItems) : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName);
+  const quotationItems = order.quotationItems ? normalizeQuotationItems(order.quotationItems) : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
   const relaxedLayout = visibleItems.length <= 4;
   const columns = [215, 78, 48, 94, CONTENT_WIDTH - 215 - 78 - 48 - 94];

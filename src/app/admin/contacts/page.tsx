@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, Filter } from 'lucide-react';
 import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
+import { isSinglePurchaseOnly } from '@/lib/productOptions';
 
 function splitContactDescription(description?: string, savedEventLocation?: string) {
   const lines = (description || '').split('\n');
@@ -19,6 +20,11 @@ function splitContactDescription(description?: string, savedEventLocation?: stri
       .join('\n')
       .replace(/^\n+|\n+$/g, ''),
   };
+}
+
+function extractContactQuantity(description?: string) {
+  const value = Number(description?.match(/【數量】\s*([0-9]+)/)?.[1] || 1);
+  return Number.isSafeInteger(value) && value >= 1 ? value : 1;
 }
 
 export default function ContactsPage() {
@@ -60,6 +66,8 @@ export default function ContactsPage() {
       selectedService.productCategories.includes(product.category)
     )
   );
+  const selectedOrderProduct = products.find(product => product.id === orderForm.product_id);
+  const selectedProductSingleOnly = isSinglePurchaseOnly(selectedOrderProduct?.description);
 
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
@@ -151,13 +159,15 @@ export default function ContactsPage() {
     const matchedServiceProduct = matchedProduct && serviceProducts.some(product => product.id === matchedProduct.id)
       ? matchedProduct
       : null;
+    const initialProduct = matchedServiceProduct || (serviceProducts.length === 1 ? serviceProducts[0] : null);
+    const requestedQuantity = extractContactQuantity(contact.description);
 
     setOrderForm({
-      product_id: matchedServiceProduct?.id || (serviceProducts.length === 1 ? serviceProducts[0].id : ''),
+      product_id: initialProduct?.id || '',
       customer_name: contact.name,
       customer_phone: contact.phone,
       customer_email: contact.email || '',
-      quantity: 1,
+      quantity: initialProduct && isSinglePurchaseOnly(initialProduct.description) ? 1 : requestedQuantity,
       borrow_date: contact.event_date || '',
       return_date: contact.event_end_date || '',
       event_name: '',
@@ -171,6 +181,14 @@ export default function ContactsPage() {
     setConvertError('');
     if (!orderForm.product_id || !orderForm.borrow_date || !orderForm.return_date) {
       setConvertError('請選擇服務方案並填寫完整日期。');
+      return;
+    }
+    if (!Number.isSafeInteger(orderForm.quantity) || orderForm.quantity < 1) {
+      setConvertError('數量必須是大於 0 的整數。');
+      return;
+    }
+    if (selectedProductSingleOnly && orderForm.quantity !== 1) {
+      setConvertError('此商品限購 1 件，數量不可超過 1。');
       return;
     }
     setConverting(true);
@@ -560,10 +578,12 @@ export default function ContactsPage() {
                           service.productCategories.includes(product.category)
                         )
                       );
+                      const nextProduct = nextProducts.length === 1 ? nextProducts[0] : null;
                       setSelectedServiceType(service.label);
                       setOrderForm(form => ({
                         ...form,
-                        product_id: nextProducts.length === 1 ? nextProducts[0].id : '',
+                        product_id: nextProduct?.id || '',
+                        quantity: nextProduct && isSinglePurchaseOnly(nextProduct.description) ? 1 : form.quantity,
                       }));
                       setConvertError('');
                     }}
@@ -580,7 +600,14 @@ export default function ContactsPage() {
                   <label className="block text-sm font-medium mb-1">服務方案／產品 *</label>
                   <select
                     value={orderForm.product_id}
-                    onChange={e => setOrderForm(f => ({ ...f, product_id: e.target.value }))}
+                    onChange={e => {
+                      const nextProduct = products.find(product => product.id === e.target.value);
+                      setOrderForm(f => ({
+                        ...f,
+                        product_id: e.target.value,
+                        quantity: nextProduct && isSinglePurchaseOnly(nextProduct.description) ? 1 : f.quantity,
+                      }));
+                    }}
                     required
                     disabled={availableProducts.length === 0}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:text-gray-400"
@@ -637,10 +664,13 @@ export default function ContactsPage() {
                     <input
                       type="number"
                       min={1}
+                      max={selectedProductSingleOnly ? 1 : undefined}
                       value={orderForm.quantity}
+                      readOnly={selectedProductSingleOnly}
                       onChange={e => setOrderForm(f => ({ ...f, quantity: Number(e.target.value) }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 read-only:bg-gray-100"
                     />
+                    {selectedProductSingleOnly && <p className="mt-1 text-xs text-gray-500">此商品在產品管理中設定為限購 1 件。</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">{selectedService.eventNameLabel}</label>

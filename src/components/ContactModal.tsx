@@ -25,6 +25,7 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ isOpen, onClose, productName, productId, serviceType, addOnOptions = [], choiceOptions = [], initialExtraSelection, onExtraSelectionChange, priceOptions = [], initialPriceOptionValue = '', orderQuantity }: ContactModalProps) {
+  const quantity = Number.isSafeInteger(orderQuantity) && (orderQuantity as number) >= 1 ? orderQuantity as number : 1;
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: ''
   });
@@ -45,7 +46,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
   const selectedPriceBase = productOptionTotals(selectedPriceOptions);
   const selectedAddOnOptions = addOnOptions.filter((option, index) => extras.addOns.includes(optionKey(option, index)));
   const selectedPriceTotal = selectedPriceOptions.length > 0
-    ? productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns)
+    ? productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity)
     : null;
   const hasCalculablePrice = priceOptions.some(option => productPriceAmount(option.price) !== null);
 
@@ -91,7 +92,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
       selectedPriceOptions.length ? `【選擇規格】\n${selectedPriceOptions.map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`).join('\n')}` : '',
       selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
       selectedChoiceLines.length ? `【選購商品】\n${selectedChoiceLines.join('\n')}` : '',
-      (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns); return `【預估金額】加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
+      (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity); return `【預估金額】商品數量 ${quantity}；加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
       form.description,
     ].filter(Boolean).join('\n');
 
@@ -100,7 +101,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...submissionForm, description: productId ? form.description : desc,
-          ...(productId ? { product_selection: { productId, priceKey: selectedPriceOptions[0] ? optionKey(selectedPriceOptions[0], priceOptions.indexOf(selectedPriceOptions[0])) : '', priceKeys: selectedPriceOptions.map(option => optionKey(option, priceOptions.indexOf(option))), ...extras, ...(orderQuantity ? { quantity: orderQuantity } : {}) } } : {}),
+          ...(productId ? { product_selection: { productId, priceKey: selectedPriceOptions[0] ? optionKey(selectedPriceOptions[0], priceOptions.indexOf(selectedPriceOptions[0])) : '', priceKeys: selectedPriceOptions.map(option => optionKey(option, priceOptions.indexOf(option))), ...extras, quantity } } : {}),
         }),
       });
       if (res.ok) {
@@ -237,7 +238,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                   {serviceType && <p className="mt-1 text-xs text-gray-500">已依您瀏覽的商品服務自動帶入</p>}
                 </div>
                 {priceOptions.length > 0 && <div className="md:col-span-2"><p className="mb-2 text-sm font-medium text-[#4A4947]">{hasLockedPriceOption ? '商品細項與價格' : priceOptions.length > 1 ? '選擇商品規格與價格 *' : '商品規格與價格'}</p>{priceOptions.length === 1 ? <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"><span className="text-sm text-[#4A4947]">{priceOptions[0].label}</span><span className="text-sm font-semibold text-[#AA7452]">{formatProductPrice(priceOptions[0].price) || '洽詢'}</span></div> : <div className={`space-y-2 rounded-lg border p-3 ${priceOptionError ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>{priceOptions.map((option, index) => { const key = optionKey(option, index); const checked = option.locked || key === selectedPriceOption; return <label key={key} className={`flex items-center justify-between gap-4 rounded-md px-2 py-1.5 ${option.locked ? 'cursor-default bg-[#FCF8F4]' : 'cursor-pointer hover:bg-gray-50'}`}><span className="flex items-center gap-2"><input type={hasLockedPriceOption ? 'checkbox' : 'radio'} name={hasLockedPriceOption ? undefined : 'product-price-option'} checked={checked} disabled={option.locked} onChange={event => { setSelectedPriceOption(event.target.checked ? key : ''); setPriceOptionError(''); }} className="h-4 w-4 accent-[#AA7452] disabled:opacity-100" /><span className="text-sm text-[#4A4947]">{option.label}</span>{option.locked && <span className="rounded-full bg-[#F1E5D7] px-2 py-0.5 text-[11px] font-medium text-[#805E45]">必選</span>}</span><span className="text-sm font-medium text-[#AA7452]">{formatProductPrice(option.price) || '洽詢'}</span></label>; })}</div>}{priceOptionError && <p className="mt-1 text-xs text-red-500">{priceOptionError}</p>}</div>}
-                <div className="md:col-span-2"><ProductExtrasSelection addOns={addOnOptions} choices={choiceOptions} selection={extras} onChange={value => { setExtras(value); onExtraSelectionChange?.(value); }} basePrice={selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal)} /></div>
+                <div className="md:col-span-2"><ProductExtrasSelection addOns={addOnOptions} choices={choiceOptions} selection={extras} onChange={value => { setExtras(value); onExtraSelectionChange?.(value); }} basePrice={selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal)} quantity={quantity} /></div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">活動起日 *</label>
                   <input
@@ -288,7 +289,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                 {loading ? '提交中...' : '送出諮詢'}
               </button>
               </div>
-              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} total={selectedPriceTotal?.total ?? null} /></div>}
+              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} quantity={quantity} total={selectedPriceTotal?.total ?? null} /></div>}
             </form>
           )}
         </div>

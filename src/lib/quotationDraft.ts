@@ -1,19 +1,32 @@
 import { extractQuotationUnitPrice } from '@/lib/quotationWorkbook';
+import { productPriceAmount } from '@/lib/productOptions';
 import type { QuotationLineItem } from '@/lib/types';
 
 const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
+
+export function extractSelectedQuotationUnitPrice(selectionDescription: string | null | undefined, fallbackPriceNote: string | null | undefined) {
+  const section = selectionDescription?.match(/【選擇規格】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim();
+  if (!section) return extractQuotationUnitPrice(fallbackPriceNote);
+
+  const amounts = section
+    .split('\n')
+    .map(line => productPriceAmount(line.split('｜').pop() || ''));
+  if (!amounts.length || amounts.some(amount => amount === null)) return extractQuotationUnitPrice(fallbackPriceNote);
+  return amounts.reduce<number>((sum, amount) => sum + (amount || 0), 0);
+}
 
 export function createDefaultQuotationItems(
   productName: string,
   productPriceNote: string | null | undefined,
   quantity: number,
   eventName?: string | null,
+  selectionDescription?: string | null,
 ): QuotationLineItem[] {
   return [
     {
       id: 'product',
       label: productName,
-      unitPrice: extractQuotationUnitPrice(productPriceNote),
+      unitPrice: extractSelectedQuotationUnitPrice(selectionDescription, productPriceNote),
       quantity,
       note: eventName || '',
     },

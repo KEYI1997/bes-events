@@ -1,9 +1,10 @@
 import { Info, ReceiptText } from 'lucide-react';
-import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, productOptionTotals, type ProductOptionRow } from '@/lib/productOptions';
 
 type OrderPriceSummaryProps = {
   productItems: ProductOptionRow[];
   addOnItems?: ProductOptionRow[];
+  quantity?: number;
   total: number | null;
   emptyTotalMessage?: string;
 };
@@ -23,7 +24,12 @@ function SummaryRows({ items, emptyMessage, addOn = false }: { items: ProductOpt
   </div>;
 }
 
-export default function OrderPriceSummary({ productItems, addOnItems = [], total, emptyTotalMessage = '請先選擇商品規格' }: OrderPriceSummaryProps) {
+export default function OrderPriceSummary({ productItems, addOnItems = [], quantity = 1, total, emptyTotalMessage = '請先選擇商品規格' }: OrderPriceSummaryProps) {
+  const productTotals = productOptionTotals(productItems);
+  const productSubtotal = productItems.length > 0 && !productTotals.hasQuotedItem
+    ? Math.round(productTotals.knownSubtotal * quantity * 100) / 100
+    : null;
+
   return (
     <aside aria-live="polite" aria-label="價格總覽" className="rounded-2xl bg-[#F8F2EC] p-5 text-[#4A4947] shadow-[0_12px_30px_rgba(89,63,43,0.12)]">
       <div className="flex items-start justify-between gap-3">
@@ -39,6 +45,10 @@ export default function OrderPriceSummary({ productItems, addOnItems = [], total
       <section>
         <h3 className="mb-2 text-sm font-bold">商品規格</h3>
         <SummaryRows items={productItems} emptyMessage="請先選擇商品規格" />
+        {productItems.length > 0 && <div className="mt-2 space-y-1 px-3 text-sm text-[#6f665f]">
+          <p className="flex items-center justify-between gap-3"><span>購買數量</span><strong className="tabular-nums text-[#4A4947]">× {quantity.toLocaleString('zh-TW')}</strong></p>
+          {productSubtotal !== null && <p className="flex items-center justify-between gap-3"><span>商品小計</span><strong className="tabular-nums text-[#8f5d3f]">{formatProductAmount(productSubtotal)}</strong></p>}
+        </div>}
       </section>
 
       {addOnItems.length > 0 && <section className="mt-5">

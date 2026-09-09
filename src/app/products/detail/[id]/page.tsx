@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
-import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, isSinglePurchaseOnly, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
+import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 
 interface ProductDetail {
   id: string;
@@ -77,6 +78,8 @@ export default function ProductDetailPage() {
     : product.price_note ? [{ label: '價格', price: product.price_note }] : [];
   const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
   const isEquipmentProduct = ['活動特效', '啟動儀式'].includes(product.category);
+  const singlePurchaseOnly = isSinglePurchaseOnly(product.description);
+  const genericTotals = productExtraTotals(priceOptions.length === 1 ? priceOptions[0].price : '', parsed.addOns, extras.addOns, quantity);
   const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
@@ -103,6 +106,7 @@ export default function ProductDetailPage() {
       currentSlide={currentSlide}
       selectedPriceOption={selectedPriceOption}
       quantity={quantity}
+      singlePurchaseOnly={singlePurchaseOnly}
       extras={extras}
       priceSelectionError={priceSelectionError}
       contactOpen={contactOpen}
@@ -203,6 +207,11 @@ export default function ProductDetailPage() {
                 {priceOptions.length > 0 ? priceOptions.map((option, index) => <div key={`${option.label}-${index}`} className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2 last:border-b-0"><span className="text-sm font-medium text-gray-600">{option.label}</span><span className="text-xl font-bold text-right" style={{ color: '#AA7452' }}>{formatProductPrice(option.price) || '洽詢'}</span></div>) : <p className="text-3xl font-bold" style={{ color: '#AA7452' }}>洽詢</p>}
               </div>
 
+              <ProductQuantitySelector quantity={quantity} singlePurchaseOnly={singlePurchaseOnly} onChange={setQuantity} className="mb-4" />
+              {priceOptions.length === 1 && <p aria-live="polite" className="mb-7 text-sm font-semibold text-[#6f6961]">
+                {genericTotals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(genericTotals.total)}</span></>}
+              </p>}
+
               {/* 建立訂單 */}
               <button
                 onClick={() => setContactOpen(true)}
@@ -252,7 +261,7 @@ export default function ProductDetailPage() {
       {/* ===== 產品說明：依資料顯示效果介紹、特色、注意事項與適用場合 ===== */}
       {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <section className="max-w-[1504px] mx-auto px-6 md:px-12 pt-8">
         <div className="rounded-2xl bg-white p-5 md:p-8">
-          <ProductExtrasSelection addOns={parsed.addOns} choices={parsed.choices} selection={extras} onChange={setExtras} basePrice={priceOptions.length === 1 ? priceOptions[0].price : ''} />
+          <ProductExtrasSelection addOns={parsed.addOns} choices={parsed.choices} selection={extras} onChange={setExtras} basePrice={priceOptions.length === 1 ? priceOptions[0].price : ''} quantity={quantity} />
           <button type="button" onClick={() => setContactOpen(true)} className="mt-5 rounded-full bg-[#AA7452] px-6 py-3 font-semibold text-white hover:bg-[#8F5F43]">確認選擇，建立訂單</button>
         </div>
       </section>}
@@ -332,6 +341,7 @@ export default function ProductDetailPage() {
         initialExtraSelection={extras}
         onExtraSelectionChange={setExtras}
         priceOptions={priceOptions}
+        orderQuantity={quantity}
       />}
 
       {/* 圖片放大 Lightbox */}
@@ -355,6 +365,7 @@ function EquipmentProductDetail({
   currentSlide,
   selectedPriceOption,
   quantity,
+  singlePurchaseOnly,
   extras,
   priceSelectionError,
   contactOpen,
@@ -379,6 +390,7 @@ function EquipmentProductDetail({
   currentSlide: number;
   selectedPriceOption: string;
   quantity: number;
+  singlePurchaseOnly: boolean;
   extras: ProductExtraSelection;
   priceSelectionError: boolean;
   contactOpen: boolean;
@@ -402,7 +414,7 @@ function EquipmentProductDetail({
     ? priceOptions.filter((option, index) => option.locked || optionKey(option, index) === selectedPriceOption)
     : (priceOptions.length === 1 ? priceOptions : selectedRegularSpecification ? [selectedRegularSpecification] : []);
   const selectedPriceTotal = productOptionTotals(selectedSpecifications);
-  const totals = productExtraTotals(selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal), parsed.addOns, extras.addOns);
+  const totals = productExtraTotals(selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal), parsed.addOns, extras.addOns, quantity);
   const updateExtra = (field: 'addOns' | 'choices', value: string, checked: boolean) => onExtrasChange({
     ...extras,
     [field]: checked ? [...extras[field], value] : extras[field].filter(item => item !== value),
@@ -454,10 +466,12 @@ function EquipmentProductDetail({
               {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7 space-y-6">
                 {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">{formatProductAddOnPrice(option.price)}</span></label>; })}</div></fieldset>}
                 {parsed.choices.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">選購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.choices.map((option, index) => { const key = optionKey(option, index); const checked = extras.choices.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('choices', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#8c867d]">不加價</span></label>; })}</div></fieldset>}
-                {selectedSpecifications.length > 0 && (parsed.addOns.length > 0 || parsed.choices.length > 0) && <p className="text-sm text-[#706a62]">{totals.total === null ? '完整金額以正式報價為準。' : `預估合計：${formatProductAmount(totals.total)}`}</p>}
               </div>}
 
-              <div className="mt-7"><p className="mb-3 text-sm font-semibold text-[#4a4947]">數量</p><div className="inline-flex items-center rounded-lg border border-[#e4ded6] bg-white"><button type="button" aria-label="減少數量" onClick={() => onQuantityChange(Math.max(1, quantity - 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Minus size={16} /></button><span className="w-10 text-center text-sm font-semibold tabular-nums text-[#4a4947]">{quantity}</span><button type="button" aria-label="增加數量" onClick={() => onQuantityChange(Math.min(99, quantity + 1))} className="flex h-10 w-10 items-center justify-center text-[#6f6961] transition-colors hover:text-[#aa7452]"><Plus size={16} /></button></div></div>
+              <ProductQuantitySelector quantity={quantity} singlePurchaseOnly={singlePurchaseOnly} onChange={onQuantityChange} className="mt-7" />
+              {selectedSpecifications.length > 0 && <p aria-live="polite" className="mt-4 text-sm font-semibold text-[#706a62]">
+                {totals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(totals.total)}</span></>}
+              </p>}
 
               <button type="button" onClick={onOpenOrder} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#aa7452] px-6 py-4 text-base font-bold text-white transition-colors hover:bg-[#935e40]"><ShoppingCart size={18} strokeWidth={1.8} /> 加入訂單</button>
               {product.ai_file_url && <a href={product.ai_file_url} download className="mt-3 w-full inline-flex items-center justify-center rounded-full border border-[#aa7452] px-6 py-3 text-sm font-semibold text-[#aa7452] transition-colors hover:bg-[#fcf5ef] hover:text-[#935e40]">下載 AI 完稿範例</a>}

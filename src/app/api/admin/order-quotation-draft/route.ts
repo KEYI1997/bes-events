@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
   const stored = await loadStoredQuotationDraft(getServiceClient(), id);
   const items = stored
     ? stored.items
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note);
   return NextResponse.json({
     items,
     revision: stored?.revision || 1,

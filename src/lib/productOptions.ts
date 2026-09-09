@@ -1,6 +1,9 @@
 export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean };
 export type ProductExtraSelection = { addOns: string[]; choices: string[] };
 
+const SINGLE_PURCHASE_SECTION = '購買數量限制';
+const SINGLE_PURCHASE_VALUE = '單件限定';
+
 export const optionKey = (row: ProductOptionRow, index: number) => row.id || `${index}:${row.label}:${row.price}`;
 
 // Only exact amounts are calculable; ranges, per-day prices and quotes remain unknown.
@@ -46,10 +49,27 @@ export function productOptionTotals(rows: ProductOptionRow[]) {
   return { knownSubtotal, hasQuotedItem: amounts.includes(null) };
 }
 
-export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[]) {
+export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[], quantity = 1) {
   const { knownSubtotal, hasQuotedItem: hasQuotedAddOn } = productOptionTotals(addOns.filter((row, index) => selected.includes(optionKey(row, index))));
   const base = productPriceAmount(basePrice);
-  return { knownSubtotal, hasQuotedAddOn, total: base === null || hasQuotedAddOn ? null : Math.round((base + knownSubtotal) * 100) / 100 };
+  const safeQuantity = Number.isSafeInteger(quantity) && quantity >= 1 ? quantity : 1;
+  const baseSubtotal = base === null ? null : Math.round(base * safeQuantity * 100) / 100;
+  return {
+    knownSubtotal,
+    hasQuotedAddOn,
+    baseSubtotal,
+    total: baseSubtotal === null || hasQuotedAddOn ? null : Math.round((baseSubtotal + knownSubtotal) * 100) / 100,
+  };
+}
+
+export function isSinglePurchaseOnly(description?: string | null) {
+  if (!description) return false;
+  const section = description.match(new RegExp(`【${SINGLE_PURCHASE_SECTION}】\\n?([\\s\\S]*?)(?=\\n*【|$)`))?.[1]?.trim();
+  return section === SINGLE_PURCHASE_VALUE;
+}
+
+export function serializePurchaseLimit(singlePurchaseOnly: boolean) {
+  return singlePurchaseOnly ? `【${SINGLE_PURCHASE_SECTION}】\n${SINGLE_PURCHASE_VALUE}` : '';
 }
 
 export function parseProductOptionRows(description: string, sectionTitle: string): ProductOptionRow[] {
