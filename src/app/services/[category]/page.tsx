@@ -125,17 +125,16 @@ export default async function ServiceCategoryPage({ params }: Props) {
 function SpecialEffectsPage({ products }: { products: Product[] }) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-white text-[#172039]">
-      <SpecialEffectsAmbient />
-      <section className="relative z-10 border-b border-[#e4e0d9] bg-[#fdfcfb]/90 pt-28">
-        <div className="mx-auto max-w-7xl px-5 pb-10 sm:px-8 md:pb-12 lg:px-12">
+      <section className="relative overflow-hidden border-b border-[#e2ded8] bg-[#fdfcfb]">
+        <div className="relative z-10 mx-auto max-w-[1400px] px-6 pb-14 pt-24 md:px-12 lg:px-20 lg:pb-16">
           <AnimateOnScroll>
-            <p className="text-xs font-medium uppercase tracking-[0.24em] text-[#b58445]">SPECIAL EFFECTS</p>
-            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-baseline md:gap-6">
-              <h1 className="text-3xl font-semibold tracking-tight text-[#172039] md:text-4xl">活動特效</h1>
-              <p className="max-w-3xl text-base leading-7 text-[#4f535b] md:text-lg">{CATEGORY_DESC['special-effects']}</p>
-            </div>
+            <p className="mb-5 text-sm font-medium uppercase tracking-[0.24em] text-[#b58445]">SPECIAL EFFECTS</p>
+            <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">活動特效</h1>
+            <p className="mt-3 text-2xl text-[#303746] md:text-3xl">從夢幻泡泡、低煙雲霧到彩帶、火花與 CO₂ 氣柱</p>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">依活動節奏打造安全、精準且有記憶點的<br className="hidden md:block" />現場效果。</p>
           </AnimateOnScroll>
         </div>
+        <CeremonyHeroLines />
       </section>
       <section className="relative z-10 mx-auto max-w-7xl px-4 py-14 md:py-16">
         {products.length > 0 ? <ServiceProductGrid products={products} showDetailCta /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
@@ -144,30 +143,26 @@ function SpecialEffectsPage({ products }: { products: Product[] }) {
   );
 }
 
-function SpecialEffectsAmbient() {
+function CeremonyHeroLines() {
   return (
-    <svg aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 1200 1600" preserveAspectRatio="none" fill="none">
+    <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none">
       <defs>
-        <radialGradient id="effects-glow-outer" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#d6a34a" stopOpacity=".12" /><stop offset="45%" stopColor="#d8b067" stopOpacity=".045" /><stop offset="100%" stopColor="#d8b067" stopOpacity="0" /></radialGradient>
-        <radialGradient id="effects-glow-inner" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#fffaf0" stopOpacity=".9" /><stop offset="18%" stopColor="#d6a34a" stopOpacity=".78" /><stop offset="68%" stopColor="#d8b067" stopOpacity=".14" /><stop offset="100%" stopColor="#d8b067" stopOpacity="0" /></radialGradient>
+        <filter id="ceremony-inner-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="1.8" /></filter>
+        <filter id="ceremony-mid-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="7" /></filter>
+        <filter id="ceremony-outer-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="15" /></filter>
+        <filter id="ceremony-core-soften" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="0.45" /></filter>
       </defs>
-      <path id="effects-line-1" d="M-50 170 C200 85 385 250 595 154 C790 65 1000 190 1250 80" stroke="#c89b55" strokeWidth="1" opacity=".28" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" dur="1.8s" fill="freeze" /></path>
-      <path id="effects-line-2" d="M-40 420 C190 510 360 360 555 435 C755 514 950 350 1240 470" stroke="#d0a565" strokeWidth=".75" opacity=".22" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".18s" dur="2s" fill="freeze" /></path>
-      <path id="effects-line-3" d="M-45 920 C185 820 360 1010 570 900 C790 784 990 980 1245 850" stroke="#d8b67a" strokeWidth=".85" opacity=".25" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".35s" dur="2.1s" fill="freeze" /></path>
-      <path d="M-35 270 C145 235 285 318 430 278 C630 225 805 306 1010 230 C1100 198 1165 208 1240 180" stroke="#d8b67a" strokeWidth=".42" opacity=".16" />
-      <path d="M-20 665 C180 590 300 720 470 640 C670 545 845 704 1040 610 C1130 566 1180 574 1230 550" stroke="#c89b55" strokeWidth=".38" opacity=".14" />
-      <path d="M90 1270 C260 1170 396 1330 565 1225 C724 1128 885 1290 1110 1174" stroke="#d0a565" strokeWidth=".48" opacity=".16" />
-      <EffectsGlow pathId="effects-line-1" duration="15s" begin="1.9s" />
-      <EffectsGlow pathId="effects-line-2" duration="18s" begin="2.1s" reverse large />
-      <EffectsGlow pathId="effects-line-3" duration="20s" begin="2.3s" />
+      <path id="ceremony-line-1" d="M-40 122 C155 78 305 190 520 104 C720 24 925 118 1240 42" stroke="#c89b55" strokeWidth="1.35" opacity=".38" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" dur="1.7s" fill="freeze" /></path>
+      <path id="ceremony-line-2" d="M-30 332 C168 366 344 244 506 298 C716 372 906 238 1230 184" stroke="#d0a565" strokeWidth="1" opacity=".24" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".16s" dur="1.8s" fill="freeze" /></path>
+      <path id="ceremony-line-3" d="M-20 508 C205 560 340 425 540 462 C754 502 900 570 1235 348" stroke="#d8b67a" strokeWidth=".8" opacity=".42" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".3s" dur="1.9s" fill="freeze" /></path>
+      <path d="M-20 230 C130 196 238 264 376 214 C506 166 594 80 748 92 C910 104 1050 164 1230 96" stroke="#d8b67a" strokeWidth=".55" opacity=".2" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".42s" dur="2s" fill="freeze" /></path>
+      <path d="M-20 412 C126 352 262 420 404 366 C548 312 658 394 810 338 C958 282 1068 338 1230 286" stroke="#c89b55" strokeWidth=".45" opacity=".18" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".55s" dur="2s" fill="freeze" /></path>
+      <path d="M176 620 C286 520 394 582 472 496 C560 398 654 494 748 400 C846 304 970 402 1114 270" stroke="#d0a565" strokeWidth=".35" opacity=".16" strokeDasharray="1400" strokeDashoffset="1400"><animate attributeName="stroke-dashoffset" from="1400" to="0" begin=".7s" dur="2.1s" fill="freeze" /></path>
+      <GoldenGlow pathId="ceremony-line-1" begin="1.95s" motionBegin="2.25s" duration="13s" />
+      <GoldenGlow pathId="ceremony-line-2" begin="2.1s" motionBegin="2.4s" duration="16s" reverse soft />
+      <GoldenGlow pathId="ceremony-line-3" begin="2.25s" motionBegin="2.55s" duration="18s" soft />
     </svg>
   );
-}
-
-function EffectsGlow({ pathId, duration, begin, reverse = false, large = false }: { pathId: string; duration: string; begin: string; reverse?: boolean; large?: boolean }) {
-  const outerRadius = large ? 32 : 28;
-  const innerRadius = large ? 8 : 7;
-  return <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin={begin} dur=".45s" fill="freeze" /><circle r={outerRadius} fill="url(#effects-glow-outer)" /><circle r={innerRadius} fill="url(#effects-glow-inner)" /><circle r="1.2" fill="#fffdf7" opacity=".88" /><animateMotion dur={duration} begin={`calc(${begin} + .3s)`} repeatCount="indefinite" {...(reverse ? { keyPoints: '1;0', keyTimes: '0;1', calcMode: 'linear' } : {})}><mpath href={`#${pathId}`} /></animateMotion></g>;
 }
 
 function OpeningCeremonyPage({ products }: { products: Product[] }) {
@@ -182,23 +177,7 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
             <p className="mt-5 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">星辰運轉、全息投影、沙漏啟動等多種創意儀式，<br className="hidden md:block" />以精準節奏與現場執行，為品牌揭開精彩序幕。</p>
           </AnimateOnScroll>
         </div>
-        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none">
-          <defs>
-            <filter id="ceremony-inner-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="1.8" /></filter>
-            <filter id="ceremony-mid-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="7" /></filter>
-            <filter id="ceremony-outer-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="15" /></filter>
-            <filter id="ceremony-core-soften" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="0.45" /></filter>
-          </defs>
-          <path id="ceremony-line-1" d="M-40 122 C155 78 305 190 520 104 C720 24 925 118 1240 42" stroke="#c89b55" strokeWidth="1.35" opacity=".38" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" dur="1.7s" fill="freeze" /></path>
-          <path id="ceremony-line-2" d="M-30 332 C168 366 344 244 506 298 C716 372 906 238 1230 184" stroke="#d0a565" strokeWidth="1" opacity=".24" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".16s" dur="1.8s" fill="freeze" /></path>
-          <path id="ceremony-line-3" d="M-20 508 C205 560 340 425 540 462 C754 502 900 570 1235 348" stroke="#d8b67a" strokeWidth=".8" opacity=".42" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".3s" dur="1.9s" fill="freeze" /></path>
-          <path d="M-20 230 C130 196 238 264 376 214 C506 166 594 80 748 92 C910 104 1050 164 1230 96" stroke="#d8b67a" strokeWidth=".55" opacity=".2" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".42s" dur="2s" fill="freeze" /></path>
-          <path d="M-20 412 C126 352 262 420 404 366 C548 312 658 394 810 338 C958 282 1068 338 1230 286" stroke="#c89b55" strokeWidth=".45" opacity=".18" strokeDasharray="1800" strokeDashoffset="1800"><animate attributeName="stroke-dashoffset" from="1800" to="0" begin=".55s" dur="2s" fill="freeze" /></path>
-          <path d="M176 620 C286 520 394 582 472 496 C560 398 654 494 748 400 C846 304 970 402 1114 270" stroke="#d0a565" strokeWidth=".35" opacity=".16" strokeDasharray="1400" strokeDashoffset="1400"><animate attributeName="stroke-dashoffset" from="1400" to="0" begin=".7s" dur="2.1s" fill="freeze" /></path>
-          <GoldenGlow pathId="ceremony-line-1" begin="1.95s" motionBegin="2.25s" duration="13s" />
-          <GoldenGlow pathId="ceremony-line-2" begin="2.1s" motionBegin="2.4s" duration="16s" reverse soft />
-          <GoldenGlow pathId="ceremony-line-3" begin="2.25s" motionBegin="2.55s" duration="18s" soft />
-        </svg>
+        <CeremonyHeroLines />
       </section>
 
       <section className="relative mx-auto max-w-[1400px] px-6 py-20 md:px-12 lg:px-20 lg:py-24">
