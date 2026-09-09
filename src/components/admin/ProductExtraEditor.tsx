@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Trash2, Upload } from 'lucide-react';
 import type { ProductOptionRow } from '@/lib/productOptions';
 
 export default function ProductExtraEditor({ title, free = false, rows, busy, onBusy, onAdd, onUpdate, onRemove }: {
@@ -47,7 +47,7 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
           {row.imageUrl && <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={row.imageUrl} alt={row.label || title} className="h-20 w-20 rounded-lg bg-gray-50 object-contain" />
-            <button type="button" onClick={() => onUpdate(row.id!, 'imageUrl', '')} className="text-sm text-red-700">移除圖片</button>
+            <button type="button" onClick={() => onUpdate(row.id!, 'imageUrl', '')} className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-red-300 bg-white px-4 text-sm font-medium text-red-700 transition-colors hover:border-red-500 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300" aria-label={`移除${row.label || title}圖片`}><Trash2 className="h-5 w-5" aria-hidden="true" /><span>移除圖片</span></button>
           </>}
           <label className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-400 bg-white px-4 text-sm font-medium text-gray-700 transition-colors hover:border-[#AA7452] hover:bg-[#F9F7F0] hover:text-[#8F5F43] focus-within:ring-2 focus-within:ring-[#AA7452] disabled:cursor-not-allowed">
             <Upload className="h-5 w-5" aria-hidden="true" />
@@ -63,3 +63,4 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
     {error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
   </fieldset>;
 }
+
