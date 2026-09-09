@@ -229,7 +229,7 @@ function GoldenGlow({ pathId, begin, motionBegin, duration, reverse = false, sof
 
 function CeremonyProductGlow() {
   return (
-    <svg aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-20 z-20 h-[calc(100%-5rem)] w-full" viewBox="0 0 1200 700" preserveAspectRatio="none" fill="none">
+    <svg aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-20 z-0 h-[calc(100%-5rem)] w-full" viewBox="0 0 1200 700" preserveAspectRatio="none" fill="none">
       <defs>
         <filter id="ceremony-grid-glow" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation="9" /></filter>
         <filter id="ceremony-grid-core" x="-300%" y="-300%" width="600%" height="600%"><feGaussianBlur stdDeviation=".45" /></filter>
