@@ -29,7 +29,7 @@ export default function ProductQuantitySelector({ quantity, singlePurchaseOnly =
       <div className="inline-flex items-center overflow-hidden rounded-lg border border-[#e4ded6] bg-white">
         <button
           type="button"
-          aria-label={`減少${label}`}
+          aria-label="減少數量"
           disabled={singlePurchaseOnly || quantity <= 1}
           onClick={() => updateQuantity(quantity - 1)}
           className={`flex ${compact ? 'h-10 w-10' : 'h-11 w-11'} items-center justify-center text-[#6f6961] transition-colors hover:bg-[#fcf8f4] hover:text-[#aa7452] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#aa7452] disabled:cursor-not-allowed disabled:opacity-35`}
@@ -49,7 +49,7 @@ export default function ProductQuantitySelector({ quantity, singlePurchaseOnly =
         />
         <button
           type="button"
-          aria-label={`增加${label}`}
+          aria-label="增加數量"
           disabled={singlePurchaseOnly || quantity >= Number.MAX_SAFE_INTEGER}
           onClick={() => updateQuantity(quantity + 1)}
           className={`flex ${compact ? 'h-9 w-9' : 'h-11 w-11'} items-center justify-center text-[#6f6961] transition-colors hover:bg-[#fcf8f4] hover:text-[#aa7452] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus:ring-[#aa7452] disabled:cursor-not-allowed disabled:opacity-35`}
