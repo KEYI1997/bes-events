@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Upload } from 'lucide-react';
 import type { ProductOptionRow } from '@/lib/productOptions';
 
 export default function ProductExtraEditor({ title, free = false, rows, busy, onBusy, onAdd, onUpdate, onRemove }: {
@@ -48,8 +49,10 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
             <img src={row.imageUrl} alt={row.label || title} className="h-20 w-20 rounded-lg bg-gray-50 object-contain" />
             <button type="button" onClick={() => onUpdate(row.id!, 'imageUrl', '')} className="text-sm text-red-700">移除圖片</button>
           </>}
-          <label className="text-sm text-gray-700">{row.imageUrl ? '更換圖片' : '上傳圖片'}
-            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label={`${row.label || title}圖片`} className="mt-1 block w-full max-w-60 text-sm" onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file, row.id!); event.target.value = ''; }} />
+          <label className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-400 bg-white px-4 text-sm font-medium text-gray-700 transition-colors hover:border-[#AA7452] hover:bg-[#F9F7F0] hover:text-[#8F5F43] focus-within:ring-2 focus-within:ring-[#AA7452] disabled:cursor-not-allowed">
+            <Upload className="h-5 w-5" aria-hidden="true" />
+            <span>{row.imageUrl ? '更換圖片' : '選擇圖片'}</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label={`${row.label || title}圖片`} className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file, row.id!); event.target.value = ''; }} />
           </label>
         </div>
       </div>)}
