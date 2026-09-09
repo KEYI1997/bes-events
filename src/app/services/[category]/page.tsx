@@ -138,7 +138,7 @@ function SpecialEffectsPage({ products }: { products: Product[] }) {
         </div>
       </section>
       <section className="relative z-10 mx-auto max-w-7xl px-4 py-14 md:py-16">
-        {products.length > 0 ? <ServiceProductGrid products={products} /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
+        {products.length > 0 ? <ServiceProductGrid products={products} showDetailCta /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
       </section>
     </main>
   );
@@ -205,7 +205,7 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
         <CeremonyProductGlow />
         <SectionHeading title="啟動儀式方案" english="CEREMONY SOLUTIONS" />
         {products.length > 0 ? (
-          <div className="relative z-10 mt-12"><ServiceProductGrid products={products} /></div>
+          <div className="relative z-10 mt-12"><ServiceProductGrid products={products} showDetailCta /></div>
         ) : (
           <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}

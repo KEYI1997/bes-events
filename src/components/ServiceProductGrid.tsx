@@ -2,15 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { Product } from '@/lib/types';
 import { formatProductPriceText } from '@/lib/productOptions';
 
 interface ServiceProductGridProps {
   products: Product[];
+  showDetailCta?: boolean;
 }
 
-export default function ServiceProductGrid({ products }: ServiceProductGridProps) {
+export default function ServiceProductGrid({ products, showDetailCta = false }: ServiceProductGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product, index) => {
@@ -44,6 +46,11 @@ export default function ServiceProductGrid({ products }: ServiceProductGridProps
                     {formatProductPriceText(product.price_note.replace(/\s*[/／]\s*/g, '\n'))}
                   </p>
                 )}
+                {showDetailCta && <span aria-hidden="true" className="mt-6 inline-flex w-full items-center justify-center overflow-hidden rounded-xl border-2 border-cta bg-cta px-5 py-3 text-sm font-bold text-white transition-all duration-300 ease-in-out group-hover:bg-white group-hover:text-cta">
+                  <ArrowRight size={16} className="mr-2 shrink-0 translate-x-0 opacity-100 transition-all duration-300 ease-in-out group-hover:-translate-x-4 group-hover:opacity-0" />
+                  <span>查看詳情</span>
+                  <ArrowRight size={16} className="ml-2 shrink-0 translate-x-4 rotate-180 opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:opacity-100" />
+                </span>}
               </div>
             </Link>
           </AnimateOnScroll>
