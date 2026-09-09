@@ -4,11 +4,13 @@ import { useEffect, useRef, ReactNode } from 'react';
 export default function AnimateOnScroll({
   children,
   delay = 0,
-  direction = 'up'
+  direction = 'up',
+  className = '',
 }: {
   children: ReactNode;
   delay?: number;
   direction?: 'up' | 'left' | 'right';
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,11 +30,11 @@ export default function AnimateOnScroll({
     return () => observer.disconnect();
   }, [delay]);
 
-  const className = direction === 'left'
+  const animationClassName = direction === 'left'
     ? 'animate-from-left'
     : direction === 'right'
     ? 'animate-from-right'
     : 'animate-on-scroll';
 
-  return <div ref={ref} className={className}>{children}</div>;
+  return <div ref={ref} className={`${animationClassName} ${className}`.trim()}>{children}</div>;
 }
