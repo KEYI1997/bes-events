@@ -4,8 +4,7 @@ import { Send, CheckCircle, X } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
-import OrderPriceSummary from '@/components/OrderPriceSummary';
-import { formatProductAmount, formatProductPrice, optionKey, productExtraTotals, productOptionTotals, productPriceAmount, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAmount, formatProductPrice, optionKey, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -43,11 +42,6 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
     ? priceOptions.filter((option, index) => option.locked || optionKey(option, index) === selectedPriceOption)
     : (priceOptions.length === 1 ? priceOptions : selectedRegularPriceOption ? [selectedRegularPriceOption] : []);
   const selectedPriceBase = productOptionTotals(selectedPriceOptions);
-  const selectedAddOnOptions = addOnOptions.filter((option, index) => extras.addOns.includes(optionKey(option, index)));
-  const selectedPriceTotal = selectedPriceOptions.length > 0
-    ? productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns)
-    : null;
-  const hasCalculablePrice = priceOptions.some(option => productPriceAmount(option.price) !== null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +141,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className={`relative bg-white rounded-2xl w-full ${hasCalculablePrice ? 'max-w-6xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto shadow-2xl`}>
+      <div className="relative bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
         <style jsx>{`
           @keyframes shake-x {
             10%, 90% { transform: translateX(-1px); }
@@ -189,8 +183,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className={hasCalculablePrice ? 'flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6' : 'space-y-4'}>
-              <div className={hasCalculablePrice ? 'order-2 space-y-4 lg:order-1' : ''}>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">姓名 *</label>
@@ -287,8 +280,6 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                 <Send size={18} />
                 {loading ? '提交中...' : '送出諮詢'}
               </button>
-              </div>
-              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-4"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} total={selectedPriceTotal?.total ?? null} /></div>}
             </form>
           )}
         </div>
