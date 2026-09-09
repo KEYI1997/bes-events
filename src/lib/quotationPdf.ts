@@ -79,16 +79,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   y += 6;
   [['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal)], ['營業稅 5%', tax === null ? '' : money(tax)], ['含稅總計', total === null ? '' : money(total)]].forEach(([label, value], i) => { const h = i === 2 ? 24 : 19; drawCell(doc, label, summaryLabelX, y, summaryLabelW, h, { background: i === 2 ? BRAND : SOFT, fillColor: i === 2 ? '#FFFFFF' : BRAND, align: 'center', fontSize: 7.5 }); drawCell(doc, value, summaryLabelX + summaryLabelW, y, summaryValueW, h, { align: 'right', fontSize: i === 2 ? 10 : 7.5, background: i === 2 ? '#FFF9F4' : undefined, fillColor: i === 2 ? BRAND : INK }); y += h; });
 
-  const noteTop = y + (relaxedLayout ? 12 : 8);
-  const noteHeight = relaxedLayout ? 64 : 48;
-  doc.roundedRect(MARGIN, noteTop, CONTENT_WIDTH, noteHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
-  doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('付款與報價說明', MARGIN + 8, noteTop + 8);
-  const deposit = total === null ? '金額由管理者確認後填入' : `${money(Math.round(total / 2))}（含稅總額 50%）`;
-  const noteLines = [`• 訂金：${deposit}`, '• 報價有效期限為製表日起 7 日；檔期以完成訂金付款為保留依據。', '• 空白費用欄位供管理者依現場需求補填，最終金額以雙方確認版本為準。'];
-  if (order.note) noteLines.push(`• 訂單備註：${order.note}`);
-  doc.fillColor(INK).fontSize(relaxedLayout ? 7.6 : 6.4).text(noteLines.join('\n'), MARGIN + 8, noteTop + (relaxedLayout ? 25 : 19), { width: CONTENT_WIDTH - 16, lineGap: relaxedLayout ? 2 : 0, height: noteHeight - 28, ellipsis: true });
-
-  const sectionY = noteTop + noteHeight + (relaxedLayout ? 16 : 11);
+  const sectionY = y + (relaxedLayout ? 16 : 11);
   doc.moveTo(MARGIN, sectionY - 5).lineTo(PAGE_WIDTH - MARGIN, sectionY - 5).lineWidth(0.8).strokeColor(BRAND).stroke();
   doc.fillColor(INK).fontSize(relaxedLayout ? 14 : 12).text('回簽前請詳閱說明', MARGIN, sectionY, { width: CONTENT_WIDTH, align: 'center' });
   doc.fillColor(MUTED).fontSize(8).text('本頁為報價單之一部分，簽署或付款即表示同意以下約定。', MARGIN, sectionY + (relaxedLayout ? 22 : 18), { width: CONTENT_WIDTH, align: 'center' });
@@ -99,17 +90,19 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   terms.forEach((term, i) => { doc.fillColor(BRAND).fontSize(termFontSize).text(`${i + 1}.`, MARGIN, termY, { width: 17, align: 'right' }); doc.fillColor(INK).fontSize(termFontSize).text(term, MARGIN + 22, termY, { width: CONTENT_WIDTH - 22, lineGap: 0 }); termY += termStep; });
 
   const signatureTop = termY + (relaxedLayout ? 10 : 6); const signatureGap = 12; const signatureWidth = (CONTENT_WIDTH - signatureGap) / 2;
-  const signatureHeight = relaxedLayout ? 99 : 75;
+  const signatureHeight = 108;
   doc.roundedRect(MARGIN, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
   doc.roundedRect(MARGIN + signatureWidth + signatureGap, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
   doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('廠商簽章', MARGIN + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
   doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('客戶簽章', MARGIN + signatureWidth + signatureGap + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
-  if (fs.existsSync(stampPath)) doc.image(stampPath, MARGIN + 39, signatureTop + (relaxedLayout ? 31 : 24), { fit: relaxedLayout ? [90, 58] : [82, 48], align: 'center', valign: 'center' });
+  const stampSize: [number, number] = relaxedLayout ? [122, 78] : [111, 65];
+  const stampTop = signatureTop + (relaxedLayout ? 22 : 24);
+  if (fs.existsSync(stampPath)) doc.image(stampPath, MARGIN + (signatureWidth - stampSize[0]) / 2, stampTop, { fit: stampSize, align: 'center', valign: 'center' });
   const customerSignX = MARGIN + signatureWidth + signatureGap + 18;
-  const signatureLineY = signatureTop + (relaxedLayout ? 78 : 59);
+  const signatureLineY = signatureTop + 82;
   doc.moveTo(customerSignX, signatureLineY).lineTo(customerSignX + signatureWidth - 36, signatureLineY).lineWidth(0.5).strokeColor(BORDER).stroke();
   doc.fillColor(MUTED).fontSize(relaxedLayout ? 7 : 6.2).text('簽名／蓋章', customerSignX, signatureLineY + 4, { width: signatureWidth - 36, align: 'center' });
-  const bankTop = signatureTop + signatureHeight + (relaxedLayout ? 12 : 7);
+  const bankTop = signatureTop + signatureHeight + 12;
   const bankHeight = relaxedLayout ? 42 : 30;
   doc.roundedRect(MARGIN, bankTop, CONTENT_WIDTH, bankHeight, 3).fill(SOFT);
   doc.fillColor(BRAND).fontSize(relaxedLayout ? 8 : 7).text('匯款資訊', MARGIN + 8, bankTop + (relaxedLayout ? 10 : 7), { width: 56 });
