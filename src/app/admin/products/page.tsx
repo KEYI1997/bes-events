@@ -20,7 +20,7 @@ import {
 import { PRODUCT_CATEGORIES } from '@/lib/services';
 import { SortableTableRow } from '@/components/admin/SortableTableRow';
 import ProductExtraEditor from '@/components/admin/ProductExtraEditor';
-import { parseProductOptionRows, productPriceAmount, serializeProductOptionRows, type ProductOptionRow } from '@/lib/productOptions';
+import { isSinglePurchaseOnly, parseProductOptionRows, productPriceAmount, serializeProductOptionRows, serializePurchaseLimit, type ProductOptionRow } from '@/lib/productOptions';
 
 interface ProductData {
   id: string;
@@ -54,11 +54,16 @@ function getDisplayImage(p: ProductData): string {
 
 // 從 description 解析服務內容、注意事項、YouTube、AI圖檔
 function parseProduct(p: ProductData) {
-  const priceOptions = parseProductOptionRows(p.description || '', '價格選項');
+  const parsedPriceOptions = parseProductOptionRows(p.description || '', '價格選項');
+  // 舊資料若只有 price_note，於編輯器中轉成新版單一價格列；儲存時即可完成遷移。
+  const priceOptions = parsedPriceOptions.length > 0
+    ? parsedPriceOptions
+    : (p.price_note?.trim() ? [{ label: '價格', price: p.price_note.trim() }] : []);
   const addOns = parseProductOptionRows(p.description || '', '加購方案');
   const choices = parseProductOptionRows(p.description || '', '選購商品');
+  const singlePurchaseOnly = isSinglePurchaseOnly(p.description);
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns, choices };
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', priceOptions, addOns, choices, singlePurchaseOnly };
   }
   const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
@@ -67,7 +72,7 @@ function parseProduct(p: ProductData) {
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns, choices };
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, priceOptions, addOns, choices, singlePurchaseOnly };
 }
 
 function getAllProductImages(p: ProductData): string[] {
@@ -82,10 +87,10 @@ export default function ProductsPage() {
   const [showDetail, setShowDetail] = useState<ProductData | null>(null);
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [form, setForm] = useState({
-    name: '', category: '啟動儀式', price_note: '', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[], choices: [] as ProductOptionRow[],
+    name: '', category: '啟動儀式', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[], choices: [] as ProductOptionRow[],
     service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
     image_url: '', size_image_url: '', ai_file_url: '',
-    stock: 1, visible: true,
+    stock: 1, visible: true, single_purchase_only: false,
   });
   const [uploading, setUploading] = useState<string | null>(null);
   const [extraUploading, setExtraUploading] = useState(false);
@@ -121,7 +126,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_note: '', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true });
+    setForm({ name: '', category: '啟動儀式', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', stock: 1, visible: true, single_purchase_only: false });
     setShowModal(true);
   };
 
@@ -134,7 +139,6 @@ export default function ProductsPage() {
     setForm({
       name: p.name,
       category: p.category,
-      price_note: p.price_note || '',
       price_options: parsed.priceOptions.map(row => ({ ...row, id: row.id || crypto.randomUUID() })),
       add_ons: parsed.addOns.map(row => ({ ...row, id: row.id || crypto.randomUUID() })),
       choices: parsed.choices.map(row => ({ ...row, id: row.id || crypto.randomUUID(), price: '0' })),
@@ -148,6 +152,7 @@ export default function ProductsPage() {
       ai_file_url: parsed.ai_file || p.ai_file_url || '',
       stock: p.stock ?? 1,
       visible: p.visible,
+      single_purchase_only: parsed.singlePurchaseOnly,
     });
     setShowModal(true);
   };
@@ -216,6 +221,7 @@ export default function ProductsPage() {
       form.price_options.length ? `【價格選項】\n${serializeProductOptionRows(form.price_options)}` : '',
       form.add_ons.length ? `【加購方案】\n${serializeProductOptionRows(form.add_ons)}` : '',
       form.choices.length ? `【選購商品】\n${serializeProductOptionRows(form.choices.map(row => ({ ...row, price: '0' })))}` : '',
+      serializePurchaseLimit(form.single_purchase_only),
       form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
       form.occasions ? `【適用場合】\n${form.occasions}` : '',
@@ -229,9 +235,8 @@ export default function ProductsPage() {
       category: form.category,
       description,
       image_url: form.image_url,
-      price_note: form.price_options.length
-        ? form.price_options.filter(row => row.label.trim() || row.price.trim()).map(row => `${row.label.trim()} ${row.price.trim()}`).join('\n')
-        : form.price_note,
+      // 價格統一儲存在「價格選項」區段；舊 price_note 僅保留在未編輯的歷史資料中。
+      price_note: '',
       stock: form.stock,
       visible: form.visible,
       ai_file_url: form.ai_file_url || null,
@@ -558,8 +563,7 @@ export default function ProductsPage() {
 
               <div className="rounded-xl border border-gray-200 p-4">
                 <div className="mb-3 flex items-center justify-between gap-3"><div><label className="block text-sm font-medium">價格選項</label><p className="mt-0.5 text-xs text-gray-500">有固定價格時只輸入數字，前台會自動加上 $NT；沒有固定價格可直接輸入說明文字。勾選必選後，前台訂單會固定帶入該項目。</p></div><button type="button" onClick={() => addOptionRow('price_options')} className="inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-gray-50"><Plus className="h-4 w-4" />新增價格列</button></div>
-                {form.price_options.length > 0 ? <div className="space-y-2">{form.price_options.map((row, index) => <div key={row.id || `price-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('price_options', index, 'label', e.target.value)} placeholder="項目／規格，例如：四頭" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('price_options', index, 'price', e.target.value)} placeholder="價格只輸入數字，例如：12000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><label className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#D6C1B0] bg-[#FCF8F4] px-2.5 text-sm font-medium text-[#6B5140] focus-within:ring-2 focus-within:ring-[#AA7452]" title="勾選後，前台訂單必須包含此項目與價格"><input type="checkbox" checked={Boolean(row.locked)} onChange={e => updateOptionRow('price_options', index, 'locked', e.target.checked)} className="h-4 w-4 accent-[#AA7452]" /><span>鎖定必選</span></label><button type="button" onClick={() => removeOptionRow('price_options', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此價格列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未新增價格選項。若僅需要一個價格，可直接填寫下方的單一價格說明。</div>}
-                <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="單一價格請輸入數字；無固定價格可輸入文字" className="mt-3 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" />
+                {form.price_options.length > 0 ? <div className="space-y-2">{form.price_options.map((row, index) => <div key={row.id || `price-${index}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] gap-2"><input value={row.label} onChange={e => updateOptionRow('price_options', index, 'label', e.target.value)} placeholder="項目／規格，例如：四頭" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><input value={row.price} onChange={e => updateOptionRow('price_options', index, 'price', e.target.value)} placeholder="價格只輸入數字，例如：12000" className="min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2" /><label className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#D6C1B0] bg-[#FCF8F4] px-2.5 text-sm font-medium text-[#6B5140] focus-within:ring-2 focus-within:ring-[#AA7452]" title="勾選後，前台訂單必須包含此項目與價格"><input type="checkbox" checked={Boolean(row.locked)} onChange={e => updateOptionRow('price_options', index, 'locked', e.target.checked)} className="h-4 w-4 accent-[#AA7452]" /><span>鎖定必選</span></label><button type="button" onClick={() => removeOptionRow('price_options', index)} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="移除此價格列"><X className="h-4 w-4" /></button></div>)}</div> : <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">尚未新增價格選項。請按「新增價格列」建立商品價格。</div>}
               </div>
 
               {(['add_ons', 'choices'] as const).map(field => (
@@ -659,6 +663,21 @@ export default function ProductsPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={form.single_purchase_only}
+                    onChange={event => setForm(current => ({ ...current, single_purchase_only: event.target.checked }))}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#AA7452]"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-[#4A4947]">每位顧客限購 1 件</span>
+                    <span className="mt-1 block text-xs leading-5 text-gray-500">勾選後，商品頁數量固定為 1；未勾選則不設定購買數量上限。</span>
+                  </span>
+                </label>
               </div>
 
               {/* 庫存 + 顯示 */}
