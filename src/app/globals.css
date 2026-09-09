@@ -190,3 +190,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .showgirl-range::-webkit-slider-runnable-track { background: transparent; }
 .showgirl-range::-moz-range-track { background: transparent; }
+@media (max-width: 767px) {
+  .home-case-carousel .coverflow-card {
+    transform: translateX(-50%) translateY(-50%) scale(0.57) !important;
+    transform-origin: center;
+  }
+}

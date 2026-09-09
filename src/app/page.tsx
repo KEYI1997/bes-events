@@ -80,7 +80,7 @@ export default async function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">案例展示</h2>
             </AnimateOnScroll>
           </div>
-          <div className="relative w-full h-[460px]">
+          <div className="home-case-carousel relative h-[300px] w-full sm:h-[460px]">
             <CoverflowCarousel
               images={[
                 { src: "/images/cases/case-1.jpg", alt: "企業品牌發表會舞台與燈光案例" },

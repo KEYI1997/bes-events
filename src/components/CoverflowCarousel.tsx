@@ -179,6 +179,7 @@ function Card({
       }}
     >
       <motion.div
+        className="coverflow-card"
         style={{
           x: "-50%",
           y: "-50%",
