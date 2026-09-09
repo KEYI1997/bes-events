@@ -288,7 +288,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                 {loading ? '提交中...' : '送出諮詢'}
               </button>
               </div>
-              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-4"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} total={selectedPriceTotal?.total ?? null} /></div>}
+              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} total={selectedPriceTotal?.total ?? null} /></div>}
             </form>
           )}
         </div>

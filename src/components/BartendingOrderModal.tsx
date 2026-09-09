@@ -352,7 +352,7 @@ export default function BartendingOrderModal({ planName, price = '', onClose }: 
               送出後我們將於 1 個工作日內與您聯繫確認
             </p>
             </div>
-            {planAmount !== null && <div className="order-1 lg:order-2 lg:sticky lg:top-4"><OrderPriceSummary productItems={[{ label: planName, price }]} total={planAmount} /></div>}
+            {planAmount !== null && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={[{ label: planName, price }]} total={planAmount} /></div>}
           </form>
         )}
       </div>
