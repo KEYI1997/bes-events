@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ContactModal from '@/components/ContactModal';
 import ImageLightbox from '@/components/ImageLightbox';
-import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, isSinglePurchaseOnly, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { formatProductAmount, formatProductPrice, isSinglePurchaseOnly, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 
@@ -80,7 +80,7 @@ export default function ProductDetailPage() {
   const serviceType = ['活動特效', '啟動儀式', '外派調酒'].includes(product.category) ? product.category : undefined;
   const isEquipmentProduct = ['活動特效', '啟動儀式'].includes(product.category);
   const singlePurchaseOnly = isSinglePurchaseOnly(product.description);
-  const genericTotals = productExtraTotals(priceOptions.length === 1 ? priceOptions[0].price : '', parsed.addOns, extras.addOns, quantity);
+  const genericTotals = productExtraTotals(priceOptions.length === 1 ? priceOptions[0].price : '', parsed.addOns, extras.addOns, quantity, extras.addOnQuantities);
   const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const detailSections = [
     { title: product.category === '活動特效' ? '效果介紹' : '服務內容', lines: parseLines(parsed.service), tone: 'blue', numbered: product.category !== '活動特效' },
@@ -430,11 +430,7 @@ function EquipmentProductDetail({
     ? priceOptions.filter((option, index) => option.locked || optionKey(option, index) === selectedPriceOption)
     : (priceOptions.length === 1 ? priceOptions : selectedRegularSpecification ? [selectedRegularSpecification] : []);
   const selectedPriceTotal = productOptionTotals(selectedSpecifications);
-  const totals = productExtraTotals(selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal), parsed.addOns, extras.addOns, quantity);
-  const updateExtra = (field: 'addOns' | 'choices', value: string, checked: boolean) => onExtrasChange({
-    ...extras,
-    [field]: checked ? [...extras[field], value] : extras[field].filter(item => item !== value),
-  });
+  const totals = productExtraTotals(selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal), parsed.addOns, extras.addOns, quantity, extras.addOnQuantities);
 
   return (
     <main className="min-h-screen bg-[#fcfaf7] px-5 pb-16 pt-28 text-[#3f3f3d] sm:px-8 md:pt-32 lg:px-12 lg:pb-24">
@@ -479,9 +475,15 @@ function EquipmentProductDetail({
                 </fieldset> : <div className="rounded-xl border border-[#e6e1da] bg-white px-4 py-4 text-sm font-medium text-[#6f6961]">價格依活動需求報價</div>}
               </div>
 
-              {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7 space-y-6">
-                {parsed.addOns.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">加購商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.addOns.map((option, index) => { const key = optionKey(option, index); const checked = extras.addOns.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('addOns', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#aa7452]">{formatProductAddOnPrice(option.price)}</span></label>; })}</div></fieldset>}
-                {parsed.choices.length > 0 && <fieldset><legend className="mb-3 text-sm font-semibold text-[#4a4947]">選配商品 <span className="font-normal text-[#8c867d]">（可複選）</span></legend><div className="space-y-3">{parsed.choices.map((option, index) => { const key = optionKey(option, index); const checked = extras.choices.includes(key); return <label key={key} className={`flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-colors ${checked ? 'border-[#aa7452] bg-white' : 'border-[#e6e1da] bg-white hover:border-[#c9ad96]'}`}><span className="flex min-w-0 items-center gap-3"><input type="checkbox" checked={checked} onChange={event => updateExtra('choices', key, event.target.checked)} className="h-4 w-4 shrink-0 accent-[#aa7452]" /><span className="font-medium text-[#4a4947]">{option.label}</span></span><span className="shrink-0 text-sm font-semibold text-[#8c867d]">不加價</span></label>; })}</div></fieldset>}
+              {(parsed.addOns.length > 0 || parsed.choices.length > 0) && <div className="mt-7">
+                <ProductExtrasSelection
+                  addOns={parsed.addOns}
+                  choices={parsed.choices}
+                  selection={extras}
+                  onChange={onExtrasChange}
+                  basePrice={selectedPriceTotal.hasQuotedItem ? '' : String(selectedPriceTotal.knownSubtotal)}
+                  quantity={quantity}
+                />
               </div>}
 
               <ProductQuantitySelector quantity={quantity} singlePurchaseOnly={singlePurchaseOnly} onChange={onQuantityChange} className="mt-7" />

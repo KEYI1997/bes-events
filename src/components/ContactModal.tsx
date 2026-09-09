@@ -45,8 +45,9 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
     : (priceOptions.length === 1 ? priceOptions : selectedRegularPriceOption ? [selectedRegularPriceOption] : []);
   const selectedPriceBase = productOptionTotals(selectedPriceOptions);
   const selectedAddOnOptions = addOnOptions.filter((option, index) => extras.addOns.includes(optionKey(option, index)));
+  const selectedAddOnKeys = addOnOptions.flatMap((option, index) => extras.addOns.includes(optionKey(option, index)) ? [optionKey(option, index)] : []);
   const selectedPriceTotal = selectedPriceOptions.length > 0
-    ? productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity)
+    ? productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity, extras.addOnQuantities)
     : null;
   const hasCalculablePrice = priceOptions.some(option => productPriceAmount(option.price) !== null);
 
@@ -92,7 +93,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
       selectedPriceOptions.length ? `【選擇規格】\n${selectedPriceOptions.map(option => `${option.label}${option.price ? `｜${option.price}` : ''}`).join('\n')}` : '',
       selectedAddOnLines.length ? `【加購方案】\n${selectedAddOnLines.join('\n')}` : '',
       selectedChoiceLines.length ? `【選配商品】\n${selectedChoiceLines.join('\n')}` : '',
-      (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity); return `【預估金額】商品數量 ${quantity}；加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
+      (addOnOptions.length || choiceOptions.length) ? (() => { const totals = productExtraTotals(selectedPriceBase.hasQuotedItem ? '' : String(selectedPriceBase.knownSubtotal), addOnOptions, extras.addOns, quantity, extras.addOnQuantities); return `【預估金額】商品數量 ${quantity}；加購小計 ${formatProductAmount(totals.knownSubtotal)}；${totals.total === null ? '完整金額待報價確認' : `合計 ${formatProductAmount(totals.total)}`}`; })() : '',
       form.description,
     ].filter(Boolean).join('\n');
 
@@ -289,7 +290,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                 {loading ? '提交中...' : '送出諮詢'}
               </button>
               </div>
-              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} quantity={quantity} total={selectedPriceTotal?.total ?? null} /></div>}
+              {hasCalculablePrice && <div className="order-1 lg:order-2 lg:sticky lg:top-24"><OrderPriceSummary productItems={selectedPriceOptions} addOnItems={selectedAddOnOptions} addOnItemKeys={selectedAddOnKeys} addOnQuantities={extras.addOnQuantities} quantity={quantity} total={selectedPriceTotal?.total ?? null} /></div>}
             </form>
           )}
         </div>

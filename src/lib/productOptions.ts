@@ -1,5 +1,5 @@
 export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean };
-export type ProductExtraSelection = { addOns: string[]; choices: string[] };
+export type ProductExtraSelection = { addOns: string[]; choices: string[]; addOnQuantities?: Record<string, number> };
 
 const SINGLE_PURCHASE_SECTION = '購買數量限制';
 const SINGLE_PURCHASE_VALUE = '單件限定';
@@ -46,13 +46,37 @@ export function formatProductPriceText(text: string): string {
 }
 
 export function productOptionTotals(rows: ProductOptionRow[]) {
+// Catalog cards use the same structured price options that the product editor saves.
+// Older products continue to fall back to the legacy price_note field.
+export function productCatalogPriceText(description?: string | null, priceNote?: string | null): string {
+  const options = parseProductOptionRows(description || '', '價格選項');
+  if (options.length === 0) return formatProductPriceText(priceNote || '');
+
+  return options.map(option => {
+    const price = formatProductPrice(option.price) || '洽詢';
+    return option.label === '價格' ? price : `${option.label}：${price}`;
+  }).join('\n');
+}
+
   const amounts = rows.map(row => productPriceAmount(row.price));
   const knownSubtotal = Math.round(amounts.reduce<number>((sum, amount) => sum + (amount ?? 0), 0) * 100) / 100;
   return { knownSubtotal, hasQuotedItem: amounts.includes(null) };
 }
 
-export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[], quantity = 1) {
-  const { knownSubtotal, hasQuotedItem: hasQuotedAddOn } = productOptionTotals(addOns.filter((row, index) => selected.includes(optionKey(row, index))));
+export function selectedAddOnQuantity(selection: Pick<ProductExtraSelection, 'addOnQuantities'>, key: string) {
+  const quantity = selection.addOnQuantities?.[key] ?? 1;
+  return Number.isSafeInteger(quantity) && quantity >= 1 ? quantity : 1;
+}
+
+export function productExtraTotals(basePrice: string, addOns: ProductOptionRow[], selected: string[], quantity = 1, addOnQuantities: Record<string, number> = {}) {
+  const addOnAmounts = addOns.flatMap((row, originalIndex) => {
+    if (!selected.includes(optionKey(row, originalIndex))) return [];
+    const amount = productPriceAmount(row.price);
+    const addOnQuantity = selectedAddOnQuantity({ addOnQuantities }, optionKey(row, originalIndex));
+    return [{ amount, addOnQuantity }];
+  });
+  const knownSubtotal = Math.round(addOnAmounts.reduce((sum, item) => sum + (item.amount === null ? 0 : item.amount * item.addOnQuantity), 0) * 100) / 100;
+  const hasQuotedAddOn = addOnAmounts.some(item => item.amount === null);
   const base = productPriceAmount(basePrice);
   const safeQuantity = Number.isSafeInteger(quantity) && quantity >= 1 ? quantity : 1;
   const baseSubtotal = base === null ? null : Math.round(base * safeQuantity * 100) / 100;
