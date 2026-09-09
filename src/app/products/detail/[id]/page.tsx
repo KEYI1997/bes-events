@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
 
               <ProductQuantitySelector quantity={quantity} singlePurchaseOnly={singlePurchaseOnly} onChange={setQuantity} className="mb-4" />
               {priceOptions.length === 1 && <p aria-live="polite" className="mb-7 text-sm font-semibold text-[#6f6961]">
-                {genericTotals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(genericTotals.total)}</span></>}
+                {genericTotals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(genericTotals.total)}</span><span className="ml-1 text-xs font-medium text-[#8c867d]">（未稅）</span></>}
               </p>}
 
               {/* 建立訂單 */}
@@ -470,7 +470,7 @@ function EquipmentProductDetail({
 
               <ProductQuantitySelector quantity={quantity} singlePurchaseOnly={singlePurchaseOnly} onChange={onQuantityChange} className="mt-7" />
               {selectedSpecifications.length > 0 && <p aria-live="polite" className="mt-4 text-sm font-semibold text-[#706a62]">
-                {totals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(totals.total)}</span></>}
+                {totals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-[#aa7452]">{formatProductAmount(totals.total)}</span><span className="ml-1 text-xs font-medium text-[#8c867d]">（未稅）</span></>}
               </p>}
 
               <button type="button" onClick={onOpenOrder} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#aa7452] px-6 py-4 text-base font-bold text-white transition-colors hover:bg-[#935e40]"><ShoppingCart size={18} strokeWidth={1.8} /> 加入訂單</button>
