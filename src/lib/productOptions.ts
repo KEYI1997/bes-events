@@ -45,7 +45,6 @@ export function formatProductPriceText(text: string): string {
   }).join('\n');
 }
 
-export function productOptionTotals(rows: ProductOptionRow[]) {
 // Catalog cards use the same structured price options that the product editor saves.
 // Older products continue to fall back to the legacy price_note field.
 export function productCatalogPriceText(description?: string | null, priceNote?: string | null): string {
@@ -58,6 +57,7 @@ export function productCatalogPriceText(description?: string | null, priceNote?:
   }).join('\n');
 }
 
+export function productOptionTotals(rows: ProductOptionRow[]) {
   const amounts = rows.map(row => productPriceAmount(row.price));
   const knownSubtotal = Math.round(amounts.reduce<number>((sum, amount) => sum + (amount ?? 0), 0) * 100) / 100;
   return { knownSubtotal, hasQuotedItem: amounts.includes(null) };

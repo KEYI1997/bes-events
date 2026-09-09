@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import { Product } from '@/lib/types';
-import { formatProductPriceText } from '@/lib/productOptions';
+import { productCatalogPriceText } from '@/lib/productOptions';
 
 interface ServiceProductGridProps {
   products: Product[];
@@ -38,12 +38,12 @@ export default function ServiceProductGrid({ products, showDetailCta = false }: 
               <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-xl font-bold text-primary mb-2">{product.name}</h3>
                 <div className="flex-1" />
-                {product.price_note && (
+                {productCatalogPriceText(product.description, product.price_note) && (
                   <p
                     className="text-base font-bold leading-relaxed whitespace-pre-line"
                     style={{ color: '#AA7452' }}
                   >
-                    {formatProductPriceText(product.price_note.replace(/\s*[/／]\s*/g, '\n'))}
+                    {productCatalogPriceText(product.description, product.price_note)}
                   </p>
                 )}
                 {showDetailCta && <span aria-hidden="true" className="mt-6 inline-flex w-full items-center justify-center overflow-hidden rounded-xl border-2 border-cta bg-cta px-5 py-3 text-sm font-bold text-white transition-all duration-300 ease-in-out group-hover:bg-white group-hover:text-cta">
