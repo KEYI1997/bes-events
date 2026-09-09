@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Check, MapPin, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, ShieldCheck, X } from 'lucide-react';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingOrderModal from '@/components/BartendingOrderModal';
 import { Product } from '@/lib/types';
@@ -58,8 +58,38 @@ function BartendingLines() {
   );
 }
 
+function BartendingBookingNotice({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
+
+  return <div className="fixed inset-0 z-[210] flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="bartending-notice-title" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="absolute inset-0 bg-[#172039]/55" />
+    <section className="relative w-full max-w-[560px] rounded-2xl bg-white p-7 shadow-[0_18px_55px_rgba(23,32,57,0.24)] sm:p-9">
+      <button type="button" onClick={onClose} aria-label="關閉提醒" className="absolute right-5 top-5 rounded-full p-1 text-[#6b6f76] transition-colors hover:text-[#172039]"><X size={22} /></button>
+      <AlertCircle size={26} strokeWidth={1.5} className="text-[#b58445]" aria-hidden="true" />
+      <h2 id="bartending-notice-title" className="mt-4 text-2xl font-semibold text-[#172039]">預訂前提醒</h2>
+      <div className="mt-6 space-y-3 text-[15px] leading-7 text-[#4f535b]">
+        <p>未滿十八歲禁止飲酒，酒後不開車。</p>
+        <p>臺北市、新北市免車馬費；其他地區依距離另計往返車馬費。</p>
+        <p>延長服務每小時 NT$2,000；指定酒款或升級酒款另行報價。</p>
+        <p>現場追加杯數依各方案標示估價；活動規模較大時，額外人力另行報價。</p>
+        <p>最終報價依活動日期、地點、時數與需求確認為準。</p>
+      </div>
+      <button type="button" onClick={onConfirm} className="mt-8 inline-flex w-full items-center justify-center rounded-md bg-[#b58445] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">了解</button>
+    </section>
+  </div>;
+}
+
 export default function BartendingPlans({ products }: { products: Product[] }) {
   const [orderPlan, setOrderPlan] = useState<string | null>(null);
+  const [noticePlan, setNoticePlan] = useState<string | null>(null);
   const firstDescription = products[0]?.description || products[0]?.service_content || '';
   const firstServiceLines = parseSection(firstDescription, '服務內容');
   const includedServices = firstServiceLines.filter(line => !PLAN_DETAIL_LABELS.some(label => line.startsWith(`${label}：`) || line.startsWith(`${label}:`)));
@@ -70,7 +100,13 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
     <main className="min-h-screen overflow-hidden bg-[#fdfcfb] text-[#172039]">
       <section className="relative min-h-[620px] border-b border-[#e2ded8] bg-white md:min-h-[680px]">
         <div className="absolute inset-y-0 right-0 w-full md:w-[61%]">
-          <Image src="/images/services/bartending.png" alt="外派調酒活動服務" fill priority className="object-cover object-center" />
+          <Image
+            src="/images/services/bartending.png"
+            alt="外派調酒活動服務"
+            fill
+            priority
+            className="object-cover object-center [mask-image:linear-gradient(90deg,transparent_0%,rgba(0,0,0,.12)_10%,rgba(0,0,0,.48)_24%,#000_42%)] [-webkit-mask-image:linear-gradient(90deg,transparent_0%,rgba(0,0,0,.12)_10%,rgba(0,0,0,.48)_24%,#000_42%)]"
+          />
           <div className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(255,255,255,1)_0%,rgba(255,255,255,.98)_12%,rgba(255,255,255,.82)_29%,rgba(255,255,255,.42)_46%,rgba(255,255,255,0)_60%)] md:-translate-x-[30%]" />
         </div>
         <BartendingLines />
@@ -104,7 +140,7 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
                 <div className="relative aspect-square overflow-hidden bg-[#f7f4ef]"><Image src={getPlanImage(product, index)} alt={`${product.name} 方案圖片`} fill className="object-contain object-center" /></div>
                 <div className="flex flex-1 flex-col p-5 md:p-6"><p className="font-serif text-xl tracking-wide text-[#172039]">{product.name.split('｜')[0]}</p><h3 className="mt-2 text-lg font-medium text-[#303746]">{cups || product.name.split('｜')[1] || '調酒方案'}</h3>
                   <div className="mt-5 space-y-3 text-sm leading-6 text-[#5b5e65]"><p>建議人數：{people || '依活動需求評估'}</p>{original && <p>原價：{original}</p>}{sale && <p className="font-semibold text-[#b58445]">優惠價：{sale}</p>}{extra && <p>現場加點：{extra}</p>}</div>
-                  <button type="button" onClick={() => setOrderPlan(product.name)} className="mt-auto inline-flex items-center justify-center gap-2 rounded-md border border-[#b58445] px-4 py-2.5 text-sm font-medium text-[#9a6c31] transition hover:bg-[#b58445] hover:text-white">立即預訂 <ArrowRight size={15} /></button>
+                  <button type="button" onClick={() => setNoticePlan(product.name)} className="mt-auto inline-flex items-center justify-center gap-2 rounded-md border border-[#b58445] px-4 py-2.5 text-sm font-medium text-[#9a6c31] transition hover:bg-[#b58445] hover:text-white">立即預訂 <ArrowRight size={15} /></button>
                 </div>
               </article></AnimateOnScroll></div>;
             })}
@@ -119,7 +155,7 @@ export default function BartendingPlans({ products }: { products: Product[] }) {
         {notices.length > 0 && <div className="mx-auto mt-12 max-w-3xl border-t border-[#e2ded8] pt-6 text-center text-sm leading-7 text-[#5b5e65]"><ShieldCheck className="mx-auto mb-2 text-[#b58445]" size={20} strokeWidth={1.4} />{notices.join('、')}</div>}
       </section>
 
-      <section className="relative mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-20"><div className="rounded-2xl border border-[#e2d8c9] bg-white px-7 py-10 text-center shadow-[0_8px_28px_rgba(23,32,57,0.04)] md:px-12"><MapPin className="mx-auto text-[#b58445]" size={28} strokeWidth={1.3} /><h2 className="mt-4 text-2xl font-medium md:text-3xl">想了解更多方案與細節？</h2><p className="mt-3 text-sm leading-7 text-[#5b5e65]">歡迎與我們聯繫，為您的活動規劃最合適的調酒服務。</p><a href="/contact" className="mt-6 inline-flex items-center gap-2 rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#996f39]">洽詢專屬方案 <ArrowRight size={16} /></a></div></section>
+      {noticePlan && <BartendingBookingNotice onClose={() => setNoticePlan(null)} onConfirm={() => { setOrderPlan(noticePlan); setNoticePlan(null); }} />}
       {orderPlan && <BartendingOrderModal planName={orderPlan} onClose={() => setOrderPlan(null)} />}
     </main>
   );
