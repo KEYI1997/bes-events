@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 import { formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, selectedAddOnQuantity, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 
@@ -11,14 +12,15 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   basePrice?: string;
   quantity?: number;
 }) {
+  const choiceGroupId = useId();
   if (!addOns.length && !choices.length) return null;
   const totals = productExtraTotals(basePrice, addOns, selection.addOns, quantity, selection.addOnQuantities);
   const toggleOption = (field: 'addOns' | 'choices', key: string, checked: boolean) => {
-    const nextValues = checked ? [...selection[field], key] : selection[field].filter(value => value !== key);
-    if (field !== 'addOns') {
-      onChange({ ...selection, [field]: nextValues });
+    if (field === 'choices') {
+      onChange({ ...selection, choices: checked ? [key] : [] });
       return;
     }
+    const nextValues = checked ? [...selection.addOns, key] : selection.addOns.filter(value => value !== key);
     const addOnQuantities = { ...selection.addOnQuantities };
     if (checked) addOnQuantities[key] = selectedAddOnQuantity(selection, key);
     else delete addOnQuantities[key];
@@ -31,7 +33,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   return <div className="space-y-6">
     {([{ title: '加購商品', field: 'addOns', rows: addOns }, { title: '選配商品', field: 'choices', rows: choices }] as const).map(group => group.rows.length > 0 && (
       <fieldset key={group.field}>
-        <legend className="mb-3 font-semibold text-[#4A4947]">{group.title}<span className="ml-2 text-sm font-normal">{group.field === 'choices' ? '不加價・可複選' : '另計費用・可複選'}</span></legend>
+        <legend className="mb-3 font-semibold text-[#4A4947]">{group.title}<span className="ml-2 text-sm font-normal">{group.field === 'choices' ? '不加價・限選一項' : '另計費用・可複選'}</span></legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {group.rows.map((row, index) => {
             const key = optionKey(row, index);
@@ -40,7 +42,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
             return <div key={key} className={`min-w-0 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#AA7452] ${checked ? 'border-[#AA7452] bg-[#F9F7F0]' : 'border-gray-200 bg-white hover:border-[#AA7452]'}`}>
               <div className="flex min-w-0 items-center gap-3">
                 <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-                  <input type="checkbox" checked={checked} onChange={event => toggleOption(group.field, key, event.target.checked)} className="h-5 w-5 shrink-0 accent-[#AA7452]" />
+                  <input type={group.field === 'choices' ? 'radio' : 'checkbox'} name={group.field === 'choices' ? choiceGroupId : undefined} checked={checked} onChange={event => toggleOption(group.field, key, event.target.checked)} className="h-5 w-5 shrink-0 accent-[#AA7452]" />
                   {row.imageUrl && <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#F9F7F0]">
                     {/* Admin-uploaded optional images use the same public storage as product photos. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -58,7 +60,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
     <div aria-live="polite" className="space-y-1 border-t border-gray-200 pt-4 text-sm text-[#4A4947]">
       {addOns.length > 0 && <p>加購小計：{formatProductAmount(totals.knownSubtotal)}{totals.hasQuotedAddOn ? '（另有需洽詢項目）' : ''}</p>}
       {totals.total !== null ? <p className="text-lg font-semibold">預估合計：{formatProductAmount(totals.total)}</p> : <p>商品價格或部分項目待確認，完整金額以報價為準。</p>}
-      <p>免費選配不增加費用；加購商品可分別調整數量。</p>
+      <p>免費選配不增加費用，限選一項；加購商品可分別調整數量。</p>
     </div>
   </div>;
 }

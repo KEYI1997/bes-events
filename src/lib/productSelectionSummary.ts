@@ -31,6 +31,7 @@ export function productSelectionSummary(product: { name: string; description?: s
     return { row, quantity, amount };
   });
   const selectedChoices = selectedRows(choices, selection.choices);
+  if (selectedChoices.length > 1) throw new Error('選配商品限選一項，請重新選擇。');
   const selectedSpecs = selection.priceKeys !== undefined
     ? selectedRows(specs, selection.priceKeys)
     : specs.filter((row, index) => optionKey(row, index) === selection.priceKey);
