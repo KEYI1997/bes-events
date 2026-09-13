@@ -7,8 +7,8 @@ type CaseMedia = { type: 'image' | 'video'; url: string };
 
 export default function CaseGallery({ images, videos = [], title }: { images: string[]; videos?: string[]; title: string }) {
   const media = useMemo<CaseMedia[]>(() => [
-    ...images.map(url => ({ type: 'image' as const, url })),
     ...videos.map(url => ({ type: 'video' as const, url })),
+    ...images.map(url => ({ type: 'image' as const, url })),
   ], [images, videos]);
   const [active, setActive] = useState(0);
   const activeIndex = Math.min(active, Math.max(media.length - 1, 0));
@@ -46,14 +46,15 @@ export default function CaseGallery({ images, videos = [], title }: { images: st
           <video src={activeMedia.url} controls preload="metadata" className="h-full w-full object-cover">此瀏覽器不支援影片播放。</video>
         )}
       </div>
-      <div className="mt-5 flex gap-3 overflow-x-auto pb-2" role="tablist" aria-label="選擇案例媒體">
+      <div className="mt-5 overflow-x-auto pb-2" role="tablist" aria-label="選擇案例媒體">
+        <div className="flex min-w-full w-max justify-center gap-3">
         {media.map((item, index) => (
           <button
             key={`${item.url}-thumb-${index}`}
             type="button"
             role="tab"
             aria-selected={index === activeIndex}
-            aria-label={item.type === 'video' ? `播放第 ${index + 1 - images.length} 部影片` : `顯示第 ${index + 1} 張照片`}
+            aria-label={item.type === 'video' ? `播放第 ${videos.indexOf(item.url) + 1} 部影片` : `顯示第 ${images.indexOf(item.url) + 1} 張照片`}
             onClick={() => setActive(index)}
             className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-md border-2 transition-colors sm:h-24 sm:w-36 ${index === activeIndex ? 'border-[#b89a67]' : 'border-[#e0ddd7]'}`}
           >
@@ -62,6 +63,7 @@ export default function CaseGallery({ images, videos = [], title }: { images: st
           </button>
         ))}
       </div>
+        </div>
     </section>
   );
 }
