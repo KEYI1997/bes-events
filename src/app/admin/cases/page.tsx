@@ -163,7 +163,13 @@ export default function CasesPage() {
     setSaveError('');
     setSaving(true);
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
-    const { video_urls, ...record } = form;
+    const { video_urls, ...formRecord } = form;
+    // Supabase DATE 欄位不能接收空字串；刪除日期後要送 null，才能正常更新案例媒體。
+    const record = {
+      ...formRecord,
+      event_date: formRecord.event_date || null,
+      activity_date: formRecord.activity_date || null,
+    };
     try {
       const response = editing
         ? await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'cases', id: editing.id, record }) })
@@ -426,3 +432,4 @@ export default function CasesPage() {
     </div>
   );
 }
+
