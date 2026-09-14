@@ -285,13 +285,9 @@ function EventPackagePage() {
         </svg>
       </section>
 
-      <section className="overflow-hidden border-b border-[#e2ded8] bg-[#fbfaf8] py-14 sm:py-16 lg:py-20">
+      <section className="overflow-hidden border-b border-[#e2ded8] bg-[#fbfaf8] py-10 sm:py-12 lg:py-14">
         <div className="mx-auto max-w-[1400px]">
-          <div className="px-6 sm:px-8 md:px-12 lg:px-16">
-            <SectionHeading title="案例分享" english="EVENT SHOWCASE" />
-            <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-[#5b5e65] md:text-base">從企劃到現場執行，看看我們協助品牌留下的活動片段。</p>
-          </div>
-          <div className="mt-8 md:mt-10"><EventCaseSmoothSlider images={EVENT_PACKAGE_CASES} /></div>
+          <EventCaseSmoothSlider images={EVENT_PACKAGE_CASES} />
         </div>
       </section>
 
