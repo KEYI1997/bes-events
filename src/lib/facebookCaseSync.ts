@@ -256,11 +256,17 @@ function createTitle(message: string, createdAt?: string) {
 function collectImageSources(attachments: FacebookAttachment[] = []) {
   const sources = new Set<string>();
   const visit = (attachment: FacebookAttachment) => {
+    const subattachments = attachment.subattachments?.data || [];
+    // 多圖貼文的父附件只是首張預覽圖；實際照片由子附件提供，避免首張被重複同步。
+    if (subattachments.length > 0) {
+      subattachments.forEach(visit);
+      return;
+    }
+
     // 影片可能同時帶有預覽圖；影片與其預覽圖都不列入案例照片。
     if (attachment.media_type?.toLowerCase() === 'video') return;
     const src = attachment.media?.image?.src;
     if (src && /^https:\/\//.test(src)) sources.add(src);
-    attachment.subattachments?.data?.forEach(visit);
   };
   attachments.forEach(visit);
   return [...sources];
