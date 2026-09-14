@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import BartendingPlans from '@/components/BartendingPlans';
+import EventCaseSmoothSlider from '@/components/EventCaseSmoothSlider';
 import JsonLd from '@/components/JsonLd';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
 import { supabase } from '@/lib/supabase';
@@ -37,6 +38,19 @@ const DB_CATEGORY_MAP: Record<string, string> = {
   'bartending': '外派調酒',
   'showgirl': 'Show Girl',
 };
+
+const EVENT_PACKAGE_CASES = [
+  { src: '/images/cases/case-1.jpg', alt: '企業品牌發表會舞台與燈光案例' },
+  { src: '/images/cases/case-2.jpg', alt: '境曜有限公司企業活動執行案例' },
+  { src: '/images/cases/case-3.webp', alt: '大型戶外活動企劃與現場執行案例' },
+  { src: '/images/cases/case-4.jpg', alt: '品牌記者會活動整合案例' },
+  { src: '/images/cases/case-5.jpg', alt: '企業典禮與啟動儀式案例' },
+  { src: '/images/cases/case-6.jpg', alt: '展覽活動空間與流程規劃案例' },
+  { src: '/images/cases/case-7.jpg', alt: '企業家庭日活動企劃案例' },
+  { src: '/images/cases/case-8.jpg', alt: '尾牙春酒舞台活動案例' },
+  { src: '/images/cases/case-9.jpg', alt: '商場品牌推廣活動案例' },
+  { src: '/images/cases/case-10.jpg', alt: '活動特效與現場技術整合案例' },
+];
 
 type Props = { params: Promise<{ category: string }> };
 
@@ -242,8 +256,8 @@ function EventPackagePage() {
 
   return (
     <main className="min-h-screen bg-[#fdfcfb] text-[#172039]">
-      <section className="relative overflow-hidden border-b border-[#e2ded8]">
-        <div className="relative z-10 mx-auto max-w-[1280px] px-6 pb-24 pt-28 sm:px-8 md:px-12 lg:px-16 lg:pb-32 lg:pt-32">
+      <section className="relative overflow-hidden border-b border-[#e2ded8] lg:h-[452px]">
+        <div className="relative z-10 mx-auto max-w-[1280px] px-6 pb-12 pt-16 sm:px-8 sm:pb-16 sm:pt-20 md:px-12 md:py-20 lg:flex lg:h-full lg:items-center lg:px-16 lg:py-0">
           <AnimateOnScroll>
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">EVENT SOLUTION</p>
             <h1 className="max-w-[10em] text-5xl font-medium leading-[1.16] tracking-tight md:text-6xl">活動策畫統包</h1>
@@ -269,6 +283,16 @@ function EventPackagePage() {
           <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2s" dur=".45s" fill="freeze" /><animateMotion dur="16s" begin="2.45s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#hero-main-line-2" /></animateMotion><circle r="34" fill="url(#gold-ambient)" /><circle r="19" fill="url(#gold-halo)" /><circle r="8" fill="url(#gold-inner)" /><circle r="1.45" fill="#fffdf7" opacity=".88" /></g>
           <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2.1s" dur=".45s" fill="freeze" /><animateMotion dur="18s" begin="2.55s" repeatCount="indefinite"><mpath href="#hero-main-line-3" /></animateMotion><circle r="27" fill="url(#gold-ambient)" /><circle r="15" fill="url(#gold-halo)" /><circle r="6" fill="url(#gold-inner)" /><circle r="1.2" fill="#fffdf7" opacity=".86" /></g>
         </svg>
+      </section>
+
+      <section className="overflow-hidden border-b border-[#e2ded8] bg-[#fbfaf8] py-14 sm:py-16 lg:py-20">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="px-6 sm:px-8 md:px-12 lg:px-16">
+            <SectionHeading title="案例分享" english="EVENT SHOWCASE" />
+            <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-[#5b5e65] md:text-base">從企劃到現場執行，看看我們協助品牌留下的活動片段。</p>
+          </div>
+          <div className="mt-8 md:mt-10"><EventCaseSmoothSlider images={EVENT_PACKAGE_CASES} /></div>
+        </div>
       </section>
 
       <section className="mx-auto max-w-[1280px] px-6 py-20 sm:px-8 md:px-12 lg:px-16 lg:py-28">
