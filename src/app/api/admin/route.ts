@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
 
   const { table, record } = await request.json();
   const supabase = getServiceClient();
-  const { data, error } = await supabase.from(table).insert(record).select().single();
+  const normalizedRecord = table === 'cases' ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null } : record;
+  const { data, error } = await supabase.from(table).insert(normalizedRecord).select().single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -67,9 +68,10 @@ export async function PUT(request: NextRequest) {
 
   const { table, id, record } = await request.json();
   const supabase = getServiceClient();
+  const normalizedRecord = table === 'cases' ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null } : record;
   const { data, error } = await supabase
     .from(table)
-    .update(record)
+    .update(normalizedRecord)
     .eq("id", id)
     .select()
     .single();
@@ -97,3 +99,6 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+
+
+
