@@ -5,6 +5,7 @@ import {
   AlertCircle, MessageSquare, Package, Camera, Building2,
   FileText, ClipboardList, BarChart3
 } from 'lucide-react';
+import LocalPageViewDashboard from '@/components/admin/LocalPageViewDashboard';
 
 // 後台資料表
 const TABLES = [
@@ -189,7 +190,9 @@ export default function AdminDashboard() {
         )}
       </section>
 
-      {/* 諮詢單與訂單總覽 */}
+      <LocalPageViewDashboard />
+
+            {/* 諮詢單與訂單總覽 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 諮詢單統計 */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -364,3 +367,4 @@ function AnalyticsLineChart({ data }: { data: Array<{ label: string; pageViews: 
     </div>
   );
 }
+
