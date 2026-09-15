@@ -1,6 +1,7 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 import { formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, selectedAddOnQuantity, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 
@@ -15,6 +16,8 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   quantity?: number;
 }) {
   const choiceGroupId = useId();
+  const [addOnsOpen, setAddOnsOpen] = useState(true);
+  const [choicesOpen, setChoicesOpen] = useState(true);
   if (!addOns.length && !choices.length) return null;
   const totals = productExtraTotals(basePrice, addOns, selection.addOns, quantity, selection.addOnQuantities);
   const choiceGroups = choices.reduce<Record<string, ChoiceEntry[]>>((groups, row, index) => {
@@ -40,11 +43,14 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   });
   return <div className="space-y-6">
     {addOns.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
-      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#e4d5c7] pb-4">
-        <h2 className="text-xl font-bold text-[#4A4947]">加購商品</h2>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#e4d5c7] pb-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#4A4947]">加購商品</h2>
+          <button type="button" onClick={() => setAddOnsOpen(open => !open)} aria-expanded={addOnsOpen} aria-controls="product-add-ons" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#d8c3ae] bg-white text-[#805e45] transition-colors hover:bg-[#f9f1e8] focus:outline-none focus:ring-2 focus:ring-[#aa7452]" aria-label={addOnsOpen ? '收起加購商品' : '展開加購商品'}><ChevronDown className={`h-4 w-4 transition-transform ${addOnsOpen ? '' : '-rotate-90'}`} /></button>
+        </div>
         <p className="text-sm font-medium text-[#805e45]">另計費用・可複選</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      {addOnsOpen && <div id="product-add-ons" className="grid gap-3 sm:grid-cols-2">
         {addOns.map((row, index) => {
           const key = optionKey(row, index);
           const checked = selection.addOns.includes(key);
@@ -56,10 +62,11 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
       </div>
     </section>}
     {choices.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
-      <div className="mb-5 border-b border-[#e4d5c7] pb-4">
+      <div className="mb-5 flex items-center gap-2 border-b border-[#e4d5c7] pb-4">
         <h2 className="text-xl font-bold text-[#4A4947]">選配商品</h2>
+        <button type="button" onClick={() => setChoicesOpen(open => !open)} aria-expanded={choicesOpen} aria-controls="product-choices" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#d8c3ae] bg-white text-[#805e45] transition-colors hover:bg-[#f9f1e8] focus:outline-none focus:ring-2 focus:ring-[#aa7452]" aria-label={choicesOpen ? '收起選配商品' : '展開選配商品'}><ChevronDown className={`h-4 w-4 transition-transform ${choicesOpen ? '' : '-rotate-90'}`} /></button>
       </div>
-      <div className="space-y-6">
+      {choicesOpen && <div id="product-choices" className="space-y-6">
         {Object.entries(choiceGroups).map(([groupName, entries], groupIndex) => <fieldset key={groupName} className="rounded-xl border border-[#eadfd5] bg-white p-4">
           <legend className="px-1 text-lg font-bold text-[#4A4947]">{groupName}<span className="ml-2 text-sm font-normal text-[#805e45]">不加價・限選一項</span></legend>
           {groupName === '未命名群組' && <p className="mb-3 text-sm text-[#9a5b36]">此群組尚未命名，請由管理者在後台設定名稱。</p>}
@@ -98,6 +105,7 @@ function OptionCard({ row, checked, inputType, name, onChange, price, children }
     {children}
   </div>;
 }
+
 
 
 
