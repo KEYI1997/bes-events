@@ -50,7 +50,7 @@ export default function OrdersPage() {
   const [quotationRevision, setQuotationRevision] = useState(1);
   const [quotationDraftLoading, setQuotationDraftLoading] = useState(false);
   const [quotationDraftSaving, setQuotationDraftSaving] = useState(false);
-  const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const [view, setView] = useState<'calendar' | 'list'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
   const [sortField, setSortField] = useState<'borrow_date' | 'return_date' | 'customer_name' | 'created_at'>('borrow_date');
@@ -488,16 +488,16 @@ export default function OrdersPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-white rounded-lg shadow-sm border overflow-hidden">
             <button
-              onClick={() => setView('calendar')}
-              className={`flex items-center gap-1 px-3 py-2 text-sm ${view === 'calendar' ? 'bg-gray-100 font-medium' : 'hover:bg-gray-50'}`}
-            >
-              <Calendar className="w-4 h-4" /> 行事曆
-            </button>
-            <button
               onClick={() => setView('list')}
               className={`flex items-center gap-1 px-3 py-2 text-sm ${view === 'list' ? 'bg-gray-100 font-medium' : 'hover:bg-gray-50'}`}
             >
               <List className="w-4 h-4" /> 列表
+            </button>
+            <button
+              onClick={() => setView('calendar')}
+              className={`flex items-center gap-1 px-3 py-2 text-sm ${view === 'calendar' ? 'bg-gray-100 font-medium' : 'hover:bg-gray-50'}`}
+            >
+              <Calendar className="w-4 h-4" /> 行事曆
             </button>
           </div>
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" style={{ backgroundColor: '#AA7452' }}>
@@ -974,3 +974,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+
