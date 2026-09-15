@@ -106,7 +106,7 @@ export function applyQuotationPricingRules(
     quantity: 1,
     activityDays: null,
     dayMultiplier: 1,
-    note: '啟動儀式單日商品金額未滿 NT$ 10,000',
+    note: '',
   };
 
   return needsControlFee ? [product, controlFee, ...rest] : [product, ...rest];
@@ -188,7 +188,7 @@ export function normalizeQuotationItems(value: unknown): QuotationLineItem[] {
     const dayMultiplier = item.dayMultiplier === null || item.dayMultiplier === undefined
       ? null
       : Math.round(Number(item.dayMultiplier) * 100) / 100;
-    if (quantity !== null && quantity <= 0) throw new Error(`第 ${index + 1} 筆數量必須大於 0`);
+    if (quantity !== null && (!Number.isInteger(quantity) || quantity <= 0)) throw new Error(`第 ${index + 1} 筆數量必須為正整數`);
     if (dayMultiplier !== null && (!Number.isFinite(dayMultiplier) || dayMultiplier <= 0 || dayMultiplier > 10)) throw new Error(`第 ${index + 1} 筆日數加成格式錯誤`);
     return {
       id: typeof item.id === 'string' && item.id ? item.id.slice(0, 60) : `item-${index + 1}`,

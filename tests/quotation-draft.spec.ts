@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { calculateQuotationTotals, createDefaultQuotationItems, quotationLineAmount } from '../src/lib/quotationDraft';
+import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems, quotationLineAmount } from '../src/lib/quotationDraft';
 
 test('啟動儀式多日租用會分開顯示天數並套用 1.3 加成', () => {
   const items = createDefaultQuotationItems('啟動柱', '10000', 1, '', '', '2026-10-01', '2026-10-02', '啟動儀式');
@@ -16,7 +16,7 @@ test('啟動儀式單日商品未滿一萬會增加一次控制費，且不乘�
   const controlFee = items.find(item => item.id === 'launch-control-fee');
 
   expect(quotationLineAmount(product!)).toBe(23400);
-  expect(controlFee).toMatchObject({ label: '控制費', unitPrice: 3500, quantity: 1, activityDays: null });
+  expect(controlFee).toMatchObject({ label: '控制費', unitPrice: 3500, quantity: 1, activityDays: null, note: '' });
   expect(calculateQuotationTotals(items).subtotal).toBe(26900);
 });
 
@@ -27,4 +27,8 @@ test('非啟動儀式商品維持單價乘數量乘活動天數的計算', () =>
   expect(product).toMatchObject({ quantity: 2, activityDays: 2, dayMultiplier: 1 });
   expect(quotationLineAmount(product!)).toBe(40000);
   expect(items.find(item => item.id === 'launch-control-fee')).toBeUndefined();
+});
+test('報價數量只接受正整數', () => {
+  expect(() => normalizeQuotationItems([{ id: 'item-1', label: '運費', unitPrice: 1000, quantity: 1.5, note: '' }])).toThrow('數量必須為正整數');
+  expect(normalizeQuotationItems([{ id: 'item-1', label: '運費', unitPrice: 1000, quantity: 2, note: '' }])[0].quantity).toBe(2);
 });

@@ -401,8 +401,13 @@ export default function OrdersPage() {
       if (item.id !== id) return item;
       if (field === 'unitPrice' || field === 'quantity') {
         const numberValue = value === '' ? null : Number(value);
-        const next = { ...item, [field]: Number.isFinite(numberValue) ? numberValue : null };
-        if (field === 'unitPrice' && numberValue !== null && next.quantity === null) next.quantity = 1;
+        const normalizedValue = numberValue === null
+          ? null
+          : field === 'quantity'
+            ? Math.max(1, Math.round(numberValue))
+            : numberValue;
+        const next = { ...item, [field]: Number.isFinite(normalizedValue) ? normalizedValue : null };
+        if (field === 'unitPrice' && normalizedValue !== null && next.quantity === null) next.quantity = 1;
         return next;
       }
       return { ...item, [field]: value };
@@ -861,8 +866,9 @@ export default function OrdersPage() {
                               <td className="p-2">
                                 <input
                                   type="number"
-                                  min={0.01}
-                                  step="0.01"
+                                  min={1}
+                                  step={1}
+                                  inputMode="numeric"
                                   value={item.quantity ?? ''}
                                   onChange={e => updateQuotationItem(item.id, 'quantity', e.target.value)}
                                   placeholder="—"
