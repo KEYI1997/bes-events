@@ -303,7 +303,9 @@ function EventPackagePage() {
 
       <section className="overflow-hidden border-b border-[#e2ded8] bg-[#fbfaf8] py-10 sm:py-12 lg:py-14">
         <div className="mx-auto max-w-[1400px]">
-          <EventCaseSmoothSlider images={EVENT_PACKAGE_CASES} />
+          <div className="relative -top-5 -mb-5 sm:-top-8 sm:-mb-8 lg:-top-10 lg:-mb-10">
+            <EventCaseSmoothSlider images={EVENT_PACKAGE_CASES} />
+          </div>
         </div>
       </section>
 
