@@ -39,8 +39,11 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
     addOnQuantities: { ...selection.addOnQuantities, [key]: nextQuantity },
   });
   return <div className="space-y-6">
-    {addOns.length > 0 && <fieldset>
-      <legend className="mb-3 font-semibold text-[#4A4947]">加購商品<span className="ml-2 text-sm font-normal">另計費用・可複選</span></legend>
+    {addOns.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#e4d5c7] pb-4">
+        <h2 className="text-xl font-bold text-[#4A4947]">加購商品</h2>
+        <p className="text-sm font-medium text-[#805e45]">另計費用・可複選</p>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {addOns.map((row, index) => {
           const key = optionKey(row, index);
@@ -51,7 +54,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
           </OptionCard>;
         })}
       </div>
-    </fieldset>}
+    </section>}
     {choices.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
       <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#e4d5c7] pb-4">
         <h2 className="text-xl font-bold text-[#4A4947]">選配商品</h2>
@@ -96,4 +99,5 @@ function OptionCard({ row, checked, inputType, name, onChange, price, children }
     {children}
   </div>;
 }
+
 
