@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import FloatingButtons from "@/components/FloatingButtons";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import PageViewTracker from "@/components/PageViewTracker";
 import JsonLd from "@/components/JsonLd";
 import {
   DEFAULT_OG_IMAGE,
@@ -108,7 +109,9 @@ export default function RootLayout({
           {children}
         </LayoutWrapper>
         <GoogleAnalytics />
+        <PageViewTracker />
       </body>
     </html>
   );
 }
+

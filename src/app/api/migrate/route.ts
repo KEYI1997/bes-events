@@ -10,6 +10,29 @@ ALTER TABLE products
   CHECK (category IN ('AI互動道具', '專案企劃', '啟動儀式', '活動特效', '燈光音響舞台', '外派調酒', 'Show Girl'));
 `;
 
+const PAGE_VIEW_MIGRATION = `
+CREATE TABLE IF NOT EXISTS page_views (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  path text NOT NULL CHECK (char_length(path) <= 512),
+  session_id text NOT NULL CHECK (char_length(session_id) <= 100),
+  user_agent text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS page_views_created_at_idx ON page_views (created_at DESC);
+CREATE INDEX IF NOT EXISTS page_views_path_created_at_idx ON page_views (path, created_at DESC);
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
+CREATE OR REPLACE FUNCTION page_view_daily_counts(days integer DEFAULT 30)
+RETURNS TABLE(day date, views bigint) LANGUAGE sql STABLE AS $$
+  SELECT created_at::date, COUNT(*)::bigint FROM page_views
+  WHERE created_at >= (CURRENT_DATE - GREATEST(days, 1)) GROUP BY created_at::date ORDER BY created_at::date ASC;
+$$;
+CREATE OR REPLACE FUNCTION page_view_monthly_counts(months integer DEFAULT 12)
+RETURNS TABLE(month text, views bigint) LANGUAGE sql STABLE AS $$
+  SELECT to_char(date_trunc('month', created_at), 'YYYY-MM'), COUNT(*)::bigint FROM page_views
+  WHERE created_at >= (date_trunc('month', CURRENT_DATE) - ((GREATEST(months, 1) - 1) * INTERVAL '1 month'))
+  GROUP BY date_trunc('month', created_at) ORDER BY date_trunc('month', created_at) ASC;
+$$;
+`;
 const CASE_ACTIVITY_DATE_MIGRATION = `
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS activity_date DATE;
 COMMENT ON COLUMN cases.activity_date IS 'Actual event date entered manually by admins.';
@@ -87,7 +110,7 @@ export async function GET() {
 
   // 舊版環境可能缺少 ai_file_url；與產品分類限制一起做成可重複執行的固定遷移。
   const { error } = await supabase.from('products').select('ai_file_url').limit(1);
-  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}${CASE_ACTIVITY_DATE_MIGRATION}`;
+  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}${CASE_ACTIVITY_DATE_MIGRATION}${PAGE_VIEW_MIGRATION}`;
   const result = await runSql(sql);
   const migrationWarning = result.ok ? null : await result.text();
 
@@ -114,3 +137,4 @@ export async function GET() {
     migrationWarning,
   });
 }
+
