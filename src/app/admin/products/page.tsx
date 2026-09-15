@@ -669,20 +669,9 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">公版影片下載</label>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm">{uploading === 'standard_video_url' ? '上傳中...' : '選擇公版影片'}</span>
-                    <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={e => handleUpload(e, 'standard_video_url')} className="hidden" />
-                  </label>
-                  {form.standard_video_url && (
-                    <div className="flex items-center gap-2">
-                      <a href={form.standard_video_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">已上傳 ✓</a>
-                      <button type="button" onClick={() => setForm(f => ({ ...f, standard_video_url: '' }))} className="text-xs text-red-500 hover:underline">移除</button>
-                    </div>
-                  )}
-                </div>
+                <label className="block text-sm font-medium mb-1">公版影片 Google 雲端連結</label>
+                <p className="mb-2 text-xs leading-5 text-gray-500">請貼上可供檢視的 Google 雲端分享連結。</p>
+                <input type="url" value={form.standard_video_url} onChange={e => setForm(f => ({ ...f, standard_video_url: e.target.value }))} placeholder="https://drive.google.com/..." className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
 
               <div className="rounded-xl border border-gray-200 p-4">

@@ -243,14 +243,14 @@ export default function ProductDetailPage() {
                 <div className="mt-3 text-center">
                   <a
                     href={parsed.standardVideo}
-                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-4/5 mx-auto py-3.5 text-lg font-bold rounded-full transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border-2"
                     style={{ color: '#4A4947', borderColor: '#4A4947' }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5" fill="#4A4947"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>
-                    下載公版影片
+                    查看公版影片
                   </a>
-                  <p className="text-xs text-gray-500 mt-2">提供活動公版影片檔案</p>
                 </div>
               )}
 
@@ -493,7 +493,7 @@ function EquipmentProductDetail({
 
               <button type="button" onClick={onOpenOrder} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#aa7452] px-6 py-4 text-base font-bold text-white transition-colors hover:bg-[#935e40]"><ShoppingCart size={18} strokeWidth={1.8} /> 加入訂單</button>
               {product.ai_file_url && <a href={product.ai_file_url} download className="mt-3 w-full inline-flex items-center justify-center rounded-full border border-[#aa7452] px-6 py-3 text-sm font-semibold text-[#aa7452] transition-colors hover:bg-[#fcf5ef] hover:text-[#935e40]">下載 AI 完稿範例</a>}
-              {parsed.standardVideo && <a href={parsed.standardVideo} download className="mt-3 w-full inline-flex items-center justify-center rounded-full border border-[#aa7452] px-6 py-3 text-sm font-semibold text-[#aa7452] transition-colors hover:bg-[#fcf5ef] hover:text-[#935e40]">下載公版影片</a>}
+              {parsed.standardVideo && <a href={parsed.standardVideo} target="_blank" rel="noopener noreferrer" className="mt-3 w-full inline-flex items-center justify-center rounded-full border border-[#aa7452] px-6 py-3 text-sm font-semibold text-[#aa7452] transition-colors hover:bg-[#fcf5ef] hover:text-[#935e40]">查看公版影片</a>}
             </div>
           </div>
         </section>
