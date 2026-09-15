@@ -59,7 +59,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
             {checked && <ProductQuantitySelector quantity={addOnQuantity} onChange={nextQuantity => updateAddOnQuantity(key, nextQuantity)} label={`${row.label} 加購數量`} compact className="mt-3 border-t border-[#eadfd5] pt-3" />}
           </OptionCard>;
         })}
-      </div>
+      </div>}
     </section>}
     {choices.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
       <div className="mb-5 flex items-center gap-2 border-b border-[#e4d5c7] pb-4">
@@ -74,7 +74,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
             {entries.map(({ row, key }) => <OptionCard key={key} row={row} checked={selection.choices.includes(key)} inputType="radio" name={`${choiceGroupId}-${groupIndex}`} onChange={event => toggleChoice(entries, key, event.target.checked)} price="不加價" />)}
           </div>
         </fieldset>)}
-      </div>
+      </div>}
     </section>}
     <div aria-live="polite" className="space-y-1 border-t border-gray-200 pt-4 text-sm text-[#4A4947]">
       {addOns.length > 0 && <p>加購小計：{formatProductAmount(totals.knownSubtotal)}{totals.hasQuotedAddOn ? '（另有需洽詢項目）' : ''}</p>}
@@ -105,6 +105,7 @@ function OptionCard({ row, checked, inputType, name, onChange, price, children }
     {children}
   </div>;
 }
+
 
 
 
