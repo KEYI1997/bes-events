@@ -423,7 +423,7 @@ function EquipmentProductDetail({
   onOpenOrder: () => void;
   onCloseOrder: () => void;
 }) {
-  const descriptionLines = parseLines(parsed.service).slice(0, 2);
+  
   const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const selectedRegularSpecification = priceOptions.find((option, index) => optionKey(option, index) === selectedPriceOption || `${option.label}｜${option.price}` === selectedPriceOption);
   const selectedSpecifications = hasLockedPriceOption
@@ -458,7 +458,7 @@ function EquipmentProductDetail({
             <div className="min-w-0 py-1 lg:py-3">
               <p className="text-[13px] font-semibold tracking-[0.12em] text-[#aa7452]">{product.category}</p>
               <h1 className="mt-3 text-[32px] font-bold leading-tight tracking-[-0.025em] text-[#3f3f3d] md:text-[36px]">{product.name}</h1>
-              {descriptionLines.length > 0 && <p className="mt-4 max-w-[34rem] text-[15px] leading-7 text-[#74706a]">{descriptionLines.join(' ')}</p>}
+              
 
               <div className="mt-8 space-y-3">
                 {priceOptions.length > 0 ? <fieldset>
@@ -509,3 +509,4 @@ function EquipmentProductDetail({
     </main>
   );
 }
+
