@@ -35,12 +35,13 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
   }
   return <fieldset disabled={busy} className="rounded-xl border border-gray-200 p-4 disabled:opacity-70">
     <legend className="px-1 text-sm font-semibold">{title}</legend>
-    <p className="mb-3 text-sm text-gray-600">{free ? '不增加費用，前臺可複選。' : '每個勾選項目加價一次，前臺可複選。'} 每個項目可上傳一張圖片。</p>
+    <p className="mb-3 text-sm text-gray-600">{free ? '不增加費用；填入相同群組名稱的項目，前臺會在該群組內限選一項。' : '每個勾選項目加價一次，前臺可複選。'} 每個項目可上傳一張圖片。</p>
     <div className="space-y-4">
       {rows.map(row => <div key={row.id} className="space-y-2 border-b border-gray-200 pb-4">
         <div className="flex flex-wrap gap-2">
           <input aria-label={`${title}名稱`} required value={row.label} onChange={event => onUpdate(row.id!, 'label', event.target.value)} placeholder="商品名稱" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />
           {!free && <input aria-label={`${title}加價金額`} required value={row.price} onChange={event => onUpdate(row.id!, 'price', event.target.value)} placeholder="有價格請輸入數字，例如：3000" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />}
+          {free && <input aria-label={`${title}群組`} value={row.group || ''} onChange={event => onUpdate(row.id!, 'group', event.target.value)} placeholder="群組名稱（同群組單選）" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-base" />}
           <button type="button" onClick={() => onRemove(row.id!)} className="px-3 py-2 text-sm text-red-700" aria-label={`移除${row.label || title}`}>移除</button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -63,4 +64,5 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
     {error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
   </fieldset>;
 }
+
 

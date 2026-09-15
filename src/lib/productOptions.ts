@@ -1,4 +1,4 @@
-export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean };
+export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean; group?: string };
 export type ProductExtraSelection = { addOns: string[]; choices: string[]; addOnQuantities?: Record<string, number> };
 
 const SINGLE_PURCHASE_SECTION = '購買數量限制';
@@ -115,6 +115,7 @@ export function parseProductOptionRows(description: string, sectionTitle: string
         ...(typeof row.id === 'string' ? { id: row.id } : {}),
         ...(typeof row.imageUrl === 'string' && /^(https?:\/\/|\/(?!\/))/.test(row.imageUrl) ? { imageUrl: row.imageUrl } : {}),
         ...(row.locked === true ? { locked: true } : {}),
+        ...(typeof row.group === 'string' && row.group.trim() ? { group: row.group.trim() } : {}),
       }));
     } catch { return []; }
   }
@@ -130,11 +131,14 @@ export function parseProductOptionRows(description: string, sectionTitle: string
 }
 
 export function serializeProductOptionRows(rows: ProductOptionRow[]) {
-  if (rows.some(row => row.id || row.imageUrl || row.locked)) {
-    return JSON.stringify(rows.filter(row => row.label.trim()).map(row => ({ ...row, label: row.label.trim(), price: row.price.trim() }))).replace(/【/g, '\\u3010');
+  if (rows.some(row => row.id || row.imageUrl || row.locked || row.group)) {
+    return JSON.stringify(rows.filter(row => row.label.trim()).map(row => ({ ...row, label: row.label.trim(), price: row.price.trim(), ...(row.group?.trim() ? { group: row.group.trim() } : {}) }))).replace(/【/g, '\\u3010');
   }
   return rows
     .filter(row => row.label.trim() || row.price.trim())
     .map(row => `${row.label.trim()}｜${row.price.trim()}`)
     .join('\n');
 }
+
+
+
