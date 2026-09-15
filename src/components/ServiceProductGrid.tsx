@@ -37,6 +37,7 @@ export default function ServiceProductGrid({ products, showDetailCta = false }: 
               </div>
               <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-xl font-bold text-primary mb-2">{product.name}</h3>
+                {(product.service_content || '') && <p className="mb-4 line-clamp-2 text-sm leading-6 text-[#6b6863]">{product.service_content}</p>}
                 <div className="flex-1" />
                 {productCatalogPriceText(product.description, product.price_note) && (
                   <p
@@ -59,3 +60,4 @@ export default function ServiceProductGrid({ products, showDetailCta = false }: 
     </div>
   );
 }
+
