@@ -56,9 +56,8 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
       </div>
     </section>}
     {choices.length > 0 && <section className="rounded-2xl border-2 border-[#d8c3ae] bg-[#fcfaf7] p-4 shadow-[0_12px_28px_rgba(83,61,42,0.08)] sm:p-6">
-      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#e4d5c7] pb-4">
+      <div className="mb-5 border-b border-[#e4d5c7] pb-4">
         <h2 className="text-xl font-bold text-[#4A4947]">選配商品</h2>
-        <p className="text-sm font-medium text-[#805e45]">每個群組限選一項</p>
       </div>
       <div className="space-y-6">
         {Object.entries(choiceGroups).map(([groupName, entries], groupIndex) => <fieldset key={groupName} className="rounded-xl border border-[#eadfd5] bg-white p-4">
@@ -99,5 +98,6 @@ function OptionCard({ row, checked, inputType, name, onChange, price, children }
     {children}
   </div>;
 }
+
 
 
