@@ -110,7 +110,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
     if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
   }
   if (productsError) {
-    console.error([services/] product query failed after retries, productsError);
+    console.error(`[services/${category}] product query failed after retries`, productsError);
     throw new Error('商品資料暫時無法載入，請稍後重新整理。');
   }
 
@@ -340,4 +340,5 @@ function SectionHeading({ title, english, align = 'center' }: { title: string; e
 function Divider() {
   return <div className="mx-auto h-px w-[92%] max-w-[1400px] bg-[#dedbd5]" />;
 }
+
 
