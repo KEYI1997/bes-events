@@ -96,7 +96,23 @@ export default async function ServiceCategoryPage({ params }: Props) {
   }
 
   const dbCategory = DB_CATEGORY_MAP[category] || categoryName;
-  const { data: products } = await supabase.from('products').select('*').eq('category', dbCategory).eq('visible', true).order('sort_order', { ascending: true });
+  // Supabase 偶發連線失敗時不可直接當成空商品，先短暫重試，避免使用者看到誤導性的空列表。
+  let products: Product[] = [];
+  let productsError: string | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const result = await supabase.from('products').select('*').eq('category', dbCategory).eq('visible', true).order('sort_order', { ascending: true });
+    if (!result.error) {
+      products = (result.data || []) as Product[];
+      productsError = null;
+      break;
+    }
+    productsError = result.error.message;
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
+  }
+  if (productsError) {
+    console.error([services/] product query failed after retries, productsError);
+    throw new Error('商品資料暫時無法載入，請稍後重新整理。');
+  }
 
   if (category === 'event-package') {
     return <><JsonLd data={structuredData} /><EventPackagePage /></>;
@@ -324,3 +340,4 @@ function SectionHeading({ title, english, align = 'center' }: { title: string; e
 function Divider() {
   return <div className="mx-auto h-px w-[92%] max-w-[1400px] bg-[#dedbd5]" />;
 }
+
