@@ -6,8 +6,8 @@ import { loadStoredQuotationDraft } from '@/lib/quotationStorage';
 export const runtime = 'nodejs';
 
 function getProduct(products: unknown) {
-  if (Array.isArray(products)) return products[0] as { name?: string; price_note?: string } | undefined;
-  return products as { name?: string; price_note?: string } | null;
+  if (Array.isArray(products)) return products[0] as { name?: string; price_note?: string; category?: string } | undefined;
+  return products as { name?: string; price_note?: string; category?: string } | null;
 }
 
 function sanitize(value: string) {
@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
   const supabase = getServiceClient();
   const { data: orderResult, error } = await supabase
     .from('orders')
-    .select('id, order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, products(name, price_note)')
+    .select('id, order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, products(name, price_note, category)')
     .eq('quotation_token', token)
     .single();
   const order = Array.isArray(orderResult) ? orderResult[0] : orderResult;
@@ -44,6 +44,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
       note: order.note,
       productName: product.name,
       productPriceNote: product.price_note,
+      productCategory: product.category,
       quotationItems: stored?.publicItems || stored?.items,
       customTotal: stored?.publicItems ? stored?.publicCustomTotal ?? null : stored?.customTotal ?? null,
       quotationRevision: stored?.publicRevision || stored?.revision || 1,

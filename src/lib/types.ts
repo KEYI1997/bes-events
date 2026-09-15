@@ -55,6 +55,8 @@ export interface QuotationLineItem {
   label: string;
   unitPrice: number | null;
   quantity: number | null;
+  activityDays?: number | null;
+  dayMultiplier?: number | null;
   note: string;
 }
 

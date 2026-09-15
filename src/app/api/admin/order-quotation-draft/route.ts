@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateQuotationTotals, createDefaultQuotationItems, normalizeCustomQuotationTotal, normalizeQuotationItems } from '@/lib/quotationDraft';
+import { applyQuotationPricingRules, calculateQuotationTotals, createDefaultQuotationItems, normalizeCustomQuotationTotal, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
 import { loadStoredQuotationDraft, saveStoredQuotationDraft } from '@/lib/quotationStorage';
 
 export const runtime = 'nodejs';
+
+type ProductRecord = { name?: string; price_note?: string; category?: string };
 
 async function getCurrentPassword() {
   try {
@@ -21,15 +23,15 @@ async function verifyAdmin(request: NextRequest) {
 }
 
 function getProduct(products: unknown) {
-  if (Array.isArray(products)) return products[0] as { name?: string; price_note?: string } | undefined;
-  return products as { name?: string; price_note?: string } | null;
+  if (Array.isArray(products)) return products[0] as ProductRecord | undefined;
+  return products as ProductRecord | null;
 }
 
 async function loadDraftOrder(id: string) {
   const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('orders')
-    .select('id, status, quantity, borrow_date, return_date, event_name, note, products(name, price_note)')
+    .select('id, status, quantity, borrow_date, return_date, event_name, note, products(name, price_note, category)')
     .eq('id', id)
     .single();
   return { supabase, order: Array.isArray(data) ? data[0] : data, error };
@@ -47,9 +49,10 @@ export async function GET(request: NextRequest) {
   if (!product?.name) return NextResponse.json({ error: '找不到產品資料' }, { status: 404 });
 
   const stored = await loadStoredQuotationDraft(getServiceClient(), id);
-  const items = stored
+  const baseItems = stored
     ? stored.items
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date, product.category);
+  const items = applyQuotationPricingRules(baseItems, product.category, order.quantity, order.borrow_date, order.return_date);
   return NextResponse.json({
     items,
     revision: stored?.revision || 1,
@@ -66,11 +69,13 @@ export async function PUT(request: NextRequest) {
   if (!id) return NextResponse.json({ error: '缺少訂單 id' }, { status: 400 });
 
   try {
-    const items = normalizeQuotationItems(body.items);
     const customTotal = normalizeCustomQuotationTotal(body.customTotal);
     const { supabase, order, error } = await loadDraftOrder(id);
     if (error || !order) return NextResponse.json({ error: error?.message || '找不到訂單' }, { status: 404 });
     if (order.status === '已取消') return NextResponse.json({ error: '已取消的訂單不可編輯報價單' }, { status: 400 });
+    const product = getProduct(order.products);
+    if (!product?.name) return NextResponse.json({ error: '找不到產品資料' }, { status: 404 });
+    const items = applyQuotationPricingRules(normalizeQuotationItems(body.items), product.category, order.quantity, order.borrow_date, order.return_date);
 
     const stored = await loadStoredQuotationDraft(supabase, id);
     const revision = (stored?.revision || 1) + 1;

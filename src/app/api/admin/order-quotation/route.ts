@@ -8,7 +8,7 @@ import { loadStoredQuotationDraft, saveStoredQuotationDraft, type StoredQuotatio
 
 export const runtime = 'nodejs';
 
-type ProductResult = { name?: string; price_note?: string } | Array<{ name?: string; price_note?: string }> | null;
+type ProductResult = { name?: string; price_note?: string; category?: string } | Array<{ name?: string; price_note?: string; category?: string }> | null;
 
 type QuotationOrderRecord = {
   id: string;
@@ -60,7 +60,7 @@ async function loadOrder(orderId: string) {
   const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('orders')
-    .select('id, order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, quotation_token, products(name, price_note)')
+    .select('id, order_code, customer_name, customer_phone, customer_email, quantity, borrow_date, return_date, event_name, note, status, quotation_token, products(name, price_note, category)')
     .eq('id', orderId)
     .single();
   return { order: data as unknown as QuotationOrderRecord | null, error };
@@ -71,7 +71,7 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
   if (!product?.name) throw new Error('找不到訂單產品資料');
   const quotationItems = stored
     ? normalizeQuotationItems(stored.items)
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date, product.category);
   const pdf = await buildQuotationPdf({
     orderCode: order.order_code,
     customerName: order.customer_name,
@@ -84,6 +84,7 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
     note: order.note,
     productName: product.name,
     productPriceNote: product.price_note,
+    productCategory: product.category,
     quotationItems,
     customTotal: stored?.customTotal ?? null,
     quotationRevision: stored?.revision || 1,

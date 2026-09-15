@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, FilePenLine, Send } from 'lucide-react';
 import type { Product, Order, QuotationLineItem } from '@/lib/types';
-import { calculateQuotationTotals, quotationActivityDays } from '@/lib/quotationDraft';
+import { calculateQuotationTotals, quotationActivityDays, quotationLineAmount } from '@/lib/quotationDraft';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -822,22 +822,21 @@ export default function OrdersPage() {
               ) : (
                 <>
                   <div className="rounded-xl border overflow-x-auto">
-                    <table className="w-full min-w-[760px] text-sm">
+                    <table className="w-full min-w-[880px] text-sm">
                       <thead className="bg-stone-50 text-gray-600">
                         <tr>
-                          <th className="px-3 py-3 text-left w-[30%]">項目／服務內容</th>
-                          <th className="px-3 py-3 text-right w-[16%]">單價</th>
-                          <th className="px-3 py-3 text-center w-[12%]">數量</th>
-                          <th className="px-3 py-3 text-right w-[16%]">金額</th>
+                          <th className="px-3 py-3 text-left w-[25%]">項目／服務內容</th>
+                          <th className="px-3 py-3 text-right w-[14%]">單價</th>
+                          <th className="px-3 py-3 text-center w-[10%]">數量</th>
+                          <th className="px-3 py-3 text-center w-[11%]">活動天數</th>
+                          <th className="px-3 py-3 text-right w-[14%]">金額</th>
                           <th className="px-3 py-3 text-left">備註</th>
                           <th className="px-2 py-3 w-10" />
                         </tr>
                       </thead>
                       <tbody>
                         {quotationItems.map((item, index) => {
-                          const lineTotal = item.unitPrice !== null && item.quantity !== null
-                            ? item.unitPrice * item.quantity
-                            : null;
+                          const lineTotal = quotationLineAmount(item);
                           return (
                             <tr key={item.id} className="border-t">
                               <td className="p-2">
@@ -869,6 +868,9 @@ export default function OrdersPage() {
                                   placeholder="—"
                                   className="w-full px-3 py-2 border rounded-lg text-center"
                                 />
+                              </td>
+                              <td className="p-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap">
+                                {item.activityDays ? <span>{item.activityDays} 日{item.dayMultiplier && item.dayMultiplier > 1 ? <span className="block text-xs font-normal text-[#8E5F43]">× {item.dayMultiplier}</span> : null}</span> : '—'}
                               </td>
                               <td className="p-2 text-right font-medium text-gray-700 whitespace-nowrap">
                                 {lineTotal === null ? '—' : `NT$ ${lineTotal.toLocaleString('zh-TW')}`}
@@ -904,7 +906,7 @@ export default function OrdersPage() {
                     <div>
                       <button
                         type="button"
-                        disabled={quotationItems.length >= 8}
+                        disabled={quotationItems.length >= 9}
                         onClick={() => setQuotationItems(current => [...current, {
                           id: `custom-${Date.now()}`,
                           label: '',
@@ -916,7 +918,7 @@ export default function OrdersPage() {
                       >
                         <Plus className="w-4 h-4" /> 新增項目
                       </button>
-                      <p className="text-xs text-gray-400 mt-2">最多 8 筆。只填單價時，數量會自動設為 1。</p>
+                      <p className="text-xs text-gray-400 mt-2">最多 9 筆（含啟動儀式控制費）。只填單價時，數量會自動設為 1。</p>
                       <div className="mt-4 border-t border-stone-200 pt-4">
                         <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#4A4947]">
                           <input

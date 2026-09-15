@@ -10,6 +10,7 @@ export interface QuotationOrderData {
   eventName?: string | null;
   productName: string;
   productPriceNote?: string | null;
+  productCategory?: string | null;
 }
 
 function parsePositiveAmount(value: string) {

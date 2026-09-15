@@ -3,6 +3,10 @@ import { productPriceAmount } from '@/lib/productOptions';
 import type { QuotationLineItem } from '@/lib/types';
 
 const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
+const LAUNCH_CEREMONY_CATEGORY = '啟動儀式';
+const LAUNCH_CONTROL_FEE = 3500;
+const LAUNCH_CONTROL_FEE_NOTE = '如單日商品價格低於一萬時，將另外收取控制費';
+const LAUNCH_MULTIDAY_NOTE = '多日租用已含提前進場加成 ×1.3';
 
 export function quotationActivityDays(borrowDate?: string | null, returnDate?: string | null) {
   if (!borrowDate || !returnDate) return 1;
@@ -51,6 +55,63 @@ export function extractSelectedAddOnQuotationItems(selectionDescription: string 
   });
 }
 
+function positiveInteger(value: unknown, fallback = 1) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.max(1, Math.round(parsed)) : fallback;
+}
+
+function appendNote(note: string, addition: string) {
+  const parts = note.split('；').map(value => value.trim()).filter(Boolean);
+  return parts.includes(addition) ? parts.join('；') : [...parts, addition].join('；');
+}
+
+export function quotationLineAmount(item: QuotationLineItem) {
+  if (item.unitPrice === null || item.quantity === null) return null;
+  const activityDays = positiveInteger(item.activityDays, 1);
+  const dayMultiplier = Number.isFinite(item.dayMultiplier) && (item.dayMultiplier || 0) > 0 ? item.dayMultiplier || 1 : 1;
+  return Math.round(item.unitPrice * item.quantity * activityDays * dayMultiplier * 100) / 100;
+}
+
+export function applyQuotationPricingRules(
+  items: QuotationLineItem[],
+  productCategory: string | null | undefined,
+  productQuantity: number,
+  borrowDate?: string | null,
+  returnDate?: string | null,
+) {
+  const productIndex = items.findIndex(item => item.id === 'product');
+  if (productIndex < 0) return items.filter(item => item.id !== 'launch-control-fee');
+
+  const activityDays = quotationActivityDays(borrowDate, returnDate);
+  const isLaunchCeremony = productCategory === LAUNCH_CEREMONY_CATEGORY;
+  const product = { ...items[productIndex] };
+  if (product.activityDays === undefined || product.activityDays === null) product.quantity = positiveInteger(productQuantity, product.quantity || 1);
+  product.activityDays = activityDays;
+  product.dayMultiplier = isLaunchCeremony && activityDays > 1 ? 1.3 : 1;
+
+  if (isLaunchCeremony) {
+    product.note = appendNote(product.note, LAUNCH_CONTROL_FEE_NOTE);
+    if (activityDays > 1) product.note = appendNote(product.note, LAUNCH_MULTIDAY_NOTE);
+  }
+
+  const rest = items.filter(item => item.id !== 'product' && item.id !== 'launch-control-fee');
+  const singleDayProductAmount = product.unitPrice !== null && product.quantity !== null
+    ? product.unitPrice * product.quantity
+    : null;
+  const needsControlFee = isLaunchCeremony && singleDayProductAmount !== null && singleDayProductAmount < 10_000;
+  const controlFee: QuotationLineItem = {
+    id: 'launch-control-fee',
+    label: '控制費',
+    unitPrice: LAUNCH_CONTROL_FEE,
+    quantity: 1,
+    activityDays: null,
+    dayMultiplier: 1,
+    note: '啟動儀式單日商品金額未滿 NT$ 10,000',
+  };
+
+  return needsControlFee ? [product, controlFee, ...rest] : [product, ...rest];
+}
+
 export function createDefaultQuotationItems(
   productName: string,
   productPriceNote: string | null | undefined,
@@ -59,12 +120,11 @@ export function createDefaultQuotationItems(
   selectionDescription?: string | null,
   borrowDate?: string | null,
   returnDate?: string | null,
+  productCategory?: string | null,
 ): QuotationLineItem[] {
   const activityDays = quotationActivityDays(borrowDate, returnDate);
-  const productQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity * activityDays : activityDays;
+  const productQuantity = positiveInteger(quantity);
   const selectedAddOns = extractSelectedAddOnQuotationItems(selectionDescription);
-  // The quotation template has room for eight rows. Preserve every explicitly selected
-  // add-on first; the remaining rows stay available for the administrator to complete.
   const addOnRows = selectedAddOns.length <= 7 ? selectedAddOns : [
     ...selectedAddOns.slice(0, 6),
     {
@@ -92,18 +152,20 @@ export function createDefaultQuotationItems(
     quantity: null,
     note: '',
   }));
-  return [
+  return applyQuotationPricingRules([
     {
       id: 'product',
       label: productName,
       unitPrice: extractSelectedQuotationUnitPrice(selectionDescription, productPriceNote),
       quantity: productQuantity,
-      note: [eventName, activityDays > 1 ? `活動 ${activityDays} 日` : ''].filter(Boolean).join('；'),
+      activityDays,
+      dayMultiplier: 1,
+      note: [eventName].filter(Boolean).join('；'),
     },
     ...addOnRows,
     ...standardRows,
     ...blankRows,
-  ];
+  ], productCategory, productQuantity, borrowDate, returnDate);
 }
 
 function optionalNumber(value: unknown) {
@@ -114,7 +176,7 @@ function optionalNumber(value: unknown) {
 
 export function normalizeQuotationItems(value: unknown): QuotationLineItem[] {
   if (!Array.isArray(value)) throw new Error('報價項目格式錯誤');
-  if (value.length === 0 || value.length > 8) throw new Error('報價項目需為 1 至 8 筆');
+  if (value.length === 0 || value.length > 9) throw new Error('報價項目需為 1 至 9 筆');
 
   return value.map((raw, index) => {
     const item = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};
@@ -122,12 +184,19 @@ export function normalizeQuotationItems(value: unknown): QuotationLineItem[] {
     const note = typeof item.note === 'string' ? item.note.trim().slice(0, 120) : '';
     const unitPrice = optionalNumber(item.unitPrice);
     const quantity = optionalNumber(item.quantity);
+    const activityDays = item.activityDays === null || item.activityDays === undefined ? null : positiveInteger(item.activityDays);
+    const dayMultiplier = item.dayMultiplier === null || item.dayMultiplier === undefined
+      ? null
+      : Math.round(Number(item.dayMultiplier) * 100) / 100;
     if (quantity !== null && quantity <= 0) throw new Error(`第 ${index + 1} 筆數量必須大於 0`);
+    if (dayMultiplier !== null && (!Number.isFinite(dayMultiplier) || dayMultiplier <= 0 || dayMultiplier > 10)) throw new Error(`第 ${index + 1} 筆日數加成格式錯誤`);
     return {
       id: typeof item.id === 'string' && item.id ? item.id.slice(0, 60) : `item-${index + 1}`,
       label,
       unitPrice,
       quantity,
+      activityDays,
+      dayMultiplier,
       note,
     };
   });
@@ -145,10 +214,7 @@ export function calculateQuotationTotals(items: QuotationLineItem[], customTotal
   }
   if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true, customTotal: false };
 
-  const subtotal = activeItems.reduce((sum, item) => {
-    if (item.unitPrice === null || item.quantity === null) return sum;
-    return sum + item.unitPrice * item.quantity;
-  }, 0);
+  const subtotal = activeItems.reduce((sum, item) => sum + (quotationLineAmount(item) || 0), 0);
   const hasAmount = activeItems.some(item => item.unitPrice !== null && item.quantity !== null);
   if (!hasAmount) return { subtotal: null, tax: null, total: null, incomplete: false, customTotal: false };
   const tax = Math.round(subtotal * 0.05);

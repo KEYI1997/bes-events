@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import { type QuotationOrderData } from '@/lib/quotationWorkbook';
-import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems, quotationActivityDays } from '@/lib/quotationDraft';
+import { applyQuotationPricingRules, calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems, quotationActivityDays, quotationLineAmount } from '@/lib/quotationDraft';
 import type { QuotationLineItem } from '@/lib/types';
 
 const PAGE_WIDTH = 595.28;
@@ -63,17 +63,21 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     drawCell(doc, v2, MARGIN + labelW * 2 + valueW, y, valueW, infoH, { fontSize: 7.5 }); y += infoH;
   }
   y += 8;
-  const quotationItems = order.quotationItems ? normalizeQuotationItems(order.quotationItems) : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note, order.borrowDate, order.returnDate);
+  const baseQuotationItems = order.quotationItems
+    ? normalizeQuotationItems(order.quotationItems)
+    : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note, order.borrowDate, order.returnDate, order.productCategory);
+  const quotationItems = applyQuotationPricingRules(baseQuotationItems, order.productCategory, order.quantity, order.borrowDate, order.returnDate);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
   const relaxedLayout = visibleItems.length <= 4;
-  const columns = [215, 78, 48, 94, CONTENT_WIDTH - 215 - 78 - 48 - 94];
-  const headers = ['項目／服務內容', '單價', '數量', '金額', '備註'];
+  const columns = [185, 70, 40, 48, 82, CONTENT_WIDTH - 185 - 70 - 40 - 48 - 82];
+  const headers = ['項目／服務內容', '單價', '數量', '天數', '金額', '備註'];
   let x = MARGIN;
   headers.forEach((header, i) => { drawCell(doc, header, x, y, columns[i], 22, { background: BRAND, fillColor: '#FFFFFF', align: 'center', fontSize: 7.5 }); x += columns[i]; }); y += 22;
   visibleItems.forEach((item, rowIndex) => {
-    const lineTotal = item.unitPrice !== null && item.quantity !== null ? item.unitPrice * item.quantity : null;
-    const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), lineTotal === null ? '' : money(lineTotal), item.note];
-    x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], 21, { align: i === 0 || i === 4 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += 21;
+    const lineTotal = quotationLineAmount(item);
+    const days = item.activityDays ? `${item.activityDays}${item.dayMultiplier && item.dayMultiplier > 1 ? ` ×${item.dayMultiplier}` : ''}` : '';
+    const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), days, lineTotal === null ? '' : money(lineTotal), item.note];
+    x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], 21, { align: i === 0 || i === 5 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += 21;
   });
   const { subtotal: itemSubtotal, tax, total, customTotal } = calculateQuotationTotals(quotationItems, order.customTotal ?? null);
   const summaryLabelX = MARGIN + 300; const summaryLabelW = 76; const summaryValueW = CONTENT_WIDTH - 300 - summaryLabelW;
