@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, FilePenLine, Send } from 'lucide-react';
 import type { Product, Order, QuotationLineItem } from '@/lib/types';
+import { calculateQuotationTotals, quotationActivityDays } from '@/lib/quotationDraft';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -47,6 +48,7 @@ export default function OrdersPage() {
   const [quotationSendingId, setQuotationSendingId] = useState<string | null>(null);
   const [quotationEditingOrder, setQuotationEditingOrder] = useState<Order | null>(null);
   const [quotationItems, setQuotationItems] = useState<QuotationLineItem[]>([]);
+  const [quotationCustomTotal, setQuotationCustomTotal] = useState<number | null>(null);
   const [quotationRevision, setQuotationRevision] = useState(1);
   const [quotationDraftLoading, setQuotationDraftLoading] = useState(false);
   const [quotationDraftSaving, setQuotationDraftSaving] = useState(false);
@@ -367,16 +369,13 @@ export default function OrdersPage() {
     }
   };
 
-  const quotationTotals = useMemo(() => {
-    const activeItems = quotationItems.filter(item => item.label || item.unitPrice !== null || item.quantity !== null || item.note);
-    const incomplete = activeItems.some(item => (item.unitPrice === null) !== (item.quantity === null));
-    if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true };
-    const priced = activeItems.filter(item => item.unitPrice !== null && item.quantity !== null);
-    if (priced.length === 0) return { subtotal: null, tax: null, total: null, incomplete: false };
-    const subtotal = priced.reduce((sum, item) => sum + (item.unitPrice || 0) * (item.quantity || 0), 0);
-    const tax = Math.round(subtotal * 0.05);
-    return { subtotal, tax, total: subtotal + tax, incomplete: false };
-  }, [quotationItems]);
+  const quotationTotals = useMemo(
+    () => calculateQuotationTotals(quotationItems, quotationCustomTotal),
+    [quotationItems, quotationCustomTotal],
+  );
+  const quotationDays = quotationEditingOrder
+    ? quotationActivityDays(quotationEditingOrder.borrow_date, quotationEditingOrder.return_date)
+    : 1;
 
   const openQuotationEditor = async (order: Order) => {
     if (order.status === '已取消' || quotationDraftLoading) return;
@@ -387,6 +386,7 @@ export default function OrdersPage() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || '載入報價單失敗');
       setQuotationItems(result.items || []);
+      setQuotationCustomTotal(result.customTotal ?? null);
       setQuotationRevision(result.revision || 1);
     } catch (error) {
       setQuotationEditingOrder(null);
@@ -416,11 +416,12 @@ export default function OrdersPage() {
       const response = await fetch('/api/admin/order-quotation-draft', {
         method: 'PUT',
         headers: { ...getHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: quotationEditingOrder.id, items: quotationItems }),
+        body: JSON.stringify({ id: quotationEditingOrder.id, items: quotationItems, customTotal: quotationCustomTotal }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || '儲存報價單失敗');
       setQuotationItems(result.items || quotationItems);
+      setQuotationCustomTotal(result.customTotal ?? quotationCustomTotal);
       setQuotationRevision(result.revision || quotationRevision + 1);
       setOrders(current => current.map(item => item.id === quotationEditingOrder.id
         ? {
@@ -809,7 +810,7 @@ export default function OrdersPage() {
               <div>
                 <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>編輯報價單</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  {quotationEditingOrder.customer_name}｜{productMap[quotationEditingOrder.product_id]?.name || '未知產品'}｜版本 v{quotationRevision}
+                  {quotationEditingOrder.customer_name}｜{productMap[quotationEditingOrder.product_id]?.name || '未知產品'}｜活動 {quotationDays} 日｜版本 v{quotationRevision}
                 </p>
               </div>
               <button onClick={() => setQuotationEditingOrder(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
@@ -916,13 +917,37 @@ export default function OrdersPage() {
                         <Plus className="w-4 h-4" /> 新增項目
                       </button>
                       <p className="text-xs text-gray-400 mt-2">最多 8 筆。只填單價時，數量會自動設為 1。</p>
+                      <div className="mt-4 border-t border-stone-200 pt-4">
+                        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#4A4947]">
+                          <input
+                            type="checkbox"
+                            checked={quotationCustomTotal !== null}
+                            onChange={event => setQuotationCustomTotal(event.target.checked ? quotationTotals.total ?? 0 : null)}
+                            className="h-4 w-4 accent-[#8E5F43]"
+                          />
+                          自定含稅總價
+                        </label>
+                        {quotationCustomTotal !== null && <>
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            inputMode="numeric"
+                            aria-label="自定含稅總價"
+                            value={quotationCustomTotal}
+                            onChange={event => setQuotationCustomTotal(Math.max(0, Math.round(Number(event.target.value) || 0)))}
+                            className="mt-2 w-full rounded-lg border border-[#d7c4b4] bg-white px-3 py-2 text-base font-semibold tabular-nums text-[#4A4947] outline-none focus:ring-2 focus:ring-[#8E5F43]"
+                          />
+                          <p className="mt-1 text-xs leading-5 text-[#786b60]">優先套用至 PDF 的含稅總價；系統會自動反推未稅與稅額。</p>
+                        </>}
+                      </div>
                     </div>
 
                     <div className="w-full sm:w-72 rounded-xl border bg-stone-50 p-4 space-y-2 text-sm">
                       <div className="flex justify-between"><span className="text-gray-500">未稅小計</span><span>{quotationTotals.subtotal === null ? '—' : `NT$ ${quotationTotals.subtotal.toLocaleString('zh-TW')}`}</span></div>
                       <div className="flex justify-between"><span className="text-gray-500">營業稅 5%</span><span>{quotationTotals.tax === null ? '—' : `NT$ ${quotationTotals.tax.toLocaleString('zh-TW')}`}</span></div>
-                      <div className="flex justify-between border-t pt-2 text-base font-bold" style={{ color: '#8E5F43' }}><span>含稅總計</span><span>{quotationTotals.total === null ? '—' : `NT$ ${quotationTotals.total.toLocaleString('zh-TW')}`}</span></div>
-                      {quotationTotals.incomplete && <p className="text-xs text-amber-700 pt-1">尚有項目只填了單價或數量，總計會先保持空白。</p>}
+                      <div className="flex justify-between border-t pt-2 text-base font-bold" style={{ color: '#8E5F43' }}><span>{quotationTotals.customTotal ? '含稅總計（自定）' : '含稅總計'}</span><span>{quotationTotals.total === null ? '—' : `NT$ ${quotationTotals.total.toLocaleString('zh-TW')}`}</span></div>
+                      {quotationTotals.incomplete && <p className="text-xs text-amber-700 pt-1">{quotationTotals.customTotal ? '商品明細尚有未填金額，但 PDF 會採用自定總價。' : '尚有項目只填了單價或數量，總計會先保持空白。'}</p>}
                     </div>
                   </div>
 

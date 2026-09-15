@@ -4,6 +4,21 @@ import type { QuotationLineItem } from '@/lib/types';
 
 const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
 
+export function quotationActivityDays(borrowDate?: string | null, returnDate?: string | null) {
+  if (!borrowDate || !returnDate) return 1;
+  const start = new Date(`${borrowDate}T00:00:00Z`).getTime();
+  const end = new Date(`${returnDate}T00:00:00Z`).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 1;
+  return Math.floor((end - start) / 86_400_000) + 1;
+}
+
+export function normalizeCustomQuotationTotal(value: unknown) {
+  if (value === '' || value === null || value === undefined) return null;
+  const total = Number(value);
+  if (!Number.isFinite(total) || total < 0 || total > 1_000_000_000) throw new Error('自定含稅總價格式錯誤');
+  return Math.round(total);
+}
+
 export function extractSelectedQuotationUnitPrice(selectionDescription: string | null | undefined, fallbackPriceNote: string | null | undefined) {
   const section = selectionDescription?.match(/【選擇規格】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim();
   if (!section) return extractQuotationUnitPrice(fallbackPriceNote);
@@ -42,7 +57,11 @@ export function createDefaultQuotationItems(
   quantity: number,
   eventName?: string | null,
   selectionDescription?: string | null,
+  borrowDate?: string | null,
+  returnDate?: string | null,
 ): QuotationLineItem[] {
+  const activityDays = quotationActivityDays(borrowDate, returnDate);
+  const productQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity * activityDays : activityDays;
   const selectedAddOns = extractSelectedAddOnQuotationItems(selectionDescription);
   // The quotation template has room for eight rows. Preserve every explicitly selected
   // add-on first; the remaining rows stay available for the administrator to complete.
@@ -78,8 +97,8 @@ export function createDefaultQuotationItems(
       id: 'product',
       label: productName,
       unitPrice: extractSelectedQuotationUnitPrice(selectionDescription, productPriceNote),
-      quantity,
-      note: eventName || '',
+      quantity: productQuantity,
+      note: [eventName, activityDays > 1 ? `活動 ${activityDays} 日` : ''].filter(Boolean).join('；'),
     },
     ...addOnRows,
     ...standardRows,
@@ -114,19 +133,24 @@ export function normalizeQuotationItems(value: unknown): QuotationLineItem[] {
   });
 }
 
-export function calculateQuotationTotals(items: QuotationLineItem[]) {
+export function calculateQuotationTotals(items: QuotationLineItem[], customTotal: number | null = null) {
   const activeItems = items.filter(item => item.label || item.unitPrice !== null || item.quantity !== null || item.note);
   const incomplete = activeItems.some(item =>
     (item.unitPrice === null) !== (item.quantity === null)
   );
-  if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true };
+  const normalizedCustomTotal = normalizeCustomQuotationTotal(customTotal);
+  if (normalizedCustomTotal !== null) {
+    const subtotal = Math.round(normalizedCustomTotal / 1.05);
+    return { subtotal, tax: normalizedCustomTotal - subtotal, total: normalizedCustomTotal, incomplete, customTotal: true };
+  }
+  if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true, customTotal: false };
 
   const subtotal = activeItems.reduce((sum, item) => {
     if (item.unitPrice === null || item.quantity === null) return sum;
     return sum + item.unitPrice * item.quantity;
   }, 0);
   const hasAmount = activeItems.some(item => item.unitPrice !== null && item.quantity !== null);
-  if (!hasAmount) return { subtotal: null, tax: null, total: null, incomplete: false };
+  if (!hasAmount) return { subtotal: null, tax: null, total: null, incomplete: false, customTotal: false };
   const tax = Math.round(subtotal * 0.05);
-  return { subtotal, tax, total: subtotal + tax, incomplete: false };
+  return { subtotal, tax, total: subtotal + tax, incomplete: false, customTotal: false };
 }

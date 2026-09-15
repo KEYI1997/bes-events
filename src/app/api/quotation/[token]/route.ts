@@ -45,6 +45,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
       productName: product.name,
       productPriceNote: product.price_note,
       quotationItems: stored?.publicItems || stored?.items,
+      customTotal: stored?.publicItems ? stored?.publicCustomTotal ?? null : stored?.customTotal ?? null,
       quotationRevision: stored?.publicRevision || stored?.revision || 1,
     });
     const filename = `報價單-${sanitize(order.customer_name)}-${sanitize(product.name)}.pdf`;

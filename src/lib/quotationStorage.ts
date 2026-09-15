@@ -1,4 +1,4 @@
-import { normalizeQuotationItems } from '@/lib/quotationDraft';
+import { normalizeCustomQuotationTotal, normalizeQuotationItems } from '@/lib/quotationDraft';
 import type { QuotationLineItem } from '@/lib/types';
 
 type SupabaseClient = ReturnType<typeof import('@/lib/supabase').getServiceClient>;
@@ -7,7 +7,9 @@ export type StoredQuotationDraft = {
   items: QuotationLineItem[];
   revision: number;
   updatedAt: string | null;
+  customTotal?: number | null;
   publicItems?: QuotationLineItem[];
+  publicCustomTotal?: number | null;
   publicRevision?: number;
   sentRevision?: number;
 };
@@ -24,7 +26,9 @@ export async function loadStoredQuotationDraft(supabase: SupabaseClient, orderId
       items: normalizeQuotationItems(parsed.items),
       revision: Math.max(1, Number(parsed.revision) || 1),
       updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null,
+      customTotal: normalizeCustomQuotationTotal(parsed.customTotal),
       publicItems: parsed.publicItems ? normalizeQuotationItems(parsed.publicItems) : undefined,
+      publicCustomTotal: normalizeCustomQuotationTotal(parsed.publicCustomTotal),
       publicRevision: parsed.publicRevision ? Math.max(1, Number(parsed.publicRevision)) : undefined,
       sentRevision: parsed.sentRevision ? Math.max(1, Number(parsed.sentRevision)) : undefined,
     };

@@ -71,7 +71,7 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
   if (!product?.name) throw new Error('找不到訂單產品資料');
   const quotationItems = stored
     ? normalizeQuotationItems(stored.items)
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date);
   const pdf = await buildQuotationPdf({
     orderCode: order.order_code,
     customerName: order.customer_name,
@@ -85,6 +85,7 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
     productName: product.name,
     productPriceNote: product.price_note,
     quotationItems,
+    customTotal: stored?.customTotal ?? null,
     quotationRevision: stored?.revision || 1,
   });
   return { pdf, product, quotationItems };
@@ -190,6 +191,7 @@ export async function POST(request: NextRequest) {
         revision: stored?.revision || 1,
         updatedAt: stored?.updatedAt || null,
         publicItems: quotationItems,
+        publicCustomTotal: stored?.customTotal ?? null,
         publicRevision: stored?.revision || 1,
         sentRevision: stored?.revision || 1,
       });

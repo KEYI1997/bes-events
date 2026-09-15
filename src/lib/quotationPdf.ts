@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import { type QuotationOrderData } from '@/lib/quotationWorkbook';
-import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
+import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems, quotationActivityDays } from '@/lib/quotationDraft';
 import type { QuotationLineItem } from '@/lib/types';
 
 const PAGE_WIDTH = 595.28;
@@ -30,7 +30,7 @@ function drawCell(doc: PDFKit.PDFDocument, value: string, x: number, y: number, 
   const textHeight = doc.heightOfString(value || ' ', { width: width - 8, ...textOptions });
   doc.text(value, x + 4, y + Math.max(2, (height - textHeight) / 2), { width: width - 8, height: height - 3, ellipsis: true, lineBreak: true, ...textOptions });
 }
-export type QuotationPdfData = QuotationOrderData & { customerEmail?: string | null; note?: string | null; quotationItems?: QuotationLineItem[] | null; quotationRevision?: number | null };
+export type QuotationPdfData = QuotationOrderData & { customerEmail?: string | null; note?: string | null; quotationItems?: QuotationLineItem[] | null; customTotal?: number | null; quotationRevision?: number | null };
 
 export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer> {
   const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansTC-Regular.otf');
@@ -50,10 +50,11 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   doc.moveTo(MARGIN, 66).lineTo(PAGE_WIDTH - MARGIN, 66).lineWidth(1.1).strokeColor(BRAND).stroke();
   let y = 76;
   const labelW = 56; const valueW = (CONTENT_WIDTH - labelW * 2) / 2; const infoH = 21;
+  const activityDays = quotationActivityDays(order.borrowDate, order.returnDate);
   const customerRows: Array<[string, string, string, string]> = [
     ['客戶名稱', order.customerName, '聯絡電話', formatPhone(order.customerPhone)],
     ['Email', order.customerEmail || '', '活動名稱', order.eventName || ''],
-    ['服務日期', order.borrowDate === order.returnDate ? formatDate(order.borrowDate) : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`, '報價編號', `${order.orderCode || ''}${order.quotationRevision ? ` / v${order.quotationRevision}` : ''}`],
+    ['服務日期', `${order.borrowDate === order.returnDate ? formatDate(order.borrowDate) : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`}${activityDays > 1 ? `（${activityDays} 日）` : ''}`, '報價編號', `${order.orderCode || ''}${order.quotationRevision ? ` / v${order.quotationRevision}` : ''}`],
   ];
   for (const [l1, v1, l2, v2] of customerRows) {
     drawCell(doc, l1, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.5, fillColor: BRAND });
@@ -62,7 +63,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     drawCell(doc, v2, MARGIN + labelW * 2 + valueW, y, valueW, infoH, { fontSize: 7.5 }); y += infoH;
   }
   y += 8;
-  const quotationItems = order.quotationItems ? normalizeQuotationItems(order.quotationItems) : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note);
+  const quotationItems = order.quotationItems ? normalizeQuotationItems(order.quotationItems) : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note, order.borrowDate, order.returnDate);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
   const relaxedLayout = visibleItems.length <= 4;
   const columns = [215, 78, 48, 94, CONTENT_WIDTH - 215 - 78 - 48 - 94];
@@ -74,10 +75,10 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), lineTotal === null ? '' : money(lineTotal), item.note];
     x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], 21, { align: i === 0 || i === 4 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += 21;
   });
-  const { subtotal: itemSubtotal, tax, total } = calculateQuotationTotals(quotationItems);
+  const { subtotal: itemSubtotal, tax, total, customTotal } = calculateQuotationTotals(quotationItems, order.customTotal ?? null);
   const summaryLabelX = MARGIN + 300; const summaryLabelW = 76; const summaryValueW = CONTENT_WIDTH - 300 - summaryLabelW;
   y += 6;
-  [['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal)], ['營業稅 5%', tax === null ? '' : money(tax)], ['含稅總計', total === null ? '' : money(total)]].forEach(([label, value], i) => { const h = i === 2 ? 24 : 19; drawCell(doc, label, summaryLabelX, y, summaryLabelW, h, { background: i === 2 ? BRAND : SOFT, fillColor: i === 2 ? '#FFFFFF' : BRAND, align: 'center', fontSize: 7.5 }); drawCell(doc, value, summaryLabelX + summaryLabelW, y, summaryValueW, h, { align: 'right', fontSize: i === 2 ? 10 : 7.5, background: i === 2 ? '#FFF9F4' : undefined, fillColor: i === 2 ? BRAND : INK }); y += h; });
+  [['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal)], ['營業稅 5%', tax === null ? '' : money(tax)], [customTotal ? '含稅總計（自定）' : '含稅總計', total === null ? '' : money(total)]].forEach(([label, value], i) => { const h = i === 2 ? 24 : 19; drawCell(doc, label, summaryLabelX, y, summaryLabelW, h, { background: i === 2 ? BRAND : SOFT, fillColor: i === 2 ? '#FFFFFF' : BRAND, align: 'center', fontSize: 7.5 }); drawCell(doc, value, summaryLabelX + summaryLabelW, y, summaryValueW, h, { align: 'right', fontSize: i === 2 ? 10 : 7.5, background: i === 2 ? '#FFF9F4' : undefined, fillColor: i === 2 ? BRAND : INK }); y += h; });
 
   const sectionY = y + (relaxedLayout ? 16 : 11);
   doc.moveTo(MARGIN, sectionY - 5).lineTo(PAGE_WIDTH - MARGIN, sectionY - 5).lineWidth(0.8).strokeColor(BRAND).stroke();

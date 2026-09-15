@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateQuotationTotals, createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
+import { calculateQuotationTotals, createDefaultQuotationItems, normalizeCustomQuotationTotal, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
 import { loadStoredQuotationDraft, saveStoredQuotationDraft } from '@/lib/quotationStorage';
 
@@ -29,7 +29,7 @@ async function loadDraftOrder(id: string) {
   const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('orders')
-    .select('id, status, quantity, event_name, products(name, price_note)')
+    .select('id, status, quantity, borrow_date, return_date, event_name, note, products(name, price_note)')
     .eq('id', id)
     .single();
   return { supabase, order: Array.isArray(data) ? data[0] : data, error };
@@ -49,12 +49,13 @@ export async function GET(request: NextRequest) {
   const stored = await loadStoredQuotationDraft(getServiceClient(), id);
   const items = stored
     ? stored.items
-    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note);
+    : createDefaultQuotationItems(product.name, product.price_note, order.quantity, order.event_name, order.note, order.borrow_date, order.return_date);
   return NextResponse.json({
     items,
     revision: stored?.revision || 1,
     updatedAt: stored?.updatedAt || null,
-    totals: calculateQuotationTotals(items),
+    customTotal: stored?.customTotal ?? null,
+    totals: calculateQuotationTotals(items, stored?.customTotal ?? null),
   });
 }
 
@@ -66,6 +67,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const items = normalizeQuotationItems(body.items);
+    const customTotal = normalizeCustomQuotationTotal(body.customTotal);
     const { supabase, order, error } = await loadDraftOrder(id);
     if (error || !order) return NextResponse.json({ error: error?.message || '找不到訂單' }, { status: 404 });
     if (order.status === '已取消') return NextResponse.json({ error: '已取消的訂單不可編輯報價單' }, { status: 400 });
@@ -78,6 +80,7 @@ export async function PUT(request: NextRequest) {
       items,
       revision,
       updatedAt,
+      customTotal,
       sentRevision: undefined,
     });
     const { error: updateError } = await supabase.from('orders').update({
@@ -90,7 +93,8 @@ export async function PUT(request: NextRequest) {
       items,
       revision,
       updatedAt,
-      totals: calculateQuotationTotals(items),
+      customTotal,
+      totals: calculateQuotationTotals(items, customTotal),
     });
   } catch (draftError) {
     return NextResponse.json({ error: draftError instanceof Error ? draftError.message : '儲存報價單失敗' }, { status: 400 });
