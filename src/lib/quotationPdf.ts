@@ -115,27 +115,29 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   terms.forEach((term, i) => { doc.fillColor(BRAND).fontSize(termFontSize).text(`${i + 1}.`, MARGIN, termY, { width: 17, align: 'right' }); doc.fillColor(INK).fontSize(termFontSize).text(term, MARGIN + 22, termY, { width: CONTENT_WIDTH - 22, lineGap: 0 }); termY += termStep; });
 
   const signatureTop = termY + (relaxedLayout ? 10 : 6); const signatureGap = 12; const signatureWidth = (CONTENT_WIDTH - signatureGap) / 2;
-  const signatureHeight = 108;
+  const signatureHeight = relaxedLayout ? 118 : 108;
   doc.roundedRect(MARGIN, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
   doc.roundedRect(MARGIN + signatureWidth + signatureGap, signatureTop, signatureWidth, signatureHeight, 3).lineWidth(0.6).strokeColor(BORDER).stroke();
   doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('廠商簽章', MARGIN + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
   doc.fillColor(BRAND).fontSize(relaxedLayout ? 10 : 9).text('客戶簽章', MARGIN + signatureWidth + signatureGap + 8, signatureTop + 10, { width: signatureWidth - 16, align: 'center' });
-  const stampSize: [number, number] = relaxedLayout ? [122, 78] : [111, 65];
+  const stampScale = 1.2;
+  const stampSize: [number, number] = relaxedLayout ? [122 * stampScale, 78 * stampScale] : [111 * stampScale, 65 * stampScale];
   const stampTop = signatureTop + (relaxedLayout ? 22 : 24);
   if (fs.existsSync(stampPath)) doc.image(stampPath, MARGIN + (signatureWidth - stampSize[0]) / 2, stampTop, { fit: stampSize, align: 'center', valign: 'center' });
   const customerSignX = MARGIN + signatureWidth + signatureGap + 18;
   const signatureLineY = signatureTop + 82;
   doc.moveTo(customerSignX, signatureLineY).lineTo(customerSignX + signatureWidth - 36, signatureLineY).lineWidth(0.5).strokeColor(BORDER).stroke();
   doc.fillColor(MUTED).fontSize(relaxedLayout ? 7 : 6.2).text('簽名／蓋章', customerSignX, signatureLineY + 4, { width: signatureWidth - 36, align: 'center' });
+  const remittanceScale = 1.3;
   const bankTop = signatureTop + signatureHeight + 12;
-  const bankHeight = relaxedLayout ? 42 : 30;
+  const bankHeight = relaxedLayout ? 55 : 42;
   doc.roundedRect(MARGIN, bankTop, CONTENT_WIDTH, bankHeight, 3).fill(SOFT);
-  doc.fillColor(BRAND).fontSize(relaxedLayout ? 8 : 7).text('匯款資訊', MARGIN + 8, bankTop + (relaxedLayout ? 10 : 7), { width: 56 });
-  doc.fillColor(INK).fontSize(relaxedLayout ? 7.2 : 6.4).text('戶名：境曜有限公司｜國泰世華銀行（013）古亭分行｜帳號：030035016755', MARGIN + 66, bankTop + (relaxedLayout ? 9 : 6), { width: CONTENT_WIDTH - 76 });
-  doc.fillColor(MUTED).fontSize(relaxedLayout ? 6.5 : 5.8).text('匯款後請提供帳號末五碼，方便工作人員核對。', MARGIN + 66, bankTop + (relaxedLayout ? 25 : 18), { width: CONTENT_WIDTH - 76 });
-  const footerY = bankTop + bankHeight + (relaxedLayout ? 12 : 10);
-  doc.moveTo(MARGIN, footerY - 7).lineTo(PAGE_WIDTH - MARGIN, footerY - 7).lineWidth(0.5).strokeColor(BORDER).stroke();
-  doc.fillColor(MUTED).fontSize(6.2).text('境曜有限公司｜電話 0912-727-596｜Email Jingyaoactivities@gmail.com｜官方 LINE @040kolkv', MARGIN, footerY, { width: CONTENT_WIDTH, align: 'center', lineBreak: false });
+  doc.fillColor(BRAND).fontSize((relaxedLayout ? 8 : 7) * remittanceScale).text('匯款資訊', MARGIN + 8, bankTop + (relaxedLayout ? 11 : 9), { width: 56 });
+  doc.fillColor(INK).fontSize((relaxedLayout ? 7.2 : 6.4) * remittanceScale).text('戶名：境曜有限公司｜國泰世華銀行（013）古亭分行｜帳號：030035016755', MARGIN + 66, bankTop + (relaxedLayout ? 10 : 8), { width: CONTENT_WIDTH - 76 });
+  doc.fillColor(MUTED).fontSize((relaxedLayout ? 6.5 : 5.8) * remittanceScale).text('匯款後請提供帳號末五碼，方便工作人員核對。', MARGIN + 66, bankTop + (relaxedLayout ? 30 : 23), { width: CONTENT_WIDTH - 76 });
+  const footerY = bankTop + bankHeight + (relaxedLayout ? 16 : 13);
+  doc.moveTo(MARGIN, footerY - 8).lineTo(PAGE_WIDTH - MARGIN, footerY - 8).lineWidth(0.5).strokeColor(BORDER).stroke();
+  doc.fillColor(MUTED).fontSize(6.2 * remittanceScale).text('境曜有限公司｜電話 0912-727-596｜Email Jingyaoactivities@gmail.com｜官方 LINE @040kolkv', MARGIN, footerY, { width: CONTENT_WIDTH, align: 'center', lineBreak: false });
   doc.end();
   return completed;
 }
