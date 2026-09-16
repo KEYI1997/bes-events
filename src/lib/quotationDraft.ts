@@ -6,7 +6,7 @@ const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
 const LAUNCH_CEREMONY_CATEGORY = '啟動儀式';
 const LAUNCH_CONTROL_FEE = 3500;
 const LAUNCH_CONTROL_FEE_NOTE = '如單日商品價格低於一萬時，將另外收取控制費';
-const REMOVED_LAUNCH_NOTES = ['提前進場係數 1.3', '多日租用已含提前進場加成 ×1.3'];
+const REMOVED_LAUNCH_NOTES = ['提前進場係數 1.3'];
 
 export function quotationActivityDays(borrowDate?: string | null, returnDate?: string | null) {
   if (!borrowDate || !returnDate) return 1;

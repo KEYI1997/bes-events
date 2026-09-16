@@ -46,11 +46,11 @@ test('自訂含稅總價會保留原始小計與稅額並列出專案優惠', ()
     customTotal: true,
   });
 });
-test('啟動儀式會移除已保存的提前進場係數備註', () => {
+test('啟動儀式會移除新提前進場係數並保留舊版備註', () => {
   const items = applyQuotationPricingRules([
     { id: 'product', label: '啟動柱', unitPrice: 1500, quantity: 5, activityDays: 5, dayMultiplier: 1.3, note: '提前進場係數 1.3；多日租用已含提前進場加成 ×1.3' },
   ], '啟動儀式', 5, '2026-10-01', '2026-10-05');
 
   expect(items[0].note).not.toContain('提前進場係數 1.3');
-  expect(items[0].note).not.toContain('多日租用已含提前進場加成 ×1.3');
+  expect(items[0].note).toContain('多日租用已含提前進場加成 ×1.3');
 });
