@@ -166,8 +166,8 @@ export async function POST(request: NextRequest) {
           from: '境曜活動通知 <noreply@besevent.com>',
           replyTo: 'Jingyaoactivities@gmail.com',
           to: [order.customer_email!.trim()],
-          subject: '【境曜有限公司】活動服務報價單，敬請確認並簽回，感謝您。',
-          html: `<p>${order.customer_name}，您好</p><p>報價內容已依目前確認之活動需求、日期及服務項目製作，如有需要調整之處，歡迎與我們聯繫。</p><p><strong>若確認報價內容無誤，請於報價單簽名／用印後回傳。本公司收到簽回之報價單後，始視為訂單正式成立，並進行後續檔期保留及相關作業安排。</strong></p><p>如有任何問題，歡迎隨時與我們聯繫，謝謝！</p><br><p>境曜有限公司 | Bright Events Services｜BES<br>郵件：<a href="mailto:Jingyaoactivities@gmail.com">Jingyaoactivities@gmail.com</a><br>電話：0912727596<br>LINE：<a href="https://lin.ee/q9CrPsv">@040kolkv</a></p>`,
+          subject: '【境曜有限公司】活動服務報價單｜敬請確認並簽回',
+          html: `<p>${order.customer_name} 您好：</p><p>感謝您對境曜有限公司的詢問與信任。</p><p>附件為本次活動之<strong>服務報價單</strong>，報價內容已依目前確認之活動需求、日期及服務項目製作，敬請查收。</p><p>若報價內容確認無誤，<strong>請於報價單簽名／用印後回傳予本公司</strong>。本公司收到簽回之報價單並確認後，始視為訂單正式成立，並進行後續檔期保留及相關作業安排。</p><p>後續如需確認活動內容、執行細節或掌握活動相關訊息，也歡迎加入我們的 <strong>LINE 官方帳號</strong>。透過 LINE 聯繫可更即時地進行活動事項確認與後續溝通。<br><strong>LINE 官方帳號：@040kolkv</strong>【<a href="https://lin.ee/q9CrPsv">加入 BES LINE 官方帳號</a>】</p><p>如對報價內容有任何疑問，或有項目需要調整，歡迎隨時與我們聯繫，我們將協助您確認。</p><p>感謝您的配合，期待與您共同完成本次活動。</p><br><p>境曜有限公司 | <strong>Bright Events Services</strong></p>`,
           attachments: [{ filename, content: pdf }],
         });
         if (emailError) emailResult.error = emailError.message;
