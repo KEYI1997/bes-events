@@ -954,8 +954,14 @@ export default function OrdersPage() {
                     <div className="w-full sm:w-72 rounded-xl border bg-stone-50 p-4 space-y-2 text-sm">
                       <div className="flex justify-between"><span className="text-gray-500">未稅小計</span><span>{quotationTotals.subtotal === null ? '—' : `NT$ ${quotationTotals.subtotal.toLocaleString('zh-TW')}`}</span></div>
                       <div className="flex justify-between"><span className="text-gray-500">營業稅 5%</span><span>{quotationTotals.tax === null ? '—' : `NT$ ${quotationTotals.tax.toLocaleString('zh-TW')}`}</span></div>
-                      <div className="flex justify-between border-t pt-2 text-base font-bold" style={{ color: '#8E5F43' }}><span>{quotationTotals.customTotal ? '含稅總計（自定）' : '含稅總計'}</span><span>{quotationTotals.total === null ? '—' : `NT$ ${quotationTotals.total.toLocaleString('zh-TW')}`}</span></div>
-                      {quotationTotals.incomplete && <p className="text-xs text-amber-700 pt-1">{quotationTotals.customTotal ? '商品明細尚有未填金額，但 PDF 會採用自定總價。' : '尚有項目只填了單價或數量，總計會先保持空白。'}</p>}
+                      {quotationTotals.customTotal && (
+                        <div className="flex justify-between border-t border-stone-200 pt-2" style={{ color: '#8E5F43' }}>
+                          <span>專案優惠</span>
+                          <span className="tabular-nums">{quotationTotals.projectDiscount === null ? '—' : `${quotationTotals.projectDiscount >= 0 ? '- ' : '+ '}NT$ ${Math.abs(quotationTotals.projectDiscount).toLocaleString('zh-TW')}`}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between border-t pt-2 text-base font-bold" style={{ color: '#8E5F43' }}><span>含稅總計</span><span>{quotationTotals.total === null ? '—' : `NT$ ${quotationTotals.total.toLocaleString('zh-TW')}`}</span></div>
+                      {quotationTotals.incomplete && <p className="text-xs text-amber-700 pt-1">{quotationTotals.customTotal ? '商品明細尚有未填金額，但 PDF 會採用手動設定的含稅總價。' : '尚有項目只填了單價或數量，總計會先保持空白。'}</p>}
                     </div>
                   </div>
 

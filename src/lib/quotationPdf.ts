@@ -79,10 +79,30 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), days, lineTotal === null ? '' : money(lineTotal), item.note];
     x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], 21, { align: i === 0 || i === 5 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += 21;
   });
-  const { subtotal: itemSubtotal, tax, total, customTotal } = calculateQuotationTotals(quotationItems, order.customTotal ?? null);
+  const { subtotal: itemSubtotal, tax, total, customTotal, projectDiscount } = calculateQuotationTotals(quotationItems, order.customTotal ?? null);
   const summaryLabelX = MARGIN + 300; const summaryLabelW = 76; const summaryValueW = CONTENT_WIDTH - 300 - summaryLabelW;
+  const projectDiscountText = projectDiscount === null
+    ? ''
+    : `${projectDiscount >= 0 ? '- ' : '+ '}${money(Math.abs(projectDiscount))}`;
+  const summaryRows: Array<[string, string, boolean]> = customTotal
+    ? [
+        ['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal), false],
+        ['營業稅 5%', tax === null ? '' : money(tax), false],
+        ['專案優惠', projectDiscountText, false],
+        ['含稅總計', total === null ? '' : money(total), true],
+      ]
+    : [
+        ['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal), false],
+        ['營業稅 5%', tax === null ? '' : money(tax), false],
+        ['含稅總計', total === null ? '' : money(total), true],
+      ];
   y += 6;
-  [['未稅小計', itemSubtotal === null ? '' : money(itemSubtotal)], ['營業稅 5%', tax === null ? '' : money(tax)], [customTotal ? '含稅總計（自定）' : '含稅總計', total === null ? '' : money(total)]].forEach(([label, value], i) => { const h = i === 2 ? 24 : 19; drawCell(doc, label, summaryLabelX, y, summaryLabelW, h, { background: i === 2 ? BRAND : SOFT, fillColor: i === 2 ? '#FFFFFF' : BRAND, align: 'center', fontSize: 7.5 }); drawCell(doc, value, summaryLabelX + summaryLabelW, y, summaryValueW, h, { align: 'right', fontSize: i === 2 ? 10 : 7.5, background: i === 2 ? '#FFF9F4' : undefined, fillColor: i === 2 ? BRAND : INK }); y += h; });
+  summaryRows.forEach(([label, value, isTotal]) => {
+    const h = isTotal ? 24 : 19;
+    drawCell(doc, label, summaryLabelX, y, summaryLabelW, h, { background: isTotal ? BRAND : SOFT, fillColor: isTotal ? '#FFFFFF' : BRAND, align: 'center', fontSize: 7.5 });
+    drawCell(doc, value, summaryLabelX + summaryLabelW, y, summaryValueW, h, { align: 'right', fontSize: isTotal ? 10 : 7.5, background: isTotal ? '#FFF9F4' : undefined, fillColor: isTotal ? BRAND : INK });
+    y += h;
+  });
 
   const sectionY = y + (relaxedLayout ? 16 : 11);
   doc.moveTo(MARGIN, sectionY - 5).lineTo(PAGE_WIDTH - MARGIN, sectionY - 5).lineWidth(0.8).strokeColor(BRAND).stroke();

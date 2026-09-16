@@ -208,15 +208,24 @@ export function calculateQuotationTotals(items: QuotationLineItem[], customTotal
     (item.unitPrice === null) !== (item.quantity === null)
   );
   const normalizedCustomTotal = normalizeCustomQuotationTotal(customTotal);
-  if (normalizedCustomTotal !== null) {
-    const subtotal = Math.round(normalizedCustomTotal / 1.05);
-    return { subtotal, tax: normalizedCustomTotal - subtotal, total: normalizedCustomTotal, incomplete, customTotal: true };
-  }
-  if (incomplete) return { subtotal: null, tax: null, total: null, incomplete: true, customTotal: false };
-
   const subtotal = activeItems.reduce((sum, item) => sum + (quotationLineAmount(item) || 0), 0);
   const hasAmount = activeItems.some(item => item.unitPrice !== null && item.quantity !== null);
-  if (!hasAmount) return { subtotal: null, tax: null, total: null, incomplete: false, customTotal: false };
-  const tax = Math.round(subtotal * 0.05);
-  return { subtotal, tax, total: subtotal + tax, incomplete: false, customTotal: false };
+  const calculatedSubtotal = incomplete || !hasAmount ? null : subtotal;
+  const calculatedTax = calculatedSubtotal === null ? null : Math.round(calculatedSubtotal * 0.05);
+  const calculatedTotal = calculatedSubtotal === null || calculatedTax === null ? null : calculatedSubtotal + calculatedTax;
+
+  if (normalizedCustomTotal !== null) {
+    return {
+      subtotal: calculatedSubtotal,
+      tax: calculatedTax,
+      total: normalizedCustomTotal,
+      projectDiscount: calculatedTotal === null ? null : calculatedTotal - normalizedCustomTotal,
+      incomplete,
+      customTotal: true,
+    };
+  }
+  if (incomplete || !hasAmount) {
+    return { subtotal: null, tax: null, total: null, projectDiscount: null, incomplete, customTotal: false };
+  }
+  return { subtotal: calculatedSubtotal, tax: calculatedTax, total: calculatedTotal, projectDiscount: null, incomplete: false, customTotal: false };
 }

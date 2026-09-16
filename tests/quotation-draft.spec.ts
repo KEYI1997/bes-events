@@ -32,3 +32,16 @@ test('報價數量只接受正整數', () => {
   expect(() => normalizeQuotationItems([{ id: 'item-1', label: '運費', unitPrice: 1000, quantity: 1.5, note: '' }])).toThrow('數量必須為正整數');
   expect(normalizeQuotationItems([{ id: 'item-1', label: '運費', unitPrice: 1000, quantity: 2, note: '' }])[0].quantity).toBe(2);
 });
+test('自訂含稅總價會保留原始小計與稅額並列出專案優惠', () => {
+  const totals = calculateQuotationTotals([
+    { id: 'product', label: '活動服務', unitPrice: 50952, quantity: 1, activityDays: 1, dayMultiplier: 1, note: '' },
+  ], 50000);
+
+  expect(totals).toMatchObject({
+    subtotal: 50952,
+    tax: 2548,
+    total: 50000,
+    projectDiscount: 3500,
+    customTotal: true,
+  });
+});
