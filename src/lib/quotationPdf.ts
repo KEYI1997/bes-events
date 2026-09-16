@@ -69,15 +69,23 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   const quotationItems = applyQuotationPricingRules(baseQuotationItems, order.productCategory, order.quantity, order.borrowDate, order.returnDate);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
   const relaxedLayout = visibleItems.length <= 4;
-  const columns = [185, 70, 40, 48, 82, CONTENT_WIDTH - 185 - 70 - 40 - 48 - 82];
-  const headers = ['項目／服務內容', '單價', '數量', '天數', '金額', '備註'];
+  const columns = [175, 64, 38, 62, 76, CONTENT_WIDTH - 175 - 64 - 38 - 62 - 76];
+  const headers = ['項目／服務內容', '單價', '數量', '計價天數／係數', '金額', '備註'];
   let x = MARGIN;
   headers.forEach((header, i) => { drawCell(doc, header, x, y, columns[i], 22, { background: BRAND, fillColor: '#FFFFFF', align: 'center', fontSize: 7.5 }); x += columns[i]; }); y += 22;
   visibleItems.forEach((item, rowIndex) => {
     const lineTotal = quotationLineAmount(item);
     const days = item.activityDays ? `${item.activityDays}${item.dayMultiplier && item.dayMultiplier > 1 ? ` ×${item.dayMultiplier}` : ''}` : '';
-    const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), days, lineTotal === null ? '' : money(lineTotal), item.note];
-    x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], 21, { align: i === 0 || i === 5 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += 21;
+    const eventName = order.eventName?.trim();
+    const note = item.note
+      .split(/[；\n]+/)
+      .map(value => value.trim())
+      .filter(value => value && !(item.id === 'product' && eventName && value === eventName))
+      .join('\n');
+    const noteHeight = doc.fontSize(7.2).heightOfString(note || ' ', { width: columns[5] - 8, lineGap: 0 });
+    const rowHeight = Math.max(21, Math.ceil(noteHeight + 5));
+    const row = [item.label, item.unitPrice === null ? '' : money(item.unitPrice), item.quantity === null ? '' : String(item.quantity), days, lineTotal === null ? '' : money(lineTotal), note];
+    x = MARGIN; row.forEach((value, i) => { drawCell(doc, value, x, y, columns[i], rowHeight, { align: i === 0 || i === 5 ? 'left' : 'center', fontSize: 7.2, background: rowIndex % 2 ? '#FCFAF8' : undefined }); x += columns[i]; }); y += rowHeight;
   });
   const { subtotal: itemSubtotal, tax, total, customTotal, projectDiscount } = calculateQuotationTotals(quotationItems, order.customTotal ?? null);
   const summaryLabelX = MARGIN + 300; const summaryLabelW = 76; const summaryValueW = CONTENT_WIDTH - 300 - summaryLabelW;
@@ -106,8 +114,10 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
 
   const sectionY = y + (relaxedLayout ? 16 : 11);
   doc.moveTo(MARGIN, sectionY - 5).lineTo(PAGE_WIDTH - MARGIN, sectionY - 5).lineWidth(0.8).strokeColor(BRAND).stroke();
-  doc.fillColor(INK).fontSize(relaxedLayout ? 14 : 12).text('回簽前請詳閱說明', MARGIN, sectionY, { width: CONTENT_WIDTH, align: 'center' });
-  doc.fillColor(MUTED).fontSize(8).text('本頁為報價單之一部分，簽署或付款即表示同意以下約定。', MARGIN, sectionY + (relaxedLayout ? 22 : 18), { width: CONTENT_WIDTH, align: 'center' });
+  const termsTextX = MARGIN + 22;
+  const termsTextWidth = CONTENT_WIDTH - 22;
+  doc.fillColor(INK).fontSize(relaxedLayout ? 14 : 12).text('回簽前請詳閱說明', termsTextX, sectionY, { width: termsTextWidth, align: 'left' });
+  doc.fillColor(MUTED).fontSize(8).text('本頁為報價單之一部分，簽署或付款即表示同意以下約定。', termsTextX, sectionY + (relaxedLayout ? 22 : 18), { width: termsTextWidth, align: 'left' });
   const terms = ['本報價依目前需求提供，內容如有變更需另行報價，報價有效期限為 7 日。', '簽署或支付訂金後視為訂單成立，訂金 50%，尾款於活動前或當日結清。', '活動日前 30 日取消全額退款，14–30 日退 50%，14 日內取消恕不退款。', '改期以一次為限，需於活動日前 14 日提出。', '活動內容須於 7 日前確認，現場執行以報價單內容為準，新增需求另計。', '若因客戶因素（延遲、流程變更等）導致超時，將酌收延時費用。', '設備租借期間應妥善保管，如有損壞或遺失需照價賠償。', '客戶需準時提供資料，如延誤導致執行影響，本公司不負相關責任。', '天災等不可抗力因素，雙方另行協議處理。'];
   let termY = sectionY + (relaxedLayout ? 39 : 32);
   const termStep = relaxedLayout ? 19 : 16;

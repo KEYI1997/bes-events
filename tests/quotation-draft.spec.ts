@@ -6,6 +6,7 @@ test('啟動儀式多日租用會分開顯示天數並套用 1.3 加成', () => 
   const product = items.find(item => item.id === 'product');
 
   expect(product).toMatchObject({ quantity: 1, activityDays: 2, dayMultiplier: 1.3 });
+  expect(product?.note).toContain('提前進場係數 1.3');
   expect(quotationLineAmount(product!)).toBe(26000);
   expect(items.find(item => item.id === 'launch-control-fee')).toBeUndefined();
 });
