@@ -6,7 +6,7 @@ const STANDARD_LABELS = ['運費', '人員交通費', '其他加購'];
 const LAUNCH_CEREMONY_CATEGORY = '啟動儀式';
 const LAUNCH_CONTROL_FEE = 3500;
 const LAUNCH_CONTROL_FEE_NOTE = '如單日商品價格低於一萬時，將另外收取控制費';
-const LAUNCH_MULTIDAY_NOTE = '提前進場係數 1.3';
+const REMOVED_LAUNCH_NOTES = ['提前進場係數 1.3', '多日租用已含提前進場加成 ×1.3'];
 
 export function quotationActivityDays(borrowDate?: string | null, returnDate?: string | null) {
   if (!borrowDate || !returnDate) return 1;
@@ -65,6 +65,10 @@ function appendNote(note: string, addition: string) {
   return parts.includes(addition) ? parts.join('；') : [...parts, addition].join('；');
 }
 
+function removeNotes(note: string, removals: string[]) {
+  return note.split(/[；\n]+/).map(value => value.trim()).filter(value => value && !removals.includes(value)).join('；');
+}
+
 export function quotationLineAmount(item: QuotationLineItem) {
   if (item.unitPrice === null || item.quantity === null) return null;
   const activityDays = positiveInteger(item.activityDays, 1);
@@ -90,8 +94,8 @@ export function applyQuotationPricingRules(
   product.dayMultiplier = isLaunchCeremony && activityDays > 1 ? 1.3 : 1;
 
   if (isLaunchCeremony) {
+    product.note = removeNotes(product.note, REMOVED_LAUNCH_NOTES);
     product.note = appendNote(product.note, LAUNCH_CONTROL_FEE_NOTE);
-    if (activityDays > 1) product.note = appendNote(product.note, LAUNCH_MULTIDAY_NOTE);
   }
 
   const rest = items.filter(item => item.id !== 'product' && item.id !== 'launch-control-fee');

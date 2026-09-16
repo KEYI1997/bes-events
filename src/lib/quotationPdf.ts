@@ -69,7 +69,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   const quotationItems = applyQuotationPricingRules(baseQuotationItems, order.productCategory, order.quantity, order.borrowDate, order.returnDate);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
   const relaxedLayout = visibleItems.length <= 4;
-  const columns = [175, 64, 38, 62, 76, CONTENT_WIDTH - 175 - 64 - 38 - 62 - 76];
+  const columns = [168, 64, 38, 62, 61, CONTENT_WIDTH - 168 - 64 - 38 - 62 - 61];
   const headers = ['項目／服務內容', '單價', '數量', '計價天數／係數', '金額', '備註'];
   let x = MARGIN;
   headers.forEach((header, i) => { drawCell(doc, header, x, y, columns[i], 22, { background: BRAND, fillColor: '#FFFFFF', align: 'center', fontSize: 7.5 }); x += columns[i]; }); y += 22;
