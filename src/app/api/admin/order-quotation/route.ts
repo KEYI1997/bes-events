@@ -164,9 +164,10 @@ export async function POST(request: NextRequest) {
         const resend = new Resend(resendKey);
         const { error: emailError } = await resend.emails.send({
           from: '境曜活動通知 <noreply@besevent.com>',
+          replyTo: 'Jingyaoactivities@gmail.com',
           to: [order.customer_email!.trim()],
-          subject: `境曜活動報價單｜${product.name}`,
-          html: `<p>${order.customer_name} 您好：</p><p>您預約「${product.name}」的 PDF 報價單已附於本信，請查收。</p><p>若內容需要調整，歡迎回覆本信或透過官方 LINE 與我們聯繫。</p><p>境曜有限公司</p>`,
+          subject: '【境曜有限公司】活動服務報價單，敬請確認並簽回，感謝您。',
+          html: `<p>${order.customer_name}，您好</p><p>報價內容已依目前確認之活動需求、日期及服務項目製作，如有需要調整之處，歡迎與我們聯繫。</p><p><strong>若確認報價內容無誤，請於報價單簽名／用印後回傳。本公司收到簽回之報價單後，始視為訂單正式成立，並進行後續檔期保留及相關作業安排。</strong></p><p>如有任何問題，歡迎隨時與我們聯繫，謝謝！</p><br><p>境曜有限公司 | Bright Events Services｜BES<br>郵件：<a href="mailto:Jingyaoactivities@gmail.com">Jingyaoactivities@gmail.com</a><br>電話：0912727596<br>LINE：<a href="https://lin.ee/q9CrPsv">@040kolkv</a></p>`,
           attachments: [{ filename, content: pdf }],
         });
         if (emailError) emailResult.error = emailError.message;
