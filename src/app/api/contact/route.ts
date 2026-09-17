@@ -4,7 +4,6 @@ import { Resend } from "resend";
 import { contactEmailHtml } from "@/lib/emailTemplates";
 import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
 import { productSelectionSummary } from '@/lib/productSelectionSummary';
-import { normalizeTaiwanPhone } from '@/lib/phone';
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +11,10 @@ const resendApiKey = (process.env.RESEND_API_KEY || '').replace(/[\uFEFF\u200B]/
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 function normalizePhone(phone: string) {
-  return normalizeTaiwanPhone(phone);
+  let normalized = phone.replace(/[\s\-()]/g, '');
+  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
+  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
+  return normalized;
 }
 
 export async function POST(request: Request) {
