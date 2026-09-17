@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getServiceClient, supabase } from "@/lib/supabase";
 import { Resend } from "resend";
 import { contactEmailHtml } from "@/lib/emailTemplates";
 import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
 import { productSelectionSummary } from '@/lib/productSelectionSummary';
+import { normalizeTaiwanPhone } from '@/lib/phone';
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,7 @@ const resendApiKey = (process.env.RESEND_API_KEY || '').replace(/[\uFEFF\u200B]/
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 function normalizePhone(phone: string) {
-  let normalized = phone.replace(/[\s\-()]/g, '');
-  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
-  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
-  return normalized;
+  return normalizeTaiwanPhone(phone);
 }
 
 export async function POST(request: Request) {
@@ -70,13 +68,19 @@ export async function POST(request: Request) {
     if (resend) {
       // 取得通知收件人
       let notifyEmails: string[] = ["Jingyaoactivities@gmail.com"];
-      const { data: setting } = await supabase
-        .from("site_content")
-        .select("value")
-        .eq("key", "notification_email")
-        .single();
-      if (setting?.value) {
-        notifyEmails = setting.value.split(",").map((e: string) => e.trim()).filter(Boolean);
+      try {
+        const { data: setting, error: settingError } = await getServiceClient()
+          .from("site_content")
+          .select("value")
+          .eq("key", "notification_email")
+          .maybeSingle();
+        if (settingError) {
+          console.error('Notification email setting error:', settingError);
+        } else if (setting?.value) {
+          notifyEmails = setting.value.split(",").map((e: string) => e.trim()).filter(Boolean);
+        }
+      } catch (settingError) {
+        console.error('Notification email setting error:', settingError);
       }
 
       try {
