@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { getServiceClient } from "@/lib/supabase";
 import { createLineOrderToken } from "@/lib/lineOrderToken";
+import { getTaiwanPhoneVariants, normalizeTaiwanPhone } from '@/lib/phone';
 
 export const dynamic = "force-dynamic";
 
@@ -45,10 +46,7 @@ async function getLineProfile(userId: string) {
 
 // 標準化電話號碼（去除空白、dash、+886 等）
 function normalizePhone(phone: string): string {
-  let p = phone.replace(/[\s\-\(\)]/g, '');
-  if (p.startsWith('+886')) p = '0' + p.slice(4);
-  if (p.startsWith('886')) p = '0' + p.slice(3);
-  return p;
+  return normalizeTaiwanPhone(phone);
 }
 
 function parseAdminPhones(value?: string | null): string[] {
@@ -329,16 +327,7 @@ function buildInquiryCard(inquiry: LineInquiry, index: number) {
 }
 
 function getPhoneVariants(phone: string) {
-  const normalized = normalizePhone(phone);
-  const variants = new Set([normalized, phone]);
-  if (/^09\d{8}$/.test(normalized)) {
-    variants.add(`${normalized.slice(0, 4)}-${normalized.slice(4, 7)}-${normalized.slice(7)}`);
-    variants.add(`${normalized.slice(0, 4)}-${normalized.slice(4)}`);
-    variants.add(`${normalized.slice(0, 4)} ${normalized.slice(4, 7)} ${normalized.slice(7)}`);
-    variants.add(`+886${normalized.slice(1)}`);
-    variants.add(`886${normalized.slice(1)}`);
-  }
-  return [...variants];
+  return getTaiwanPhoneVariants(phone);
 }
 
 async function findBoundCustomer(userId?: string) {
@@ -386,7 +375,7 @@ async function replyRecentOrders(replyToken: string, userId?: string) {
     await replyMessage(replyToken, [
       {
         type: "text",
-        text: "尚未完成手機綁定。\n\n請直接傳送您填寫表單或訂單時使用的手機號碼，例如：0912345678",
+        text: "尚未完成手機綁定。\n\n請直接傳送您填寫表單或訂單時使用的電話號碼（手機或市話），例如：0912345678 或 02-2345-6789",
       },
     ]);
     return;

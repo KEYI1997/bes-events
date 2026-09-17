@@ -6,6 +6,7 @@ import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 import { isSinglePurchaseOnly } from '@/lib/productOptions';
 import Pagination from '@/components/admin/Pagination';
+import { normalizeTaiwanPhone } from '@/lib/phone';
 
 function splitContactDescription(description?: string, savedEventLocation?: string) {
   const lines = (description || '').split('\n');
@@ -212,7 +213,7 @@ export default function ContactsPage() {
       const now = new Date();
       const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
       const timePart = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}${String(now.getMilliseconds()).padStart(3, '0')}`;
-      const normalizedPhone = orderForm.customer_phone.replace(/[\s\-()]/g, '').replace(/^\+886/, '0').replace(/^886/, '0');
+      const normalizedPhone = normalizeTaiwanPhone(orderForm.customer_phone);
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { ...getHeaders(), 'Content-Type': 'application/json' },

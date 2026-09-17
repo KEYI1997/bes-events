@@ -3,6 +3,7 @@ import LineOrderForm from '@/components/LineOrderForm';
 import { getServiceClient, supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 import { parseLineOrderToken } from '@/lib/lineOrderToken';
+import { normalizeTaiwanPhone } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export default async function LineOrderPage({
       products={(data || []) as Product[]}
       initialCustomer={{
         name: boundCustomer?.name || '',
-        phone: boundCustomer?.phone || '',
+        phone: normalizeTaiwanPhone(boundCustomer?.phone),
       }}
     />
   );

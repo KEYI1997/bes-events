@@ -5,6 +5,7 @@ import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, Fil
 import type { Product, Order, QuotationLineItem } from '@/lib/types';
 import { calculateQuotationTotals, quotationActivityDays, quotationLineAmount } from '@/lib/quotationDraft';
 import Pagination from '@/components/admin/Pagination';
+import { normalizeTaiwanPhone } from '@/lib/phone';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -14,13 +15,6 @@ const STATUS_COLORS: Record<string, string> = {
   '已結案': 'bg-purple-100 text-purple-700',
   '已取消': 'bg-gray-100 text-gray-500',
 };
-
-function normalizeCustomerPhone(phone: string) {
-  let normalized = phone.replace(/[\s\-()]/g, '');
-  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
-  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
-  return normalized;
-}
 
 const EMPTY_ORDER = {
   product_id: '',
@@ -197,7 +191,7 @@ export default function OrdersPage() {
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
     const normalizedForm = {
       ...form,
-      customer_phone: normalizeCustomerPhone(form.customer_phone),
+      customer_phone: normalizeTaiwanPhone(form.customer_phone),
     };
     if (editing) {
       await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: normalizedForm }) });

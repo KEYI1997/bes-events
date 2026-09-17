@@ -5,6 +5,7 @@ import { buildQuotationPdf } from '@/lib/quotationPdf';
 import { createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
 import { loadStoredQuotationDraft, saveStoredQuotationDraft, type StoredQuotationDraft } from '@/lib/quotationStorage';
+import { getTaiwanPhoneVariants, normalizeTaiwanPhone } from '@/lib/phone';
 
 export const runtime = 'nodejs';
 
@@ -47,13 +48,6 @@ function getProductRecord(products: ProductResult) {
 
 function sanitizeFilenamePart(value: string) {
   return value.replace(/[\\/:*?"<>|\r\n]/g, '_').trim().slice(0, 40) || '客戶';
-}
-
-function normalizePhone(phone?: string | null) {
-  let normalized = (phone || '').replace(/[\s\-()]/g, '');
-  if (normalized.startsWith('+886')) normalized = `0${normalized.slice(4)}`;
-  if (normalized.startsWith('886')) normalized = `0${normalized.slice(3)}`;
-  return normalized;
 }
 
 async function loadOrder(orderId: string) {
@@ -137,10 +131,16 @@ export async function POST(request: NextRequest) {
     const stored = await loadStoredQuotationDraft(supabase, order.id);
     const { pdf, product, quotationItems } = await generateOrderPdf(order, stored);
     const filename = quotationFilename(order, product.name || '服務');
-    const normalizedPhone = normalizePhone(order.customer_phone);
+    const normalizedPhone = normalizeTaiwanPhone(order.customer_phone);
     let lineUserId = '';
     if (normalizedPhone) {
-      const { data: customer } = await supabase.from('customers').select('line_user_id').eq('phone', normalizedPhone).maybeSingle();
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('line_user_id')
+        .in('phone', getTaiwanPhoneVariants(normalizedPhone))
+        .not('line_user_id', 'is', null)
+        .limit(1)
+        .maybeSingle();
       lineUserId = customer?.line_user_id || '';
     }
 

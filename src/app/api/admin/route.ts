@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { verifyAdminRequest } from '@/lib/adminAuth';
+import { getTaiwanPhoneVariants, normalizeTaiwanPhone } from '@/lib/phone';
 
 // 簡易密碼驗證（header: x-admin-password）
 async function verifyAdmin(request: NextRequest) {
@@ -106,12 +107,14 @@ export async function GET(request: NextRequest) {
         .range(from, from + pageSize - 1);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-      const phones = [...new Set((data || []).map(order => order.customer_phone).filter(Boolean))];
-      const { data: boundCustomers, error: customerError } = phones.length > 0
-        ? await supabase.from('customers').select('phone').in('phone', phones).not('line_user_id', 'is', null)
+      const orderPhones = [...new Set((data || []).map(order => String(order.customer_phone || '')).filter(Boolean))];
+      const lookupPhones = [...new Set(orderPhones.flatMap(phone => getTaiwanPhoneVariants(phone)))];
+      const { data: boundCustomers, error: customerError } = lookupPhones.length > 0
+        ? await supabase.from('customers').select('phone').in('phone', lookupPhones).not('line_user_id', 'is', null)
         : { data: [], error: null };
       if (customerError) return NextResponse.json({ error: customerError.message }, { status: 500 });
-      const customerBindings = Object.fromEntries((boundCustomers || []).map(customer => [customer.phone, true]));
+      const boundPhones = new Set((boundCustomers || []).map(customer => normalizeTaiwanPhone(customer.phone)));
+      const customerBindings = Object.fromEntries(orderPhones.map(phone => [phone, boundPhones.has(normalizeTaiwanPhone(phone))]));
       return NextResponse.json({ data: data || [], count: count || 0, customerBindings, page, pageSize });
     }
 
@@ -163,7 +166,11 @@ export async function POST(request: NextRequest) {
 
   const { table, record } = await request.json();
   const supabase = getServiceClient();
-  const normalizedRecord = table === 'cases' ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null } : record;
+  const normalizedRecord = table === 'cases'
+    ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null }
+    : table === 'orders'
+      ? { ...record, customer_phone: normalizeTaiwanPhone(record.customer_phone) }
+      : record;
   const { data, error } = await supabase.from(table).insert(normalizedRecord).select().single();
 
   if (error) {
@@ -181,7 +188,11 @@ export async function PUT(request: NextRequest) {
 
   const { table, id, record } = await request.json();
   const supabase = getServiceClient();
-  const normalizedRecord = table === 'cases' ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null } : record;
+  const normalizedRecord = table === 'cases'
+    ? { ...record, event_date: record.event_date || null, activity_date: record.activity_date || null }
+    : table === 'orders'
+      ? { ...record, customer_phone: normalizeTaiwanPhone(record.customer_phone) }
+      : record;
   const { data, error } = await supabase
     .from(table)
     .update(normalizedRecord)
