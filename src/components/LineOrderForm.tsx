@@ -69,7 +69,7 @@ export default function LineOrderForm({
       ? savedOptions
       : selectedProduct.price_note ? [{ label: '價格', price: selectedProduct.price_note }] : [];
   }, [selectedProduct]);
-  const addOnOptions = useMemo(() => selectedProduct ? parseProductOptionRows(selectedProduct.description || '', '加購商品') : [], [selectedProduct]);
+  const addOnOptions = useMemo(() => selectedProduct ? parseProductOptionRows(selectedProduct.description || '', '加購方案') : [], [selectedProduct]);
   const choiceOptions = useMemo(() => selectedProduct ? parseProductOptionRows(selectedProduct.description || '', '選配商品') : [], [selectedProduct]);
   const lockedPriceOptions = priceOptions.filter(option => option.locked);
   const regularPriceOption = priceOptions.find((option, index) => !option.locked && optionKey(option, index) === selectedPriceKey);
