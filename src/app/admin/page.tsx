@@ -5,7 +5,6 @@ import {
   AlertCircle, MessageSquare, Package, Camera, Building2,
   FileText, ClipboardList, BarChart3
 } from 'lucide-react';
-import LocalPageViewDashboard from '@/components/admin/LocalPageViewDashboard';
 
 // 後台資料表
 const TABLES = [
@@ -155,8 +154,6 @@ export default function AdminDashboard() {
           </div>
         )}
       </section>
-
-      <LocalPageViewDashboard />
 
             {/* 諮詢單與訂單總覽 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
