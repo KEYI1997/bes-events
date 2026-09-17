@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight, Calendar, List, Trash2, Pencil, FileDown, FilePenLine, Send } from 'lucide-react';
 import type { Product, Order, QuotationLineItem } from '@/lib/types';
 import { calculateQuotationTotals, quotationActivityDays, quotationLineAmount } from '@/lib/quotationDraft';
+import Pagination from '@/components/admin/Pagination';
 
 const STATUS_OPTIONS = ['已預約', '出借中', '已歸還', '已結案', '已取消'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -39,6 +40,9 @@ export default function OrdersPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Record<string, boolean>>({}); // phone -> LINE已綁定
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const pageSize = 50;
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
   const [form, setForm] = useState(EMPTY_ORDER);
@@ -55,6 +59,7 @@ export default function OrdersPage() {
   const [view, setView] = useState<'calendar' | 'list'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [stockError, setStockError] = useState('');
+  const [availableStock, setAvailableStock] = useState<number | null>(null);
   const [sortField, setSortField] = useState<'borrow_date' | 'return_date' | 'customer_name' | 'created_at'>('borrow_date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -64,61 +69,50 @@ export default function OrdersPage() {
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
-    const [ordersRes, productsRes, customersRes] = await Promise.all([
-      fetch('/api/admin?table=orders', { headers: getHeaders() }),
-      fetch('/api/admin?table=products', { headers: getHeaders() }),
-      fetch('/api/admin?table=customers', { headers: getHeaders() }),
+    setLoading(true);
+    const productsRequest = fetch('/api/admin?table=products', { headers: getHeaders() });
+
+    if (view === 'calendar') {
+      const monthStart = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01`;
+      const monthEnd = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()).padStart(2, '0')}`;
+      const [ordersRes, productsRes] = await Promise.all([
+        fetch(`/api/admin?table=orders&calendarStart=${monthStart}&calendarEnd=${monthEnd}`, { headers: getHeaders() }),
+        productsRequest,
+      ]);
+      const ordersJson = await ordersRes.json();
+      const productsJson = await productsRes.json();
+      setOrders(ordersJson.data || []);
+      setProducts(productsJson.data || []);
+      setLoading(false);
+      return;
+    }
+
+    const params = new URLSearchParams({
+      table: 'orders',
+      page: String(page),
+      pageSize: String(pageSize),
+      status: filterStatus,
+      productId: filterProduct,
+      sort: sortField,
+      direction: sortDir,
+    });
+    if (searchText.trim()) params.set('search', searchText.trim());
+    const [ordersRes, productsRes] = await Promise.all([
+      fetch(`/api/admin?${params.toString()}`, { headers: getHeaders() }),
+      productsRequest,
     ]);
     const ordersJson = await ordersRes.json();
     const productsJson = await productsRes.json();
-    const customersJson = await customersRes.json();
-    const fetchedOrders: Order[] = ordersJson.data || [];
+    setOrders(ordersJson.data || []);
+    setTotalOrders(ordersJson.count || 0);
+    setCustomers(ordersJson.customerBindings || {});
     setProducts(productsJson.data || []);
-
-    // 建立電話 -> LINE綁定 的 map
-    const customerMap: Record<string, boolean> = {};
-    (customersJson.data || []).forEach((c: { phone: string; line_user_id?: string }) => {
-      if (c.line_user_id) customerMap[c.phone] = true;
-    });
-    setCustomers(customerMap);
-
-    // 自動更新訂單狀態
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const updates: Promise<void>[] = [];
-
-    for (const o of fetchedOrders) {
-      let newStatus: string | null = null;
-
-      if (o.status === '已預約' && o.borrow_date <= today && o.return_date >= today) {
-        // 出借日當天或期間內 → 出借中
-        newStatus = '出借中';
-      } else if ((o.status === '已預約' || o.status === '出借中') && o.return_date < today) {
-        // 已超過歸還日期 → 已歸還
-        newStatus = '已歸還';
-      }
-
-      if (newStatus) {
-        o.status = newStatus as Order['status'];
-        updates.push(
-          fetch('/api/admin', {
-            method: 'PUT',
-            headers: { ...getHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ table: 'orders', id: o.id, record: { status: newStatus } }),
-          }).then(() => {})
-        );
-      }
-    }
-
-    if (updates.length > 0) await Promise.all(updates);
-    setOrders(fetchedOrders);
     setLoading(false);
   };
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => { void fetchData(); }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
+  // 列表、搜尋與行事曆皆由伺服器分批讀取，避免受單次 1,000 筆限制。
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void fetchData(); }, [view, currentMonth, page, filterStatus, filterProduct, searchText, sortField, sortDir]);
   // 取得產品名稱 map
   const productMap = useMemo(() => {
     const map: Record<string, Product> = {};
@@ -126,77 +120,42 @@ export default function OrdersPage() {
     return map;
   }, [products]);
 
-  // 計算某日期區間內某產品的已佔用數量
-  const getUsedStock = (productId: string, borrowDate: string, returnDate: string, excludeOrderId?: string) => {
-    return orders
-      .filter(o =>
-        o.product_id === productId &&
-        o.status !== '已歸還' &&
-        o.status !== '已結案' &&
-        o.status !== '已取消' &&
-        o.id !== excludeOrderId &&
-        // 日期重疊判斷
-        o.borrow_date <= returnDate &&
-        o.return_date >= borrowDate
-      )
-      .reduce((sum, o) => sum + o.quantity, 0);
-  };
+  // 清單已由 API 依條件排序、篩選與分頁。
+  const filteredOrders = orders;
 
-  // 計算可用庫存
-  const getAvailableStock = (productId: string, borrowDate: string, returnDate: string, excludeOrderId?: string) => {
-    const product = productMap[productId];
-    if (!product) return 0;
-    const used = getUsedStock(productId, borrowDate, returnDate, excludeOrderId);
-    return product.stock - used;
-  };
-
-  // 篩選+排序後的訂單列表
-  const filteredOrders = useMemo(() => {
-    let result = [...orders];
-    // 狀態篩選
-    if (filterStatus !== 'all') {
-      result = result.filter(o => o.status === filterStatus);
-    }
-    // 產品篩選
-    if (filterProduct !== 'all') {
-      result = result.filter(o => o.product_id === filterProduct);
-    }
-    // 搜尋（客戶名稱、活動名稱）
-    if (searchText.trim()) {
-      const keyword = searchText.trim().toLowerCase();
-      result = result.filter(o =>
-        o.customer_name.toLowerCase().includes(keyword) ||
-        (o.event_name || '').toLowerCase().includes(keyword) ||
-        (productMap[o.product_id]?.name || '').toLowerCase().includes(keyword)
-      );
-    }
-    // 排序
-    result.sort((a, b) => {
-      const aVal = a[sortField] || '';
-      const bVal = b[sortField] || '';
-      if (sortDir === 'asc') return aVal > bVal ? 1 : -1;
-      return aVal < bVal ? 1 : -1;
-    });
-    return result;
-  }, [orders, filterStatus, filterProduct, searchText, sortField, sortDir, productMap]);
-
-  // 排序切換
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+      setSortDir(direction => direction === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDir('desc');
     }
+    setPage(1);
   };
-
-  // 驗證庫存
-  const validateStock = () => {
+  // 驗證庫存：由伺服器彙總全部重疊訂單，不依賴目前清單頁面。
+  const validateStock = async () => {
     if (!form.product_id || !form.borrow_date || !form.return_date) {
       setStockError('');
+      setAvailableStock(null);
       return true;
     }
-    const available = getAvailableStock(form.product_id, form.borrow_date, form.return_date, editing?.id);
+    const product = productMap[form.product_id];
+    if (!product) { setAvailableStock(null); return false; }
+    const params = new URLSearchParams({
+      productId: form.product_id,
+      startDate: form.borrow_date,
+      endDate: form.return_date,
+    });
+    if (editing?.id) params.set('excludeOrderId', editing.id);
+    const response = await fetch(`/api/admin/order-availability?${params.toString()}`, { headers: getHeaders() });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setStockError(result.error || '無法確認庫存，請稍後再試。');
+      setAvailableStock(null);
+      return false;
+    }
+    const available = product.stock - Number(result.used || 0);
+    setAvailableStock(available);
     if (form.quantity > available) {
       setStockError(`庫存不足！該日期區間可用數量為 ${available}，您欲預約 ${form.quantity} 個。`);
       return false;
@@ -204,11 +163,11 @@ export default function OrdersPage() {
     setStockError('');
     return true;
   };
-
   const openCreate = () => {
     setEditing(null);
     setForm(EMPTY_ORDER);
     setStockError('');
+    setAvailableStock(null);
     setShowModal(true);
   };
 
@@ -227,12 +186,13 @@ export default function OrdersPage() {
       status: o.status,
     });
     setStockError('');
+    setAvailableStock(null);
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStock()) return;
+    if (!await validateStock()) return;
 
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
     const normalizedForm = {
@@ -242,14 +202,11 @@ export default function OrdersPage() {
     if (editing) {
       await fetch('/api/admin', { method: 'PUT', headers, body: JSON.stringify({ table: 'orders', id: editing.id, record: normalizedForm }) });
     } else {
-      // 自動產生訂單碼：BES-YYYYMMDD-XXX
+      // 使用含毫秒的時間戳，避免分頁後無法從目前頁面推算當日流水號。
       const today = new Date();
-      const dateStr = today.getFullYear().toString() +
-        String(today.getMonth() + 1).padStart(2, '0') +
-        String(today.getDate()).padStart(2, '0');
-      const todayOrders = orders.filter(o => o.order_code?.startsWith(`BES-${dateStr}`));
-      const seq = String(todayOrders.length + 1).padStart(3, '0');
-      const order_code = `BES-${dateStr}-${seq}`;
+      const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+      const timeStr = `${String(today.getHours()).padStart(2, '0')}${String(today.getMinutes()).padStart(2, '0')}${String(today.getSeconds()).padStart(2, '0')}${String(today.getMilliseconds()).padStart(3, '0')}`;
+      const order_code = `BES-${dateStr}-${timeStr}`;
 
       await fetch('/api/admin', { method: 'POST', headers, body: JSON.stringify({ table: 'orders', record: { ...normalizedForm, order_code } }) });
       // 新增訂單時發送 Email 通知（非阻塞，失敗不影響訂單建立）
@@ -482,7 +439,7 @@ export default function OrdersPage() {
   // 即時檢查庫存（當表單改變時）
   useEffect(() => {
     if (showModal && form.product_id && form.borrow_date && form.return_date) {
-      const timer = window.setTimeout(() => { validateStock(); }, 0);
+      const timer = window.setTimeout(() => { void validateStock(); }, 0);
       return () => window.clearTimeout(timer);
     }
   }, [showModal, form.product_id, form.borrow_date, form.return_date, form.quantity]);
@@ -575,13 +532,13 @@ export default function OrdersPage() {
             <input
               type="text"
               value={searchText}
-              onChange={e => setSearchText(e.target.value)}
+              onChange={e => { setSearchText(e.target.value); setPage(1); }}
               placeholder="搜尋客戶/活動/產品..."
               className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 w-48"
             />
             <select
               value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
+              onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
               className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
             >
               <option value="all">所有狀態</option>
@@ -589,13 +546,13 @@ export default function OrdersPage() {
             </select>
             <select
               value={filterProduct}
-              onChange={e => setFilterProduct(e.target.value)}
+              onChange={e => { setFilterProduct(e.target.value); setPage(1); }}
               className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
             >
               <option value="all">所有產品</option>
               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <span className="text-xs text-gray-400 ml-auto">共 {filteredOrders.length} 筆</span>
+            <span className="text-xs text-gray-400 ml-auto">共 {totalOrders} 筆</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -695,6 +652,7 @@ export default function OrdersPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} pageSize={pageSize} total={totalOrders} onPageChange={setPage} noun="筆訂單" />
         </div>
       )}
 
@@ -766,9 +724,9 @@ export default function OrdersPage() {
                   ⚠️ {stockError}
                 </div>
               )}
-              {!stockError && form.product_id && form.borrow_date && form.return_date && (
+              {!stockError && availableStock !== null && form.product_id && form.borrow_date && form.return_date && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                  ✓ 庫存充足，該日期區間可用數量：{getAvailableStock(form.product_id, form.borrow_date, form.return_date, editing?.id)}
+                  ✓ 庫存充足，該日期區間可用數量：{availableStock}
                 </div>
               )}
 
@@ -1013,4 +971,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-

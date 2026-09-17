@@ -29,6 +29,9 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('zh-TW').format(value);
 }
 
+function publicPageHref(path: string) {
+  return path.startsWith('/') && !path.startsWith('//') ? path : '/';
+}
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [contactStats, setContactStats] = useState({ total: 0, unread: 0, read: 0 });
@@ -44,50 +47,13 @@ export default function AdminDashboard() {
 
     const fetchAll = async () => {
       try {
-        // 取得各資料表數量
-        const tableResults = await Promise.all(
-          TABLES.map(t =>
-            fetch(`/api/admin?table=${t.table}`, { headers })
-              .then(r => r.json())
-              .then(d => ({ table: t.table, count: d.data?.length || 0, data: d.data || [] }))
-          )
-        );
-        
-        const countMap: Record<string, number> = {};
-        tableResults.forEach(r => { countMap[r.table] = r.count; });
-        setCounts(countMap);
-
-        // 計算諮詢單統計
-        const contactResult = tableResults.find(r => r.table === 'contacts');
-        if (contactResult && contactResult.data) {
-          const total = contactResult.data.length;
-          const unread = contactResult.data.filter((c: { read: boolean }) => !c.read).length;
-          const read = contactResult.data.filter((c: { read: boolean }) => c.read).length;
-          setContactStats({ total, unread, read });
-        }
-
-        // 取得訂單統計（如果有 orders 表格的話）
-        try {
-          const orderRes = await fetch('/api/admin?table=orders', { headers });
-          const orderData = await orderRes.json();
-          if (orderData.data) {
-            const total = orderData.data.length;
-            const processing = orderData.data.filter((o: { status: string }) => 
-              o.status === '已預約' || o.status === '出借中'
-            ).length;
-            const completed = orderData.data.filter((o: { status: string }) => 
-              o.status === '已歸還' || o.status === '已結案'
-            ).length;
-            const cancelled = orderData.data.filter((o: { status: string }) => 
-              o.status === '已取消'
-            ).length;
-            setOrderStats({ total, processing, completed, cancelled });
-          }
-        } catch {
-          // 如果沒有 orders 表格，使用預設值
-          setOrderStats({ total: 0, processing: 0, completed: 0, cancelled: 0 });
-        }
-
+        // 統計交由資料庫 COUNT(*) 計算，不受單次讀取 1,000 筆限制。
+        const summaryRes = await fetch('/api/admin/summary', { headers });
+        const summary = await summaryRes.json();
+        if (!summaryRes.ok) throw new Error(summary.error || '讀取後台統計失敗');
+        setCounts(summary.counts || {});
+        setContactStats(summary.contacts || { total: 0, unread: 0, read: 0 });
+        setOrderStats(summary.orders || { total: 0, processing: 0, completed: 0, cancelled: 0 });
         // 取得 GA4 網站流量資料。此端點受後台密碼保護，GA4 金鑰不會傳到瀏覽器。
         try {
           const analyticsRes = await fetch('/api/admin/analytics', { headers });
@@ -174,7 +140,7 @@ export default function AdminDashboard() {
                     <table className="w-full min-w-[15rem] text-left text-sm">
                       <thead className="border-b border-gray-100 text-xs text-gray-500"><tr><th className="pb-2 font-medium">頁面</th><th className="pb-2 text-right font-medium">瀏覽量</th></tr></thead>
                       <tbody>
-                        {analytics.topPages.map(page => <tr key={page.path} className="border-b border-gray-50 last:border-0"><td className="max-w-[13rem] truncate py-2.5 text-gray-700" title={page.path}>{page.path}</td><td className="py-2.5 text-right font-medium" style={{ color: '#4A4947' }}>{formatNumber(page.pageViews)}</td></tr>)}
+                        {analytics.topPages.map(page => <tr key={page.path} className="border-b border-gray-50 last:border-0"><td className="max-w-[13rem] truncate py-2.5"><a href={publicPageHref(page.path)} target="_blank" rel="noreferrer" title={`開啟 ${page.path}`} className="text-[#355d91] underline decoration-[#355d91]/30 underline-offset-4 transition hover:text-[#AA7452] hover:decoration-[#AA7452]">{page.path}</a></td><td className="py-2.5 text-right font-medium" style={{ color: '#4A4947' }}>{formatNumber(page.pageViews)}</td></tr>)}
                       </tbody>
                     </table>
                   </div>
@@ -367,4 +333,3 @@ function AnalyticsLineChart({ data }: { data: Array<{ label: string; pageViews: 
     </div>
   );
 }
-

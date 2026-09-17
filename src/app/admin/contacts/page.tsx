@@ -5,6 +5,7 @@ import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, 
 import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 import { isSinglePurchaseOnly } from '@/lib/productOptions';
+import Pagination from '@/components/admin/Pagination';
 
 function splitContactDescription(description?: string, savedEventLocation?: string) {
   const lines = (description || '').split('\n');
@@ -31,6 +32,10 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalContacts, setTotalContacts] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const pageSize = 50;
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [detail, setDetail] = useState<Contact | null>(null);
   const [convertContact, setConvertContact] = useState<Contact | null>(null);
@@ -72,20 +77,31 @@ export default function ContactsPage() {
   const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
 
   const fetchData = async () => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      table: 'contacts',
+      page: String(page),
+      pageSize: String(pageSize),
+      status: filterStatus,
+      serviceType: filterServiceType,
+      sort: sortBy,
+    });
     const [contactsRes, productsRes] = await Promise.all([
-      fetch('/api/admin?table=contacts', { headers: getHeaders() }),
+      fetch(`/api/admin?${params.toString()}`, { headers: getHeaders() }),
       fetch('/api/admin?table=products', { headers: getHeaders() }),
     ]);
     const contactsJson = await contactsRes.json();
     const productsJson = await productsRes.json();
     setContacts(contactsJson.data || []);
+    setTotalContacts(contactsJson.count || 0);
+    setUnreadCount(contactsJson.unreadCount || 0);
     setProducts(productsJson.data || []);
     setLoading(false);
   };
 
-  // 管理員憑證只存在瀏覽器，頁面掛載後載入一次。
-  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
-  useEffect(() => { fetchData(); }, []);
+  // 篩選、排序與分頁由資料庫處理，避免資料量超過 1,000 筆時遺漏。
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void fetchData(); }, [page, filterStatus, filterServiceType, sortBy]);
 
   const markAsRead = async (id: string) => {
     await fetch('/api/admin', {
@@ -245,33 +261,9 @@ export default function ContactsPage() {
     return <span className="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700">訂單/諮詢確認中</span>;
   };
 
-  // 篩選後的資料
-  const filteredContacts = contacts
-    .filter(c => {
-      // 狀態篩選
-      if (filterStatus !== 'all') {
-        if (filterStatus === 'pending' && (c.status === 'replied' || c.status === 'converted')) return false;
-        if (filterStatus === 'replied' && c.status !== 'replied') return false;
-        if (filterStatus === 'converted' && c.status !== 'converted') return false;
-      }
-      // 服務類型篩選
-      if (filterServiceType !== 'all' && c.service_type !== filterServiceType) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      // 排序
-      if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      if (sortBy === 'event_date_asc') return new Date(a.event_date || '9999-12-31').getTime() - new Date(b.event_date || '9999-12-31').getTime();
-      if (sortBy === 'event_date_desc') return new Date(b.event_date || '0000-01-01').getTime() - new Date(a.event_date || '0000-01-01').getTime();
-      return 0;
-    });
-
-  // 取得所有服務類型（去重）
-  const serviceTypes = [...new Set(contacts.map(c => c.service_type).filter(Boolean))];
-
-  const unreadCount = contacts.filter(c => !c.read).length;
-
+  // 清單已由 API 依條件排序、篩選與分頁。
+  const filteredContacts = contacts;
+  const serviceTypes = SERVICE_DEFINITIONS.map(service => service.label);
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -295,7 +287,7 @@ export default function ContactsPage() {
           <span className="text-sm text-gray-500">狀態：</span>
           <div className="flex gap-1">
             <button
-              onClick={() => setFilterStatus('all')}
+              onClick={() => { setFilterStatus('all'); setPage(1); }}
               className={`px-3 py-1.5 text-sm rounded-lg border transition ${
                 filterStatus === 'all' 
                   ? 'bg-gray-800 text-white border-gray-800' 
@@ -305,7 +297,7 @@ export default function ContactsPage() {
               全部
             </button>
             <button
-              onClick={() => setFilterStatus('pending')}
+              onClick={() => { setFilterStatus('pending'); setPage(1); }}
               className={`px-3 py-1.5 text-sm rounded-lg border transition ${
                 filterStatus === 'pending' 
                   ? 'bg-amber-500 text-white border-amber-500' 
@@ -315,7 +307,7 @@ export default function ContactsPage() {
               訂單/諮詢確認中
             </button>
             <button
-              onClick={() => setFilterStatus('replied')}
+              onClick={() => { setFilterStatus('replied'); setPage(1); }}
               className={`px-3 py-1.5 text-sm rounded-lg border transition ${
                 filterStatus === 'replied' 
                   ? 'bg-gray-500 text-white border-gray-500' 
@@ -325,7 +317,7 @@ export default function ContactsPage() {
               已回覆・未成立訂單
             </button>
             <button
-              onClick={() => setFilterStatus('converted')}
+              onClick={() => { setFilterStatus('converted'); setPage(1); }}
               className={`px-3 py-1.5 text-sm rounded-lg border transition ${
                 filterStatus === 'converted' 
                   ? 'bg-green-500 text-white border-green-500' 
@@ -342,7 +334,7 @@ export default function ContactsPage() {
           <span className="text-sm text-gray-500">服務類型：</span>
           <select
             value={filterServiceType}
-            onChange={e => setFilterServiceType(e.target.value)}
+            onChange={e => { setFilterServiceType(e.target.value); setPage(1); }}
             className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 bg-white"
           >
             <option value="all">全部</option>
@@ -357,7 +349,7 @@ export default function ContactsPage() {
           <span className="text-sm text-gray-500">排序：</span>
           <select
             value={sortBy}
-            onChange={e => setSortBy(e.target.value as typeof sortBy)}
+            onChange={e => { setSortBy(e.target.value as typeof sortBy); setPage(1); }}
             className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 bg-white"
           >
             <option value="newest">提交時間（新→舊）</option>
@@ -424,13 +416,14 @@ export default function ContactsPage() {
                 {filteredContacts.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
-                      {contacts.length === 0 ? '尚無諮詢紀錄' : '沒有符合篩選條件的紀錄'}
+                      {totalContacts === 0 ? '尚無諮詢紀錄' : '沒有符合篩選條件的紀錄'}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+          <Pagination page={page} pageSize={pageSize} total={totalContacts} onPageChange={setPage} noun="筆諮詢" />
         </div>
       )}
 
