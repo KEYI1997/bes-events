@@ -16,16 +16,24 @@ function normalizePhone(phone: string) {
   return normalizeTaiwanPhone(phone);
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TAIWAN_PHONE_PATTERN = /^0\d{7,11}$/;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, phone, email, service_type, event_end_date, event_date, event_location } = body;
+    const isLineOrder = body.source === 'line_order';
     let description = typeof body.description === 'string' ? body.description : '';
     const location = typeof event_location === 'string' ? event_location.trim() : '';
     const pastEventDate = isDateBeforeTaiwanToday(event_date) || isDateBeforeTaiwanToday(event_end_date);
 
     if (pastEventDate) {
       return NextResponse.json({ error: '活動日期不可早於今天，請重新選擇。' }, { status: 400 });
+    }
+
+    if (event_date && event_end_date && event_end_date < event_date) {
+      return NextResponse.json({ error: '結束日期不可早於活動日期，請重新選擇。' }, { status: 400 });
     }
 
     if (!name || !phone || !location) {
@@ -36,6 +44,12 @@ export async function POST(request: Request) {
     }
 
     const normalizedPhone = normalizePhone(phone);
+    if (isLineOrder && !TAIWAN_PHONE_PATTERN.test(normalizedPhone)) {
+      return NextResponse.json({ error: '請輸入有效的台灣電話號碼。' }, { status: 400 });
+    }
+    if (isLineOrder && (!email || typeof email !== 'string' || !EMAIL_PATTERN.test(email.trim()))) {
+      return NextResponse.json({ error: '請輸入有效的 Email。' }, { status: 400 });
+    }
 
     // Rebuild the product snapshot from current catalog data; never accept client prices.
     if (body.product_selection !== undefined) {

@@ -123,7 +123,7 @@ export const SERVICE_DEFINITIONS: ServiceDefinition[] = [
 export const PRODUCT_CATEGORIES = SERVICE_DEFINITIONS.flatMap(service => service.productCategories);
 // 「燈光音響舞台」仍保留於產品與後台分類，但不提供於聯絡表單的服務類型選項。
 export const CONTACT_SERVICE_TYPES = SERVICE_DEFINITIONS
-  .filter(service => service.key !== 'stage-production')
+  .filter(service => service.key !== 'stage-production' && service.key !== 'other')
   .map(service => service.label);
 
 export function getServiceDefinition(value?: string | null): ServiceDefinition {

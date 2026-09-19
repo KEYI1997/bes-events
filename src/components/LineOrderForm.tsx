@@ -18,6 +18,10 @@ import {
 } from '@/lib/productOptions';
 import { CONTACT_SERVICE_TYPES, getServiceDefinition } from '@/lib/services';
 import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
+import { normalizeTaiwanPhone } from '@/lib/phone';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TAIWAN_PHONE_PATTERN = /^0\d{7,11}$/;
 
 type FormState = {
   serviceType: string;
@@ -28,6 +32,9 @@ type FormState = {
   eventDate: string;
   eventEndDate: string;
   eventLocation: string;
+  showGirlHeight: string;
+  showGirlHeadcount: string;
+  showGirlRequirements: string;
   note: string;
 };
 
@@ -47,6 +54,9 @@ export default function LineOrderForm({
     eventDate: '',
     eventEndDate: '',
     eventLocation: '',
+    showGirlHeight: '不限',
+    showGirlHeadcount: '',
+    showGirlRequirements: '',
     note: '',
   });
   const [extras, setExtras] = useState<ProductExtraSelection>({ addOns: [], choices: [] });
@@ -59,9 +69,9 @@ export default function LineOrderForm({
   const selectedService = getServiceDefinition(form.serviceType);
   const categoryProducts = useMemo(() => {
     if (!form.serviceType) return [];
-    if (selectedService.key === 'other') return products;
+
     return products.filter(product => selectedService.productCategories.includes(product.category));
-  }, [form.serviceType, products, selectedService.key, selectedService.productCategories]);
+  }, [form.serviceType, products, selectedService.productCategories]);
   const selectedProduct = useMemo(() => products.find(product => product.id === form.productId), [form.productId, products]);
   const priceOptions = useMemo(() => {
     if (!selectedProduct) return [];
@@ -93,8 +103,39 @@ export default function LineOrderForm({
     setError('');
   };
 
+  const updateEventDate = (eventDate: string) => {
+    const today = getTaiwanToday();
+    if (eventDate && eventDate < today) {
+      setError('活動日期不可早於今天，請重新選擇。');
+      return;
+    }
+    setForm(current => ({
+      ...current,
+      eventDate,
+      eventEndDate: current.eventEndDate && current.eventEndDate < eventDate ? '' : current.eventEndDate,
+    }));
+    setError('');
+  };
+
+  const updateEventEndDate = (eventEndDate: string) => {
+    const minimumDate = getTaiwanDateMin(form.eventDate);
+    if (eventEndDate && eventEndDate < minimumDate) {
+      setError('結束日期不可早於活動日期或今天，請重新選擇。');
+      return;
+    }
+    setForm(current => ({ ...current, eventEndDate }));
+    setError('');
+  };
+
   const selectService = (serviceType: string) => {
-    setForm(current => ({ ...current, serviceType, productId: '' }));
+    setForm(current => ({
+      ...current,
+      serviceType,
+      productId: '',
+      showGirlHeight: '不限',
+      showGirlHeadcount: '',
+      showGirlRequirements: '',
+    }));
     setExtras({ addOns: [], choices: [] });
     setSelectedPriceKey('');
     setQuantity(1);
@@ -111,8 +152,25 @@ export default function LineOrderForm({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!form.serviceType || !selectedProduct || !form.name.trim() || !form.phone.trim() || !form.eventDate || !form.eventLocation.trim()) {
-      setError('請完成服務類型、產品項目／方案、姓名、電話、活動日期與活動地點。');
+    if (!form.serviceType || !selectedProduct || !form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.eventDate || !form.eventLocation.trim()) {
+      setError('請完成服務類型、產品項目／方案、姓名、電話、Email、活動日期與活動地點。');
+      return;
+    }
+    if (!TAIWAN_PHONE_PATTERN.test(normalizeTaiwanPhone(form.phone))) {
+      setError('請輸入有效的台灣電話號碼。');
+      return;
+    }
+    if (!EMAIL_PATTERN.test(form.email.trim())) {
+      setError('請輸入有效的 Email。');
+      return;
+    }
+    const today = getTaiwanToday();
+    if (form.eventDate < today || (form.eventEndDate && form.eventEndDate < form.eventDate)) {
+      setError('請選擇今天或之後的活動日期，且結束日期不可早於活動日期。');
+      return;
+    }
+    if (selectedService.key === 'showgirl' && (!Number.isSafeInteger(Number(form.showGirlHeadcount)) || Number(form.showGirlHeadcount) < 1 || !form.showGirlRequirements.trim())) {
+      setError('請完整填寫 Show Girl 的需求人數與工作及服裝要求。');
       return;
     }
     if (needsPriceSelection && !selectedPriceKey) {
@@ -135,8 +193,10 @@ export default function LineOrderForm({
           event_date: form.eventDate,
           event_end_date: form.eventEndDate || form.eventDate,
           event_location: form.eventLocation.trim(),
+          source: 'line_order',
           description: [
             '【LINE 圖文選單新增訂單】',
+            selectedService.key === 'showgirl' ? `【Show Girl 需求】\n身高：${form.showGirlHeight || '不限'}\n需求人數：${form.showGirlHeadcount} 人\n工作及服裝要求：${form.showGirlRequirements.trim()}` : '',
             form.note.trim() ? `【其他需求】\n${form.note.trim()}` : '',
           ].filter(Boolean).join('\n'),
           product_selection: {
@@ -173,11 +233,11 @@ export default function LineOrderForm({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{CONTACT_SERVICE_TYPES.map(serviceType => <button key={serviceType} type="button" onClick={() => selectService(serviceType)} className={`rounded-xl border-2 px-3 py-3 text-sm font-semibold transition-colors ${form.serviceType === serviceType ? 'border-cta bg-cta text-white' : 'border-primary/15 bg-white text-primary hover:border-cta/60'}`}>{serviceType}</button>)}</div>
           </section>
 
-          <section>
+          {form.serviceType && <section>
             <label htmlFor="line-product" className="mb-3 block font-bold text-primary">2. 選擇產品項目／方案</label>
-            <div className="relative"><select id="line-product" value={form.productId} onChange={event => selectProduct(event.target.value)} required disabled={!form.serviceType} className="w-full appearance-none rounded-xl border-2 border-primary/15 bg-white px-4 py-3.5 pr-11 text-primary outline-none focus:border-cta disabled:cursor-not-allowed disabled:bg-gray-100"><option value="">{form.serviceType ? '請選擇產品項目或方案' : '請先選擇服務類型'}</option>{categoryProducts.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary/50" size={20} /></div>
-            {form.serviceType && categoryProducts.length === 0 && <p className="mt-2 text-sm text-red-500">此服務類型目前尚無可選產品。</p>}
-          </section>
+            <div className="relative"><select id="line-product" value={form.productId} onChange={event => selectProduct(event.target.value)} required className="w-full appearance-none rounded-xl border-2 border-primary/15 bg-white px-4 py-3.5 pr-11 text-primary outline-none focus:border-cta"><option value="">請選擇產品項目或方案</option>{categoryProducts.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary/50" size={20} /></div>
+            {categoryProducts.length === 0 && <p className="mt-2 text-sm text-red-500">此服務類型目前尚無可選產品。</p>}
+          </section>}
 
           {selectedProduct && <section className="space-y-6 border-t border-primary/10 pt-7">
             {priceOptions.length > 0 && <fieldset><legend className="mb-3 font-bold text-primary">3. 選擇規格與價格{needsPriceSelection ? ' *' : ''}</legend><div className="space-y-3">{priceOptions.map((option, index) => { const key = optionKey(option, index); const checked = option.locked || selectedPriceOptions.includes(option); return <label key={key} className={`flex min-h-14 items-center justify-between gap-4 rounded-xl border-2 px-4 py-3 transition-colors ${option.locked ? 'cursor-default border-primary/15 bg-primary/5' : 'cursor-pointer'} ${checked ? 'border-cta bg-white' : 'border-primary/15 bg-white hover:border-cta/60'}`}><span className="flex min-w-0 items-center gap-3"><input type={option.locked ? 'checkbox' : 'radio'} name="line-price-option" checked={checked} disabled={option.locked} onChange={event => setSelectedPriceKey(event.target.checked ? key : '')} className="h-4 w-4 shrink-0 accent-cta disabled:opacity-100" /><span className="font-medium text-primary">{option.label}</span>{option.locked && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary/70">必選</span>}</span><span className="shrink-0 text-sm font-semibold text-cta">{formatProductPrice(option.price) || '洽詢'}</span></label>; })}</div></fieldset>}
@@ -186,7 +246,16 @@ export default function LineOrderForm({
             {selectedPriceOptions.length > 0 && <p aria-live="polite" className="text-sm font-semibold text-primary/70">{totals.total === null ? '完整金額以正式報價為準。' : <>預估金額：<span className="text-cta">{formatProductAmount(totals.total)}</span></>}</p>}
           </section>}
 
-          <div className="border-t border-primary/10 pt-7"><h2 className="mb-5 font-bold text-primary">{selectedProduct ? '4' : '3'}. 填寫聯絡與活動資訊</h2><div className="grid gap-4 sm:grid-cols-2"><Field label="姓名 *" value={form.name} onChange={value => updateField('name', value)} required /><Field label="聯絡電話 *" type="tel" inputMode="tel" value={form.phone} onChange={value => updateField('phone', value)} required placeholder="例：0912-345-678 或 02-2345-6789" readOnly={Boolean(initialCustomer.phone)} /><Field label="Email" type="email" value={form.email} onChange={value => updateField('email', value)} /><Field label="活動日期 *" type="date" value={form.eventDate} min={getTaiwanToday()} onChange={value => updateField('eventDate', value)} required /><Field label="結束日期" type="date" value={form.eventEndDate} min={getTaiwanDateMin(form.eventDate)} onChange={value => updateField('eventEndDate', value)} /><Field label="活動地點 *" value={form.eventLocation} onChange={value => updateField('eventLocation', value)} required placeholder="請輸入活動地點" /></div><label className="mt-4 block text-sm font-semibold text-primary">其他需求<textarea value={form.note} onChange={event => updateField('note', event.target.value)} rows={4} placeholder="活動時間、人數、現場需求或其他備註" className="mt-2 w-full resize-none rounded-xl border-2 border-primary/15 px-4 py-3 font-normal outline-none focus:border-cta" /></label></div>
+          {selectedService.key === 'showgirl' && <section className="border-t border-primary/10 pt-7">
+            <h2 className="mb-5 font-bold text-primary">Show Girl 需求</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-semibold text-primary">身高<select value={form.showGirlHeight} onChange={event => updateField('showGirlHeight', event.target.value)} className="mt-2 w-full rounded-xl border-2 border-primary/15 bg-white px-4 py-3 font-normal outline-none focus:border-cta"><option value="不限">不限</option><option value="155–160 cm">155–160 cm</option><option value="160–165 cm">160–165 cm</option><option value="165–170 cm">165–170 cm</option><option value="170 cm 以上">170 cm 以上</option></select></label>
+              <Field label="需求人數 *" type="number" inputMode="numeric" value={form.showGirlHeadcount} onChange={value => updateField('showGirlHeadcount', value)} required placeholder="請輸入人數" min="1" />
+            </div>
+            <label className="mt-4 block text-sm font-semibold text-primary">工作及服裝要求 *<textarea value={form.showGirlRequirements} onChange={event => updateField('showGirlRequirements', event.target.value)} required rows={4} placeholder="請說明工作內容、服裝風格、現場時段或其他要求" className="mt-2 w-full resize-none rounded-xl border-2 border-primary/15 px-4 py-3 font-normal outline-none focus:border-cta" /></label>
+          </section>}
+
+          <div className="border-t border-primary/10 pt-7"><h2 className="mb-5 font-bold text-primary">填寫聯絡與活動資訊</h2><div className="grid gap-4 sm:grid-cols-2"><Field label="姓名 *" value={form.name} onChange={value => updateField('name', value)} required /><Field label="聯絡電話 *" type="tel" inputMode="tel" value={form.phone} onChange={value => updateField('phone', value)} required placeholder="例：0912-345-678 或 02-2345-6789" readOnly={Boolean(initialCustomer.phone)} /><Field label="Email *" type="email" value={form.email} onChange={value => updateField('email', value)} required placeholder="example@email.com" /><Field label="活動日期 *" type="date" value={form.eventDate} min={getTaiwanToday()} onChange={updateEventDate} required /><Field label="結束日期" type="date" value={form.eventEndDate} min={getTaiwanDateMin(form.eventDate)} onChange={updateEventEndDate} /><Field label="活動地點 *" value={form.eventLocation} onChange={value => updateField('eventLocation', value)} required placeholder="請輸入活動地點" /></div><label className="mt-4 block text-sm font-semibold text-primary">其他需求<textarea value={form.note} onChange={event => updateField('note', event.target.value)} rows={4} placeholder="活動時間、人數、現場需求或其他備註" className="mt-2 w-full resize-none rounded-xl border-2 border-primary/15 px-4 py-3 font-normal outline-none focus:border-cta" /></label></div>
 
           {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={submitting || products.length === 0} className="flex w-full items-center justify-center gap-2 rounded-full bg-cta py-4 font-bold text-white transition-colors hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-50">{submitting && <LoaderCircle className="animate-spin" size={19} />}{submitting ? '送出中…' : '送出訂單需求'}</button>
