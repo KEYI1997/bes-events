@@ -104,4 +104,3 @@ export default function YouTubeVideoSection({ source, className = '' }: { source
     </div>
   </section>;
 }
-
