@@ -10,6 +10,8 @@ import ImageLightbox from '@/components/ImageLightbox';
 import { formatProductAmount, formatProductPrice, isSinglePurchaseOnly, optionKey, parseProductOptionRows, productExtraTotals, productOptionTotals, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
+import YouTubeVideoSection from '@/components/YouTubeVideoSection';
+import { parseYouTubeSource } from '@/lib/youtube';
 
 interface ProductDetail {
   id: string;
@@ -32,42 +34,6 @@ function parseDescription(desc: string) {
   const sizeImg = desc.match(/【尺寸圖】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
   const standardVideo = desc.match(/【公版影片】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
   return { service, features, notice, occasions, youtube, sizeImg, standardVideo, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案'), choices: parseProductOptionRows(desc, '選配商品') };
-}
-
-function getYouTubeEmbedUrl(rawUrl: string) {
-  const value = rawUrl.trim();
-  if (!value) return '';
-
-  try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase().replace(/^www\./, '');
-    const pathParts = url.pathname.split('/').filter(Boolean);
-    const playlistId = url.searchParams.get('list');
-    let videoId = '';
-
-    if (host === 'youtu.be') {
-      videoId = pathParts[0] || '';
-    } else if (['youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(host)) {
-      if (url.pathname === '/watch') videoId = url.searchParams.get('v') || '';
-      if (['embed', 'shorts', 'live'].includes(pathParts[0] || '')) videoId = pathParts[1] || '';
-    }
-
-    if (videoId) {
-      const params = new URLSearchParams();
-      if (playlistId) params.set('list', playlistId);
-      const query = params.toString();
-      return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${query ? `?${query}` : ''}`;
-    }
-
-    if (playlistId) {
-      return `https://www.youtube.com/embed?listType=playlist&list=${encodeURIComponent(playlistId)}`;
-    }
-  } catch {
-    // Keep legacy bare video IDs working for older product records.
-    if (/^[A-Za-z0-9_-]{11}$/.test(value)) return `https://www.youtube.com/embed/${value}`;
-  }
-
-  return '';
 }
 
 function parseLines(text: string): string[] {
@@ -110,7 +76,7 @@ export default function ProductDetailPage() {
     ? product.image_url.split(',').map(url => url.trim()).filter(Boolean)
     : (product.image_urls || []);
   const parsed = parseDescription(product.description || '');
-  const youtubeEmbedUrl = getYouTubeEmbedUrl(parsed.youtube);
+  const youtubeSource = parseYouTubeSource(parsed.youtube);
   const priceOptions = parsed.priceOptions.length > 0
     ? parsed.priceOptions
     : product.price_note ? [{ label: '價格', price: product.price_note }] : [];
@@ -365,21 +331,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* ===== YouTube 影片 ===== */}
-      {youtubeEmbedUrl && (
-        <section className="max-w-[1504px] mx-auto px-12 pt-8 pb-12">
-          <h2 className="text-lg font-bold mb-4" style={{ color: '#4A4947' }}>
-            影片介紹
-          </h2>
-          <div className="aspect-video w-full rounded-2xl overflow-hidden">
-            <iframe
-              src={youtubeEmbedUrl}
-              className="w-full h-full"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            />
-          </div>
-        </section>
-      )}
+      {youtubeSource && <YouTubeVideoSection key={parsed.youtube} source={youtubeSource} className="max-w-[1504px] mx-auto px-12 pt-8 pb-12" />}
 
       {/* 聯絡表單 Modal */}
       {contactOpen && <ContactModal
@@ -461,7 +413,7 @@ function EquipmentProductDetail({
   onCloseOrder: () => void;
 }) {
   
-  const youtubeEmbedUrl = getYouTubeEmbedUrl(parsed.youtube);
+  const youtubeSource = parseYouTubeSource(parsed.youtube);
   const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const selectedRegularSpecification = priceOptions.find((option, index) => optionKey(option, index) === selectedPriceOption || `${option.label}｜${option.price}` === selectedPriceOption);
   const selectedSpecifications = hasLockedPriceOption
@@ -539,7 +491,7 @@ function EquipmentProductDetail({
         {detailSections.length > 0 && <section className="mt-14 grid gap-x-12 md:grid-cols-2">{detailSections.map(section => <section key={section.title} className="border-t border-[#e6dfd6] py-7"><h2 className="text-lg font-bold text-[#4a4947]">{section.title}</h2><div className="mt-4 space-y-3">{section.lines.map((line, index) => <p key={`${section.title}-${index}`} className="text-[15px] leading-7 text-[#706c66]">{line}</p>)}</div></section>)}</section>}
 
         {parsed.sizeImg && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">尺寸說明</h2><div className="relative mt-5 aspect-[3/2] max-w-4xl overflow-hidden rounded-xl bg-white"><Image src={parsed.sizeImg} alt="尺寸圖" fill className="object-contain" /></div></section>}
-        {youtubeEmbedUrl && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">影片介紹</h2><div className="mt-5 aspect-video overflow-hidden rounded-xl"><iframe src={youtubeEmbedUrl} className="h-full w-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" /></div></section>}
+        {youtubeSource && <YouTubeVideoSection key={parsed.youtube} source={youtubeSource} className="mt-8 border-t border-[#e6dfd6] pt-7" />}
       </div>
 
       {contactOpen && <ContactModal key={`${product.id}-${selectedPriceOption}-${quantity}`} isOpen={contactOpen} onClose={onCloseOrder} productName={product.name} productId={product.id} serviceType={serviceType} addOnOptions={parsed.addOns} choiceOptions={parsed.choices} initialExtraSelection={extras} onExtraSelectionChange={onExtrasChange} priceOptions={priceOptions} initialPriceOptionValue={selectedPriceOption} orderQuantity={quantity} />}
