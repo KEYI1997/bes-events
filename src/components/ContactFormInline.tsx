@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
 
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 
@@ -144,6 +145,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
           <input
             type="date"
             value={form.event_date}
+            min={getTaiwanToday()}
             onChange={(e) => setForm({...form, event_date: e.target.value})}
             className={inputClass('event_date')}
           />
@@ -153,6 +155,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
           <input
             type="date"
             value={form.event_end_date}
+            min={getTaiwanDateMin(form.event_date)}
             onChange={(e) => setForm({...form, event_end_date: e.target.value})}
             className={inputClass('event_end_date')}
           />

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import { getTaiwanToday } from '@/lib/eventDate';
 
 // 台灣手機格式：09xx-xxx-xxx 或 09xxxxxxxx（10碼）
 const PHONE_REGEX = /^09\d{2}-?\d{3}-?\d{3}$/;
@@ -215,7 +216,7 @@ export default function ShowGirlInquiryForm() {
       <div>
         <label className="block text-sm font-semibold text-primary mb-1.5">活動日期</label>
         <input
-          type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
+          type="date" value={eventDate} min={getTaiwanToday()} onChange={e => setEventDate(e.target.value)}
           className="w-full px-4 py-3 border-2 border-primary/20 rounded-xl focus:outline-none focus:border-cta transition text-sm"
         />
       </div>

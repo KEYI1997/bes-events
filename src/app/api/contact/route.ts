@@ -5,6 +5,7 @@ import { contactEmailHtml } from "@/lib/emailTemplates";
 import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
 import { productSelectionSummary } from '@/lib/productSelectionSummary';
 import { normalizeTaiwanPhone } from '@/lib/phone';
+import { isDateBeforeTaiwanToday } from '@/lib/eventDate';
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,11 @@ export async function POST(request: Request) {
     const { name, phone, email, service_type, event_end_date, event_date, event_location } = body;
     let description = typeof body.description === 'string' ? body.description : '';
     const location = typeof event_location === 'string' ? event_location.trim() : '';
+    const pastEventDate = isDateBeforeTaiwanToday(event_date) || isDateBeforeTaiwanToday(event_end_date);
+
+    if (pastEventDate) {
+      return NextResponse.json({ error: '活動日期不可早於今天，請重新選擇。' }, { status: 400 });
+    }
 
     if (!name || !phone || !location) {
       return NextResponse.json(

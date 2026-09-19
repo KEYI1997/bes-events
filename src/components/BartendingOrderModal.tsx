@@ -5,6 +5,7 @@ import { X, ClipboardList } from 'lucide-react';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import OrderPriceSummary from '@/components/OrderPriceSummary';
 import { productPriceAmount } from '@/lib/productOptions';
+import { getTaiwanToday } from '@/lib/eventDate';
 
 const EVENT_TYPES = [
   '婚宴 / 婚禮',
@@ -251,7 +252,7 @@ export default function BartendingOrderModal({ planName, price = '', onClose }: 
                 <input
                   type="date"
                   value={form.event_date}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={getTaiwanToday()}
                   onChange={e => handleChange('event_date', e.target.value)}
                   className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
                     errors.event_date ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-cta'

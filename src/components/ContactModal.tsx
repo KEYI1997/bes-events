@@ -6,6 +6,7 @@ import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import OrderPriceSummary from '@/components/OrderPriceSummary';
 import { formatProductAmount, formatProductPrice, optionKey, productExtraTotals, productOptionTotals, productPriceAmount, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -245,6 +246,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                   <input
                     type="date"
                     value={form.event_date}
+                    min={getTaiwanToday()}
                     onChange={(e) => setForm({...form, event_date: e.target.value})}
                     className={inputClass('event_date')}
                   />
@@ -254,6 +256,7 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
                   <input
                     type="date"
                     value={form.event_end_date}
+                    min={getTaiwanDateMin(form.event_date)}
                     onChange={(e) => setForm({...form, event_end_date: e.target.value})}
                     className={inputClass('event_end_date')}
                   />
