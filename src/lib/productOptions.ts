@@ -1,4 +1,4 @@
-export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean; group?: string };
+export type ProductOptionRow = { label: string; price: string; id?: string; imageUrl?: string; locked?: boolean; group?: string; required?: boolean };
 export type ProductExtraSelection = { addOns: string[]; choices: string[]; addOnQuantities?: Record<string, number> };
 
 const SINGLE_PURCHASE_SECTION = '購買數量限制';
@@ -7,6 +7,19 @@ const LEGACY_CHOICE_SECTION = '選購商品';
 const CHOICE_SECTION = '選配商品';
 
 export const optionKey = (row: ProductOptionRow, index: number) => row.id || `${index}:${row.label}:${row.price}`;
+export const choiceGroupName = (row: ProductOptionRow) => row.group?.trim() || '未命名群組';
+
+export function missingRequiredChoiceGroups(rows: ProductOptionRow[], selectedKeys: string[]) {
+  const groups = new Map<string, { required: boolean; selected: boolean }>();
+  rows.forEach((row, index) => {
+    const group = choiceGroupName(row);
+    const current = groups.get(group) || { required: false, selected: false };
+    current.required ||= row.required === true;
+    current.selected ||= selectedKeys.includes(optionKey(row, index));
+    groups.set(group, current);
+  });
+  return [...groups].flatMap(([group, value]) => value.required && !value.selected ? [group] : []);
+}
 
 // Only exact amounts are calculable; ranges, per-day prices and quotes remain unknown.
 export function productPriceAmount(price: string): number | null {
@@ -116,6 +129,7 @@ export function parseProductOptionRows(description: string, sectionTitle: string
         ...(typeof row.imageUrl === 'string' && /^(https?:\/\/|\/(?!\/))/.test(row.imageUrl) ? { imageUrl: row.imageUrl } : {}),
         ...(row.locked === true ? { locked: true } : {}),
         ...(typeof row.group === 'string' && row.group.trim() ? { group: row.group.trim() } : {}),
+        ...(row.required === true ? { required: true } : {}),
       }));
     } catch { return []; }
   }
@@ -131,7 +145,7 @@ export function parseProductOptionRows(description: string, sectionTitle: string
 }
 
 export function serializeProductOptionRows(rows: ProductOptionRow[]) {
-  if (rows.some(row => row.id || row.imageUrl || row.locked || row.group)) {
+  if (rows.some(row => row.id || row.imageUrl || row.locked || row.group || row.required)) {
     return JSON.stringify(rows.filter(row => row.label.trim()).map(row => ({ ...row, label: row.label.trim(), price: row.price.trim(), ...(row.group?.trim() ? { group: row.group.trim() } : {}) }))).replace(/【/g, '\\u3010');
   }
   return rows

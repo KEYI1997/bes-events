@@ -572,12 +572,13 @@ export default function ProductsPage() {
               {(['add_ons', 'choices'] as const).map(field => (
                 <ProductExtraEditor key={field} title={field === 'add_ons' ? '加購商品' : '選配商品'} free={field === 'choices'}
                   rows={form[field]} busy={extraUploading} onBusy={setExtraUploading}
-                  onAdd={group => setForm(current => ({ ...current, [field]: [...current[field], { id: crypto.randomUUID(), label: '', price: field === 'choices' ? '0' : '', imageUrl: '', ...(field === 'choices' && group ? { group } : {}) }] }))}
+                  onAdd={(group, required) => setForm(current => ({ ...current, [field]: [...current[field], { id: crypto.randomUUID(), label: '', price: field === 'choices' ? '0' : '', imageUrl: '', ...(field === 'choices' && group ? { group } : {}), ...(field === 'choices' && required ? { required: true } : {}) }] }))}
                   onUpdate={(id, key, value) => setForm(current => ({ ...current, [field]: current[field].map(row => row.id === id ? { ...row, [key]: value } : row) }))}
                   onRenameGroup={(previousGroup, nextGroup) => setForm(current => ({ ...current, [field]: current[field].map(row => {
                     const rowGroup = row.group?.trim() || '未分組';
                     return rowGroup === previousGroup ? { ...row, group: nextGroup.trim() } : row;
                   }) }))}
+                  onSetGroupRequired={(group, required) => { if (field !== 'choices') return; setForm(current => ({ ...current, choices: current.choices.map(row => (row.group?.trim() || '未分組') === group ? { ...row, ...(required ? { required: true } : { required: false }) } : row) })); }}
                   onRemove={id => setForm(current => ({ ...current, [field]: current[field].filter(row => row.id !== id) }))}                />
               ))}
 

@@ -1,4 +1,4 @@
-import { formatProductAddOnPrice, formatProductAmount, formatProductPrice, isSinglePurchaseOnly, optionKey, parseProductOptionRows, productOptionTotals, productPriceAmount, type ProductOptionRow } from './productOptions';
+import { choiceGroupName, formatProductAddOnPrice, formatProductAmount, formatProductPrice, isSinglePurchaseOnly, missingRequiredChoiceGroups, optionKey, parseProductOptionRows, productOptionTotals, productPriceAmount, type ProductOptionRow } from './productOptions';
 
 export function productSelectionSummary(product: { name: string; description?: string | null; price_note?: string | null }, input: unknown) {
   if (!input || typeof input !== 'object') throw new Error('商品選擇格式錯誤');
@@ -31,9 +31,11 @@ export function productSelectionSummary(product: { name: string; description?: s
     return { row, quantity, amount };
   });
   const selectedChoices = selectedRows(choices, selection.choices);
+  const missingRequiredGroups = missingRequiredChoiceGroups(choices, selection.choices as string[]);
+  if (missingRequiredGroups.length) throw new Error(`請選擇「${missingRequiredGroups.join('」、「')}」的必選項目。`);
   const selectedChoiceGroups = new Set<string>();
   for (const choice of selectedChoices) {
-    const group = choice.group?.trim() || '未命名群組';
+    const group = choiceGroupName(choice);
     if (selectedChoiceGroups.has(group)) throw new Error(`「${group}」限選一項，請重新選擇。`);
     selectedChoiceGroups.add(group);
   }

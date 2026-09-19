@@ -10,13 +10,14 @@ type EditorProps = {
   rows: ProductOptionRow[];
   busy: boolean;
   onBusy: (busy: boolean) => void;
-  onAdd: (group?: string) => void;
+  onAdd: (group?: string, required?: boolean) => void;
   onUpdate: (id: string, key: keyof ProductOptionRow, value: string) => void;
   onRemove: (id: string) => void;
   onRenameGroup?: (previousGroup: string, nextGroup: string) => void;
+  onSetGroupRequired?: (group: string, required: boolean) => void;
 };
 
-export default function ProductExtraEditor({ title, free = false, rows, busy, onBusy, onAdd, onUpdate, onRemove, onRenameGroup }: EditorProps) {
+export default function ProductExtraEditor({ title, free = false, rows, busy, onBusy, onAdd, onUpdate, onRemove, onRenameGroup, onSetGroupRequired }: EditorProps) {
   const [error, setError] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const groups = rows.reduce<Record<string, ProductOptionRow[]>>((result, row) => {
@@ -86,8 +87,9 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
       {Object.entries(groups).map(([group, groupRows]) => <section key={group} className="rounded-xl border border-[#e5ddd4] bg-[#fcfaf7] p-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <input value={group === '未分組' ? '' : group} onChange={event => onRenameGroup?.(group, event.target.value)} placeholder={group === '未分組' ? '未分組：請輸入群組名稱' : '群組名稱'} className="min-w-0 flex-1 rounded-lg border border-[#d7c5b5] bg-white px-3 py-2 text-base font-medium text-[#4A4947]" aria-label="選配群組名稱" />
+          <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-[#d7c5b5] bg-white px-3 py-2 text-sm font-medium text-[#805e45]"><input type="checkbox" checked={groupRows.some(row => row.required)} onChange={event => onSetGroupRequired?.(group, event.target.checked)} className="h-4 w-4 accent-[#AA7452]" />選配必選</label>
           <span className="text-sm text-[#805e45]">同組限選一項</span>
-          <button type="button" onClick={() => onAdd(group === '未分組' ? '' : group)} className="inline-flex items-center gap-1 rounded-lg border border-[#aa7452] bg-white px-3 py-2 text-sm font-medium text-[#805e45] hover:bg-[#f9f1e8]"><Plus className="h-4 w-4" />新增商品</button>
+          <button type="button" onClick={() => onAdd(group === '未分組' ? '' : group, groupRows.some(row => row.required))} className="inline-flex items-center gap-1 rounded-lg border border-[#aa7452] bg-white px-3 py-2 text-sm font-medium text-[#805e45] hover:bg-[#f9f1e8]"><Plus className="h-4 w-4" />新增商品</button>
         </div>
         <div className="space-y-4">{groupRows.map(renderRow)}</div>
       </section>)}

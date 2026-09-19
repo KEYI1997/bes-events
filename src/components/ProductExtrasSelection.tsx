@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
-import { formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, selectedAddOnQuantity, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
+import { choiceGroupName, formatProductAddOnPrice, formatProductAmount, optionKey, productExtraTotals, selectedAddOnQuantity, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 
 type ChoiceEntry = { row: ProductOptionRow; index: number; key: string };
 
@@ -21,7 +21,7 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   if (!addOns.length && !choices.length) return null;
   const totals = productExtraTotals(basePrice, addOns, selection.addOns, quantity, selection.addOnQuantities);
   const choiceGroups = choices.reduce<Record<string, ChoiceEntry[]>>((groups, row, index) => {
-    const groupName = row.group?.trim() || '未命名群組';
+    const groupName = choiceGroupName(row);
     (groups[groupName] ||= []).push({ row, index, key: optionKey(row, index) });
     return groups;
   }, {});
@@ -67,13 +67,13 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
         <button type="button" onClick={() => setChoicesOpen(open => !open)} aria-expanded={choicesOpen} aria-controls="product-choices" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#d8c3ae] bg-white text-[#805e45] transition-colors hover:bg-[#f9f1e8] focus:outline-none focus:ring-2 focus:ring-[#aa7452]" aria-label={choicesOpen ? '收起選配商品' : '展開選配商品'}><ChevronDown className={`h-4 w-4 transition-transform ${choicesOpen ? '' : '-rotate-90'}`} /></button>
       </div>
       {choicesOpen && <div id="product-choices" className="space-y-6">
-        {Object.entries(choiceGroups).map(([groupName, entries], groupIndex) => <fieldset key={groupName} className="rounded-xl border border-[#eadfd5] bg-white p-4">
-          <legend className="px-1 text-lg font-bold text-[#4A4947]">{groupName}<span className="ml-2 text-sm font-normal text-[#805e45]">不加價・限選一項</span></legend>
+        {Object.entries(choiceGroups).map(([groupName, entries], groupIndex) => { const required = entries.some(entry => entry.row.required); return <fieldset key={groupName} className="rounded-xl border border-[#eadfd5] bg-white p-4">
+          <legend className="px-1 text-lg font-bold text-[#4A4947]">{groupName}<span className="ml-2 text-sm font-normal text-[#805e45]">{required ? '必選・不加價・限選一項' : '不加價・限選一項'}</span></legend>
           {groupName === '未命名群組' && <p className="mb-3 text-sm text-[#9a5b36]">此群組尚未命名，請由管理者在後台設定名稱。</p>}
           <div className="grid gap-3 sm:grid-cols-2">
-            {entries.map(({ row, key }) => <OptionCard key={key} row={row} checked={selection.choices.includes(key)} inputType="radio" name={`${choiceGroupId}-${groupIndex}`} onChange={event => toggleChoice(entries, key, event.target.checked)} price="不加價" />)}
+            {entries.map(({ row, key }, entryIndex) => <OptionCard key={key} row={row} checked={selection.choices.includes(key)} inputType="radio" name={`${choiceGroupId}-${groupIndex}`} required={required && entryIndex === 0} onChange={event => toggleChoice(entries, key, event.target.checked)} price="不加價" />)}
           </div>
-        </fieldset>)}
+        </fieldset>; })}
       </div>}
     </section>}
     <div aria-live="polite" className="space-y-1 border-t border-gray-200 pt-4 text-sm text-[#4A4947]">
@@ -84,18 +84,19 @@ export default function ProductExtrasSelection({ addOns, choices, selection, onC
   </div>;
 }
 
-function OptionCard({ row, checked, inputType, name, onChange, price, children }: {
+function OptionCard({ row, checked, inputType, name, required = false, onChange, price, children }: {
   row: ProductOptionRow;
   checked: boolean;
   inputType: 'checkbox' | 'radio';
   name?: string;
+  required?: boolean;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   price: string;
   children?: React.ReactNode;
 }) {
   return <div className={`min-w-0 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#AA7452] ${checked ? 'border-[#AA7452] bg-[#F9F7F0]' : 'border-gray-200 bg-white hover:border-[#AA7452]'}`}>
     <label className="flex min-w-0 cursor-pointer items-center gap-3">
-      <input type={inputType} name={name} checked={checked} onChange={onChange} className="h-5 w-5 shrink-0 accent-[#AA7452]" />
+      <input type={inputType} name={name} checked={checked} required={required} onChange={onChange} className="h-5 w-5 shrink-0 accent-[#AA7452]" />
       {row.imageUrl && <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#F9F7F0]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={row.imageUrl} alt={row.label} loading="lazy" className="h-full w-full object-contain" />
