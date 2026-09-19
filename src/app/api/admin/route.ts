@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
   const calendarEnd = request.nextUrl.searchParams.get('calendarEnd');
   if (table === 'orders' && calendarStart && calendarEnd) {
     const calendarRows: unknown[] = [];
+    const inquiryRows: unknown[] = [];
     let offset = 0;
     while (true) {
       const { data, error } = await supabase
@@ -53,7 +54,24 @@ export async function GET(request: NextRequest) {
       if (rows.length < 1000) break;
       offset += 1000;
     }
-    return NextResponse.json({ data: calendarRows });
+    offset = 0;
+    while (true) {
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id, name, service_type, event_date, event_end_date, status')
+        .or('status.is.null,status.eq.pending,status.eq.replied')
+        .not('event_date', 'is', null)
+        .lte('event_date', calendarEnd)
+        .or(`event_end_date.is.null,event_end_date.gte.${calendarStart}`)
+        .order('event_date', { ascending: true })
+        .range(offset, offset + 999);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      const rows = data || [];
+      inquiryRows.push(...rows);
+      if (rows.length < 1000) break;
+      offset += 1000;
+    }
+    return NextResponse.json({ data: calendarRows, inquiries: inquiryRows });
   }
 
   const pageParam = request.nextUrl.searchParams.get('page');

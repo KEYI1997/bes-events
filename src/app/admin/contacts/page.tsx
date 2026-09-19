@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Eye, ArrowRightCircle, MessageSquare, CheckCircle, StickyNote, Filter } from 'lucide-react';
+import { Trash2, Eye, MessageSquare, CheckCircle, StickyNote, Filter } from 'lucide-react';
 import type { Contact, Product } from '@/lib/types';
 import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 import { isSinglePurchaseOnly } from '@/lib/productOptions';
 import Pagination from '@/components/admin/Pagination';
+import ContactQuotationPanel from '@/components/admin/ContactQuotationPanel';
 import { normalizeTaiwanPhone } from '@/lib/phone';
 
 function splitContactDescription(description?: string, savedEventLocation?: string) {
@@ -156,7 +157,7 @@ export default function ContactsPage() {
     fetchData();
   };
 
-  const openConvert = (contact: Contact) => {
+  const openConvert = (contact: Contact, preferredProductId = '') => {
     setDetail(null);
     setConvertContact(contact);
     setConvertSuccess(false);
@@ -164,17 +165,19 @@ export default function ContactsPage() {
     const service = getServiceDefinition(contact.service_type);
     setSelectedServiceType(service.label);
     const productMatch = (contact.description || '').match(/【詢問商品】(.+)/);
-    const matchedProduct = productMatch
+    const requestedProduct = productMatch
       ? products.find(p => p.name === productMatch[1].trim())
       : null;
+    const preferredProduct = products.find(product => product.id === preferredProductId);
     const serviceProducts = products.filter(product =>
       product.visible && (
         service.productCategories.length === 0 ||
         service.productCategories.includes(product.category)
       )
     );
-    const matchedServiceProduct = matchedProduct && serviceProducts.some(product => product.id === matchedProduct.id)
-      ? matchedProduct
+    const candidateProduct = preferredProduct || requestedProduct;
+    const matchedServiceProduct = candidateProduct && serviceProducts.some(product => product.id === candidateProduct.id)
+      ? candidateProduct
       : null;
     const initialProduct = matchedServiceProduct || (serviceProducts.length === 1 ? serviceProducts[0] : null);
     const requestedQuantity = extractContactQuantity(contact.description);
@@ -431,7 +434,7 @@ export default function ContactsPage() {
       {/* Detail Modal */}
       {detail && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <div>
                 <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>諮詢詳情</h2>
@@ -439,7 +442,8 @@ export default function ContactsPage() {
               </div>
               <button onClick={() => setDetail(null)} className="p-1 rounded-lg hover:bg-gray-100 text-xl">✕</button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-xs text-gray-500">姓名</p><p className="font-medium">{detail.name}</p></div>
                 <div><p className="text-xs text-gray-500">電話</p><p className="font-medium">{detail.phone}</p></div>
@@ -507,7 +511,14 @@ export default function ContactsPage() {
                 提交時間：{new Date(detail.created_at).toLocaleString('zh-TW')}
               </div>
             </div>
-            <div className="p-6 border-t flex justify-between">
+              <ContactQuotationPanel
+                contact={detail}
+                products={products}
+                getHeaders={getHeaders}
+                onConvert={productId => openConvert(detail, productId)}
+              />
+            </div>
+            <div className="p-5 border-t flex flex-wrap items-center justify-between gap-3">
               <div className="flex gap-2">
                 {detail.status !== 'replied' && detail.status !== 'converted' && (
                   <button
@@ -518,18 +529,7 @@ export default function ContactsPage() {
                   </button>
                 )}
               </div>
-              <div className="flex gap-2">
-                {detail.status !== 'converted' && (
-                  <button
-                    onClick={() => openConvert(detail)}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
-                    style={{ backgroundColor: '#22c55e' }}
-                  >
-                    <ArrowRightCircle className="w-4 h-4" /> 轉為訂單
-                  </button>
-                )}
-                <button onClick={() => setDetail(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">關閉</button>
-              </div>
+              <button onClick={() => setDetail(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">關閉</button>
             </div>
           </div>
         </div>
