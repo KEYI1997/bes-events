@@ -104,7 +104,8 @@ export default function ContactsPage() {
   };
 
   // 篩選、排序與分頁由資料庫處理，避免資料量超過 1,000 筆時遺漏。
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Data loading changes local state after the request resolves.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { void fetchData(); }, [page, filterStatus, filterServiceType, sortBy]);
 
   const markAsRead = async (id: string) => {
@@ -442,7 +443,7 @@ export default function ContactsPage() {
       {/* Detail Modal */}
       {detail && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <div>
                 <h2 className="text-lg font-bold" style={{ color: '#4A4947' }}>諮詢詳情</h2>
@@ -450,8 +451,15 @@ export default function ContactsPage() {
               </div>
               <button onClick={() => setDetail(null)} className="p-1 rounded-lg hover:bg-gray-100 text-xl">✕</button>
             </div>
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="p-6 space-y-4">
+            <div className="grid lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.15fr)_360px]">
+              <aside className="border-b border-stone-200 bg-stone-50/60 p-5 lg:border-b-0 lg:border-r">
+                <ContactInventoryStatus
+                  contact={detail}
+                  productId={detailProductId}
+                  getHeaders={getHeaders}
+                />
+              </aside>
+              <div className="border-b border-stone-200 p-6 space-y-4 lg:border-b-0">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-xs text-gray-500">姓名</p><p className="font-medium">{detail.name}</p></div>
                 <div><p className="text-xs text-gray-500">電話</p><p className="font-medium">{detail.phone}</p></div>
@@ -468,11 +476,6 @@ export default function ContactsPage() {
                 <p className="text-sm bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">{detailContent?.description || '（無）'}</p>
               </div>
 
-              <ContactInventoryStatus
-                contact={detail}
-                productId={detailProductId}
-                getHeaders={getHeaders}
-              />
 
               {/* 工作人員備註 */}
               <div className="border-t pt-4">
