@@ -1,6 +1,7 @@
 import { createSign } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminRequest } from '@/lib/adminAuth';
+import { isProductionTrackingRequest } from '@/lib/productionTracking';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -112,6 +113,14 @@ function buildMonthKeys() {
 export async function GET(request: NextRequest) {
   if (!await verifyAdminRequest(request)) {
     return NextResponse.json({ error: '未授權' }, { status: 401 });
+  }
+
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+  if (!isProductionTrackingRequest(host)) {
+    return NextResponse.json({
+      configured: false,
+      error: 'GA4 正式 Property 僅可在正式網域使用。',
+    }, { status: 403 });
   }
 
   const propertyId = process.env.GA4_PROPERTY_ID?.trim().replace(/^properties\//, '');
