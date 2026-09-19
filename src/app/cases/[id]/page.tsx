@@ -91,7 +91,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         <Link href="/cases" className="mb-8 inline-flex text-base font-bold text-[#81704f] transition-colors hover:text-[#aa8a56] hover:underline">← 返回活動案例</Link>
         <header className="border-b border-[#dedbd5] pb-8 md:pb-10">
           <p className="mb-5 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#aa8a56]">CASE STUDY</p>
-          <h1 className="whitespace-nowrap text-[1.8rem] font-semibold leading-[1.18] tracking-[-0.02em] text-[#252b3a] sm:text-5xl md:text-[3.5rem]">{displayTitle}</h1>
+          <h1 className="break-words text-[1.8rem] font-semibold leading-[1.18] tracking-[-0.02em] text-[#252b3a] sm:text-5xl md:text-[3.5rem]">
+            {products ? <><span className="block">{products}</span><span className="block">{activityTitle}</span></> : activityTitle}
+          </h1>
           <div className="my-6 h-px w-14 bg-[#b89a67]" />
           {(caseItem.event_date || caseItem.activity_date) && (
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm tracking-[0.08em] text-[#85827d]">
