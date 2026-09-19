@@ -65,11 +65,10 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   }
   const fullInfoRows: Array<[string, string]> = [
     ['客戶地址', order.customerAddress || ''],
-    ['廠商資訊', '境曜有限公司｜統編：60373507｜地址：臺北市中山區民權東路二段92巷6之1號｜電話：0912-727-596'],
   ];
   for (const [label, value] of fullInfoRows) {
     drawCell(doc, label, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.2, fillColor: BRAND });
-    drawCell(doc, value, MARGIN + labelW, y, CONTENT_WIDTH - labelW, infoH, { fontSize: label === '廠商資訊' ? 6.3 : 7.2 }); y += infoH;
+    drawCell(doc, value, MARGIN + labelW, y, CONTENT_WIDTH - labelW, infoH, { fontSize: 7.2 }); y += infoH;
   }
   y += 8;
   const baseQuotationItems = order.quotationItems
