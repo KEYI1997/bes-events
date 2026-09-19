@@ -16,7 +16,7 @@ export default function FAQsPage() {
   const [form, setForm] = useState(EMPTY_FAQ);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=faqs', { headers: getHeaders() });

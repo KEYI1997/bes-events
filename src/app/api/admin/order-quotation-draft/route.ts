@@ -1,26 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { applyQuotationPricingRules, calculateQuotationTotals, createDefaultQuotationItems, normalizeCustomQuotationTotal, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 import { loadStoredQuotationDraft, saveStoredQuotationDraft } from '@/lib/quotationStorage';
 
 export const runtime = 'nodejs';
 
 type ProductRecord = { name?: string; price_note?: string; category?: string };
-
-async function getCurrentPassword() {
-  try {
-    const supabase = getServiceClient();
-    const { data } = await supabase.from('site_content').select('value').eq('key', 'admin_password').single();
-    if (data?.value) return data.value;
-  } catch {
-    // fallback 到環境變數
-  }
-  return process.env.ADMIN_PASSWORD || '';
-}
-
-async function verifyAdmin(request: NextRequest) {
-  return request.headers.get('x-admin-password') === await getCurrentPassword();
-}
 
 function getProduct(products: unknown) {
   if (Array.isArray(products)) return products[0] as ProductRecord | undefined;
@@ -48,7 +34,7 @@ async function loadDraftOrder(id: string) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!await verifyAdmin(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
+  if (!await verifyAdminRequest(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
   const id = request.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: '缺少訂單 id' }, { status: 400 });
 
@@ -75,7 +61,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!await verifyAdmin(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
+  if (!await verifyAdminRequest(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const id = typeof body.id === 'string' ? body.id : '';
   if (!id) return NextResponse.json({ error: '缺少訂單 id' }, { status: 400 });

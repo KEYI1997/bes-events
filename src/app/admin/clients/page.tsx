@@ -17,7 +17,7 @@ export default function ClientsPage() {
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=clients', { headers: getHeaders() });
@@ -31,7 +31,7 @@ export default function ClientsPage() {
 
     const loadClients = async () => {
       const res = await fetch('/api/admin?table=clients', {
-        headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' },
+        headers: {},
       });
       const json = await res.json();
       if (cancelled) return;

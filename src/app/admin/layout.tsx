@@ -24,17 +24,20 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [inputPassword, setInputPassword] = useState('');
   const [error, setError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_password');
-    if (saved) {
-      const timer = window.setTimeout(() => setIsLoggedIn(true), 0);
-      return () => window.clearTimeout(timer);
-    }
+    let active = true;
+    localStorage.removeItem('admin_password');
+    fetch('/api/admin/session', { cache: 'no-store' })
+      .then(response => active && setIsLoggedIn(response.ok))
+      .catch(() => active && setIsLoggedIn(false))
+      .finally(() => active && setCheckingSession(false));
+    return () => { active = false; };
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,10 +46,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       const response = await fetch('/api/admin/verify', {
         method: 'POST',
-        headers: { 'x-admin-password': inputPassword },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: inputPassword }),
       });
       if (!response.ok) {
-        setError('密碼錯誤');
+        const result = await response.json().catch(() => ({}));
+        setError(result.error || '密碼錯誤');
         return;
       }
       localStorage.setItem('admin_password', inputPassword);
@@ -61,6 +66,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsLoggedIn(false);
     setInputPassword('');
   };
+
+  if (checkingSession) {
+    return <div className="min-h-screen" style={{ backgroundColor: '#F9F7F0' }} />;
+  }
 
   if (!isLoggedIn) {
     return (

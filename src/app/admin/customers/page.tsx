@@ -36,7 +36,7 @@ export default function CustomersPage() {
       const params = new URLSearchParams({ table: 'customers', page: String(page), pageSize: String(pageSize) });
       if (searchText.trim()) params.set('search', searchText.trim());
       const response = await fetch(`/api/admin?${params.toString()}`, {
-        headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' },
+        headers: {},
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || '讀取 LINE 客戶資料失敗');

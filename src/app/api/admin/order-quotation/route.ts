@@ -4,6 +4,7 @@ import { pushCustomerQuotationLineMessage } from '@/lib/customerLineNotification
 import { buildQuotationPdf } from '@/lib/quotationPdf';
 import { createDefaultQuotationItems, normalizeQuotationItems } from '@/lib/quotationDraft';
 import { getServiceClient } from '@/lib/supabase';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 import { loadStoredQuotationDraft, saveStoredQuotationDraft, type StoredQuotationDraft } from '@/lib/quotationStorage';
 import { getTaiwanPhoneVariants, normalizeTaiwanPhone } from '@/lib/phone';
 
@@ -26,21 +27,6 @@ type QuotationOrderRecord = {
   quotation_token: string;
   products: ProductResult;
 };
-
-async function getCurrentPassword() {
-  try {
-    const supabase = getServiceClient();
-    const { data } = await supabase.from('site_content').select('value').eq('key', 'admin_password').single();
-    if (data?.value) return data.value;
-  } catch {
-    // fallback 到環境變數
-  }
-  return process.env.ADMIN_PASSWORD || '';
-}
-
-async function verifyAdmin(request: NextRequest) {
-  return request.headers.get('x-admin-password') === await getCurrentPassword();
-}
 
 function getProductRecord(products: ProductResult) {
   return Array.isArray(products) ? products[0] : products;
@@ -93,7 +79,7 @@ function quotationFilename(order: QuotationOrderRecord, productName: string) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!await verifyAdmin(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
+  if (!await verifyAdminRequest(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
   const orderId = request.nextUrl.searchParams.get('id');
   if (!orderId) return NextResponse.json({ error: '缺少訂單 id' }, { status: 400 });
 
@@ -119,7 +105,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!await verifyAdmin(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
+  if (!await verifyAdminRequest(request)) return NextResponse.json({ error: '未授權' }, { status: 401 });
   const body = await request.json().catch(() => ({}));
   const orderId = typeof body.id === 'string' ? body.id : '';
   if (!orderId) return NextResponse.json({ error: '缺少訂單 id' }, { status: 400 });

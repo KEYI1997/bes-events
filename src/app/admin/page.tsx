@@ -41,8 +41,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const password = localStorage.getItem('admin_password') || '';
-    const headers = { 'x-admin-password': password };
+    const headers = {};
 
     const fetchAll = async () => {
       try {

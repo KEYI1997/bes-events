@@ -108,7 +108,7 @@ export default function ProductsPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=products', { headers: getHeaders(), cache: 'no-store' });
@@ -216,7 +216,6 @@ export default function ProductsPage() {
       alert('請填寫每個選配商品的名稱。');
       return;
     }
-    const adminPwd = localStorage.getItem('admin_password') || '';
     // 組合為舊schema格式存入（兼容）
     const description = [
       form.service_content ? `${form.category === '活動特效' ? '【效果介紹】' : '【服務內容】'}\n${form.service_content}` : '',
@@ -249,7 +248,7 @@ export default function ProductsPage() {
       if (editing) {
         const res = await fetch('/api/admin', {
           method: 'PUT',
-          headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ table: 'products', id: editing.id, record }),
         });
         if (!res.ok) {
@@ -264,7 +263,7 @@ export default function ProductsPage() {
           .reduce((max, product) => Math.max(max, product.sort_order ?? 0), 0) + 1;
         const res = await fetch('/api/admin', {
           method: 'POST',
-          headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ table: 'products', record }),
         });
         if (!res.ok) {

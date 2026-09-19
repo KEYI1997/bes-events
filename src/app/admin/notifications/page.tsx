@@ -58,7 +58,7 @@ export default function NotificationsPage() {
     const loadSettings = async () => {
       try {
         const res = await fetch('/api/admin?table=site_content', {
-          headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' },
+          headers: {},
         });
         const json = await res.json();
         if (cancelled) return;
@@ -111,12 +111,11 @@ export default function NotificationsPage() {
     if (emails.length === 0) { setError('請至少設定一個收件信箱'); return; }
     setSaving(true);
     setError('');
-    const adminPwd = localStorage.getItem('admin_password') || '';
     const value = emails.join(',');
     try {
       // 先 GET 找到現有記錄的 id
       const res = await fetch('/api/admin?table=site_content', {
-        headers: { 'x-admin-password': adminPwd },
+        headers: {},
       });
       const json = await res.json();
 
@@ -133,7 +132,7 @@ export default function NotificationsPage() {
         // 更新
         const putRes = await fetch('/api/admin', {
           method: 'PUT',
-          headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ table: 'site_content', id: existing.id, record: { value, updated_at: new Date().toISOString() } }),
         });
         const putJson = await putRes.json();
@@ -142,7 +141,7 @@ export default function NotificationsPage() {
         // 新增
         const postRes = await fetch('/api/admin', {
           method: 'POST',
-          headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ table: 'site_content', record: { key: 'notification_email', value } }),
         });
         const postJson = await postRes.json();
@@ -161,12 +160,11 @@ export default function NotificationsPage() {
   const saveAdminPhones = async (nextPhones: string[]) => {
     setPhoneSaving(true);
     setPhoneError('');
-    const adminPwd = localStorage.getItem('admin_password') || '';
     const value = JSON.stringify(nextPhones);
 
     try {
       const res = await fetch('/api/admin?table=site_content', {
-        headers: { 'x-admin-password': adminPwd },
+        headers: {},
       });
       const json = await res.json();
 
@@ -180,7 +178,7 @@ export default function NotificationsPage() {
       const saveRes = existing
         ? await fetch('/api/admin', {
             method: 'PUT',
-            headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               table: 'site_content',
               id: existing.id,
@@ -189,7 +187,7 @@ export default function NotificationsPage() {
           })
         : await fetch('/api/admin', {
             method: 'POST',
-            headers: { 'x-admin-password': adminPwd, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               table: 'site_content',
               record: { key: 'admin_line_phone', value },
@@ -554,12 +552,9 @@ export default function NotificationsPage() {
                   // 驗證
                   if (!currentPassword) { setPwdError('請輸入目前密碼'); return; }
                   if (!newPassword) { setPwdError('請輸入新密碼'); return; }
-                  if (newPassword.length < 6) { setPwdError('新密碼至少需要 6 個字元'); return; }
+                  if (newPassword.length < 12) { setPwdError('新密碼至少需要 12 個字元'); return; }
                   if (newPassword !== confirmPassword) { setPwdError('兩次輸入的新密碼不一致'); return; }
                   
-                  const storedPwd = localStorage.getItem('admin_password') || '';
-                  if (currentPassword !== storedPwd) { setPwdError('目前密碼不正確'); return; }
-
                   setPwdSaving(true);
                   setPwdError('');
 
@@ -567,7 +562,7 @@ export default function NotificationsPage() {
                     // 呼叫 API 更新密碼
                     const res = await fetch('/api/admin/change-password', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'x-admin-password': storedPwd },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ currentPassword, newPassword }),
                     });
                     const json = await res.json();

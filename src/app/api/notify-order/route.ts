@@ -3,39 +3,15 @@ import { Resend } from "resend";
 import { orderEmailHtml } from "@/lib/emailTemplates";
 import { getServiceClient } from "@/lib/supabase";
 import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export const dynamic = "force-dynamic";
 
 const resendApiKey = (process.env.RESEND_API_KEY || '').replace(/[\uFEFF\u200B]/g, '').trim();
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-// 取得目前有效密碼（優先從 Supabase 讀取，沒有則用環境變數）
-async function getCurrentPassword() {
-  try {
-    const supabase = getServiceClient();
-    const { data } = await supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "admin_password")
-      .single();
-    
-    if (data?.value) {
-      return data.value;
-    }
-  } catch {
-    // 忽略錯誤，fallback 到環境變數
-  }
-  return process.env.ADMIN_PASSWORD || '';
-}
-
-async function verifyAdmin(request: NextRequest) {
-  const password = request.headers.get("x-admin-password");
-  const currentPassword = await getCurrentPassword();
-  return password === currentPassword;
-}
-
 export async function POST(request: NextRequest) {
-  if (!await verifyAdmin(request)) {
+  if (!await verifyAdminRequest(request)) {
     return NextResponse.json({ error: "未授權" }, { status: 401 });
   }
 

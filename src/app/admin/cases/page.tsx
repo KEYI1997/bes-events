@@ -59,7 +59,7 @@ export default function CasesPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     const res = await fetch('/api/admin?table=cases', { headers: getHeaders(), cache: 'no-store' });

@@ -37,7 +37,7 @@ export default function ProductExtraEditor({ title, free = false, rows, busy, on
       const body = new FormData();
       body.append('file', file);
       body.append('folder', 'products');
-      const response = await fetch('/api/upload', { method: 'POST', headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' }, body });
+      const response = await fetch('/api/upload', { method: 'POST', headers: {}, body });
       const result = await response.json();
       if (!response.ok || !result.url) throw new Error('圖片上傳失敗，請重試。');
       onUpdate(id, 'imageUrl', result.url);

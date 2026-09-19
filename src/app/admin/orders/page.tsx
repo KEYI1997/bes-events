@@ -51,7 +51,7 @@ export default function OrdersPage() {
   const [filterProduct, setFilterProduct] = useState<string>('all');
   const [searchText, setSearchText] = useState('');
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     setLoading(true);

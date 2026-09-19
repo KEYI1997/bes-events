@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminRequestWithRateLimit } from '@/lib/adminAuth';
+import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_COOKIE_OPTIONS, authenticateSharedAdmin, createAdminSessionCookie } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
-  const verification = await verifyAdminRequestWithRateLimit(request);
-  if (!verification.ok) {
-    if (verification.retryAfterSeconds) return NextResponse.json({ error: '嘗試次數過多，請稍後再試。' }, { status: 429, headers: { 'Retry-After': String(verification.retryAfterSeconds) } });
-    return NextResponse.json({ error: '密碼錯誤' }, { status: 401 });
+  const body = await request.json().catch(() => ({}));
+  const password = typeof body.password === 'string' ? body.password : '';
+  const result = await authenticateSharedAdmin(request, password);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error },
+      { status: result.retryAfterSeconds ? 429 : 401, headers: result.retryAfterSeconds ? { 'Retry-After': String(result.retryAfterSeconds) } : {} },
+    );
   }
-
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  response.cookies.set(ADMIN_SESSION_COOKIE, createAdminSessionCookie(result.session), ADMIN_SESSION_COOKIE_OPTIONS);
+  return response;
 }

@@ -78,7 +78,7 @@ export default function ContactsPage() {
   const selectedOrderProduct = products.find(product => product.id === orderForm.product_id);
   const selectedProductSingleOnly = isSinglePurchaseOnly(selectedOrderProduct?.description);
 
-  const getHeaders = () => ({ 'x-admin-password': localStorage.getItem('admin_password') || '' });
+  const getHeaders = () => ({});
 
   const fetchData = async () => {
     setLoading(true);

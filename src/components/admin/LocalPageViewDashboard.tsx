@@ -20,7 +20,7 @@ export default function LocalPageViewDashboard() {
     const load = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/admin/page-views?page=${page}`, { headers: { 'x-admin-password': localStorage.getItem('admin_password') || '' }, cache: 'no-store' });
+        const response = await fetch(`/api/admin/page-views?page=${page}`, { headers: {}, cache: 'no-store' });
         const json = await response.json();
         if (!response.ok) throw new Error(json.error || '瀏覽資料暫時無法讀取');
         setData(json);
