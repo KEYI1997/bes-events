@@ -461,6 +461,7 @@ function EquipmentProductDetail({
   onCloseOrder: () => void;
 }) {
   
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(parsed.youtube);
   const hasLockedPriceOption = priceOptions.some(option => option.locked);
   const selectedRegularSpecification = priceOptions.find((option, index) => optionKey(option, index) === selectedPriceOption || `${option.label}｜${option.price}` === selectedPriceOption);
   const selectedSpecifications = hasLockedPriceOption
