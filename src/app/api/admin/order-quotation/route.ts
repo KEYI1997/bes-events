@@ -71,6 +71,8 @@ async function generateOrderPdf(order: QuotationOrderRecord, stored: StoredQuota
     customerName: order.customer_name,
     customerPhone: order.customer_phone,
     customerEmail: order.customer_email,
+    customerTaxId: stored?.customerTaxId || '',
+    customerAddress: stored?.customerAddress || '',
     quantity: order.quantity,
     borrowDate: order.borrow_date,
     returnDate: order.return_date,
@@ -194,6 +196,8 @@ export async function POST(request: NextRequest) {
         updatedAt: stored?.updatedAt || null,
         publicItems: quotationItems,
         publicCustomTotal: stored?.customTotal ?? null,
+        publicCustomerTaxId: stored?.customerTaxId || '',
+        publicCustomerAddress: stored?.customerAddress || '',
         publicRevision: stored?.revision || 1,
         sentRevision: stored?.revision || 1,
       });
@@ -207,6 +211,9 @@ export async function POST(request: NextRequest) {
           revision: stored?.revision || 1,
           updatedAt: stored?.updatedAt || null,
           publicItems: stored?.publicItems,
+          publicCustomTotal: stored?.publicCustomTotal ?? null,
+          publicCustomerTaxId: stored?.publicCustomerTaxId || '',
+          publicCustomerAddress: stored?.publicCustomerAddress || '',
           publicRevision: stored?.publicRevision,
           sentRevision: stored?.revision || 1,
         });

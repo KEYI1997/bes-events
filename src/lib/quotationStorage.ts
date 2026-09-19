@@ -8,13 +8,21 @@ export type StoredQuotationDraft = {
   revision: number;
   updatedAt: string | null;
   customTotal?: number | null;
+  customerTaxId?: string;
+  customerAddress?: string;
   publicItems?: QuotationLineItem[];
   publicCustomTotal?: number | null;
+  publicCustomerTaxId?: string;
+  publicCustomerAddress?: string;
   publicRevision?: number;
   sentRevision?: number;
 };
 
 const quotationKey = (orderId: string) => `quotation_draft_${orderId}`;
+
+function normalizeText(value: unknown, maxLength: number) {
+  return typeof value === 'string' ? value.replace(/[\r\n]+/g, ' ').trim().slice(0, maxLength) : '';
+}
 
 export async function loadStoredQuotationDraft(supabase: SupabaseClient, orderId: string): Promise<StoredQuotationDraft | null> {
   const { data, error } = await supabase.from('site_content').select('value').eq('key', quotationKey(orderId)).maybeSingle();
@@ -27,8 +35,12 @@ export async function loadStoredQuotationDraft(supabase: SupabaseClient, orderId
       revision: Math.max(1, Number(parsed.revision) || 1),
       updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null,
       customTotal: normalizeCustomQuotationTotal(parsed.customTotal),
+      customerTaxId: normalizeText(parsed.customerTaxId, 8),
+      customerAddress: normalizeText(parsed.customerAddress, 180),
       publicItems: parsed.publicItems ? normalizeQuotationItems(parsed.publicItems) : undefined,
       publicCustomTotal: normalizeCustomQuotationTotal(parsed.publicCustomTotal),
+      publicCustomerTaxId: normalizeText(parsed.publicCustomerTaxId, 8),
+      publicCustomerAddress: normalizeText(parsed.publicCustomerAddress, 180),
       publicRevision: parsed.publicRevision ? Math.max(1, Number(parsed.publicRevision)) : undefined,
       sentRevision: parsed.sentRevision ? Math.max(1, Number(parsed.sentRevision)) : undefined,
     };

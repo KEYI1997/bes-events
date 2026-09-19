@@ -47,6 +47,8 @@ export default function OrdersPage() {
   const [quotationEditingOrder, setQuotationEditingOrder] = useState<Order | null>(null);
   const [quotationItems, setQuotationItems] = useState<QuotationLineItem[]>([]);
   const [quotationCustomTotal, setQuotationCustomTotal] = useState<number | null>(null);
+  const [quotationCustomerTaxId, setQuotationCustomerTaxId] = useState('');
+  const [quotationCustomerAddress, setQuotationCustomerAddress] = useState('');
   const [quotationRevision, setQuotationRevision] = useState(1);
   const [quotationDraftLoading, setQuotationDraftLoading] = useState(false);
   const [quotationDraftSaving, setQuotationDraftSaving] = useState(false);
@@ -338,6 +340,8 @@ export default function OrdersPage() {
       if (!response.ok) throw new Error(result.error || '載入報價單失敗');
       setQuotationItems(result.items || []);
       setQuotationCustomTotal(result.customTotal ?? null);
+      setQuotationCustomerTaxId(result.customerTaxId || '');
+      setQuotationCustomerAddress(result.customerAddress || '');
       setQuotationRevision(result.revision || 1);
     } catch (error) {
       setQuotationEditingOrder(null);
@@ -372,12 +376,20 @@ export default function OrdersPage() {
       const response = await fetch('/api/admin/order-quotation-draft', {
         method: 'PUT',
         headers: { ...getHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: quotationEditingOrder.id, items: quotationItems, customTotal: quotationCustomTotal }),
+        body: JSON.stringify({
+          id: quotationEditingOrder.id,
+          items: quotationItems,
+          customTotal: quotationCustomTotal,
+          customerTaxId: quotationCustomerTaxId,
+          customerAddress: quotationCustomerAddress,
+        }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || '儲存報價單失敗');
       setQuotationItems(result.items || quotationItems);
       setQuotationCustomTotal(result.customTotal ?? quotationCustomTotal);
+      setQuotationCustomerTaxId(result.customerTaxId || '');
+      setQuotationCustomerAddress(result.customerAddress || '');
       setQuotationRevision(result.revision || quotationRevision + 1);
       setOrders(current => current.map(item => item.id === quotationEditingOrder.id
         ? {
@@ -778,6 +790,35 @@ export default function OrdersPage() {
                 <div className="py-16 text-center text-gray-400">載入報價內容中…</div>
               ) : (
                 <>
+                  <section className="mb-5 rounded-xl border border-stone-200 bg-stone-50/70 p-4">
+                    <h3 className="text-sm font-semibold text-[#4A4947]">客戶開立資訊</h3>
+                    <p className="mt-1 text-xs text-gray-500">填寫後會顯示於本次報價單的客戶資料區；未填的欄位維持空白。</p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                      <label className="block text-sm text-gray-600">
+                        客戶統編
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={8}
+                          value={quotationCustomerTaxId}
+                          onChange={event => setQuotationCustomerTaxId(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                          placeholder="8 位數字（選填）"
+                          className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2 text-[#4A4947] outline-none focus:ring-2 focus:ring-[#8E5F43]"
+                        />
+                      </label>
+                      <label className="block text-sm text-gray-600">
+                        客戶地址
+                        <input
+                          type="text"
+                          maxLength={180}
+                          value={quotationCustomerAddress}
+                          onChange={event => setQuotationCustomerAddress(event.target.value)}
+                          placeholder="例：臺北市信義區○○路 100 號"
+                          className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2 text-[#4A4947] outline-none focus:ring-2 focus:ring-[#8E5F43]"
+                        />
+                      </label>
+                    </div>
+                  </section>
                   <div className="rounded-xl border overflow-x-auto">
                     <table className="w-full min-w-[880px] text-sm">
                       <thead className="bg-stone-50 text-gray-600">

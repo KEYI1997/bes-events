@@ -37,6 +37,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
       customerName: order.customer_name,
       customerPhone: order.customer_phone,
       customerEmail: order.customer_email,
+      customerTaxId: stored?.publicItems ? stored?.publicCustomerTaxId || '' : stored?.customerTaxId || '',
+      customerAddress: stored?.publicItems ? stored?.publicCustomerAddress || '' : stored?.customerAddress || '',
       quantity: order.quantity,
       borrowDate: order.borrow_date,
       returnDate: order.return_date,

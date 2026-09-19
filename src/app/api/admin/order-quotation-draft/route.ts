@@ -27,6 +27,16 @@ function getProduct(products: unknown) {
   return products as ProductRecord | null;
 }
 
+function normalizeCustomerTaxId(value: unknown) {
+  const taxId = typeof value === 'string' ? value.trim() : '';
+  if (taxId && !/^\d{8}$/.test(taxId)) throw new Error('客戶統編需為 8 位數字。');
+  return taxId;
+}
+
+function normalizeCustomerAddress(value: unknown) {
+  return typeof value === 'string' ? value.replace(/[\r\n]+/g, ' ').trim().slice(0, 180) : '';
+}
+
 async function loadDraftOrder(id: string) {
   const supabase = getServiceClient();
   const { data, error } = await supabase
@@ -58,6 +68,8 @@ export async function GET(request: NextRequest) {
     revision: stored?.revision || 1,
     updatedAt: stored?.updatedAt || null,
     customTotal: stored?.customTotal ?? null,
+    customerTaxId: stored?.customerTaxId || '',
+    customerAddress: stored?.customerAddress || '',
     totals: calculateQuotationTotals(items, stored?.customTotal ?? null),
   });
 }
@@ -70,6 +82,8 @@ export async function PUT(request: NextRequest) {
 
   try {
     const customTotal = normalizeCustomQuotationTotal(body.customTotal);
+    const customerTaxId = normalizeCustomerTaxId(body.customerTaxId);
+    const customerAddress = normalizeCustomerAddress(body.customerAddress);
     const { supabase, order, error } = await loadDraftOrder(id);
     if (error || !order) return NextResponse.json({ error: error?.message || '找不到訂單' }, { status: 404 });
     if (order.status === '已取消') return NextResponse.json({ error: '已取消的訂單不可編輯報價單' }, { status: 400 });
@@ -86,6 +100,8 @@ export async function PUT(request: NextRequest) {
       revision,
       updatedAt,
       customTotal,
+      customerTaxId,
+      customerAddress,
       sentRevision: undefined,
     });
     const { error: updateError } = await supabase.from('orders').update({
@@ -99,6 +115,8 @@ export async function PUT(request: NextRequest) {
       revision,
       updatedAt,
       customTotal,
+      customerTaxId,
+      customerAddress,
       totals: calculateQuotationTotals(items, customTotal),
     });
   } catch (draftError) {

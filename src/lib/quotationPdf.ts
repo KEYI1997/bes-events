@@ -30,7 +30,7 @@ function drawCell(doc: PDFKit.PDFDocument, value: string, x: number, y: number, 
   const textHeight = doc.heightOfString(value || ' ', { width: width - 8, ...textOptions });
   doc.text(value, x + 4, y + Math.max(2, (height - textHeight) / 2), { width: width - 8, height: height - 3, ellipsis: true, lineBreak: true, ...textOptions });
 }
-export type QuotationPdfData = QuotationOrderData & { customerEmail?: string | null; note?: string | null; quotationItems?: QuotationLineItem[] | null; customTotal?: number | null; quotationRevision?: number | null };
+export type QuotationPdfData = QuotationOrderData & { customerEmail?: string | null; customerTaxId?: string | null; customerAddress?: string | null; note?: string | null; quotationItems?: QuotationLineItem[] | null; customTotal?: number | null; quotationRevision?: number | null };
 
 export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer> {
   const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansTC-Regular.otf');
@@ -43,24 +43,33 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
   doc.on('data', chunk => chunks.push(Buffer.from(chunk)));
   const completed = new Promise<Buffer>((resolve, reject) => { doc.on('end', () => resolve(Buffer.concat(chunks))); doc.on('error', reject); });
 
-  if (fs.existsSync(logoPath)) doc.image(logoPath, MARGIN, 24, { fit: [88, 34], valign: 'center' });
+  if (fs.existsSync(logoPath)) doc.image(logoPath, MARGIN, 18, { fit: [119, 46], valign: 'center' });
   doc.fillColor(INK).fontSize(20).text('活動服務報價單', MARGIN, 24, { width: CONTENT_WIDTH, align: 'center', lineBreak: false });
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(new Date());
-  doc.fillColor(MUTED).fontSize(7.5).text(`製表日期：${formatDate(today)}`, MARGIN, 52, { width: CONTENT_WIDTH, align: 'center' });
-  doc.moveTo(MARGIN, 66).lineTo(PAGE_WIDTH - MARGIN, 66).lineWidth(1.1).strokeColor(BRAND).stroke();
-  let y = 76;
-  const labelW = 56; const valueW = (CONTENT_WIDTH - labelW * 2) / 2; const infoH = 21;
+  doc.fillColor(MUTED).fontSize(7.5).text(`製表日期：${formatDate(today)}`, MARGIN, 54, { width: CONTENT_WIDTH, align: 'right' });
+  doc.moveTo(MARGIN, 74).lineTo(PAGE_WIDTH - MARGIN, 74).lineWidth(1.1).strokeColor(BRAND).stroke();
+  let y = 82;
+  const labelW = 56; const valueW = (CONTENT_WIDTH - labelW * 2) / 2; const infoH = 18;
   const activityDays = quotationActivityDays(order.borrowDate, order.returnDate);
   const customerRows: Array<[string, string, string, string]> = [
     ['客戶名稱', order.customerName, '聯絡電話', formatPhone(order.customerPhone)],
-    ['Email', order.customerEmail || '', '活動名稱', order.eventName || ''],
-    ['服務日期', `${order.borrowDate === order.returnDate ? formatDate(order.borrowDate) : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`}${activityDays > 1 ? `（${activityDays} 日）` : ''}`, '報價編號', `${order.orderCode || ''}${order.quotationRevision ? ` / v${order.quotationRevision}` : ''}`],
+    ['客戶統編', order.customerTaxId || '', 'Email', order.customerEmail || ''],
+    ['活動名稱', order.eventName || '', '報價編號', `${order.orderCode || ''}${order.quotationRevision ? ` / v${order.quotationRevision}` : ''}`],
+    ['服務日期', `${order.borrowDate === order.returnDate ? formatDate(order.borrowDate) : `${formatDate(order.borrowDate)}－${formatDate(order.returnDate)}`}${activityDays > 1 ? `（${activityDays} 日）` : ''}`, '', ''],
   ];
   for (const [l1, v1, l2, v2] of customerRows) {
-    drawCell(doc, l1, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.5, fillColor: BRAND });
-    drawCell(doc, v1, MARGIN + labelW, y, valueW, infoH, { fontSize: 7.5 });
-    drawCell(doc, l2, MARGIN + labelW + valueW, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.5, fillColor: BRAND });
-    drawCell(doc, v2, MARGIN + labelW * 2 + valueW, y, valueW, infoH, { fontSize: 7.5 }); y += infoH;
+    drawCell(doc, l1, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.2, fillColor: BRAND });
+    drawCell(doc, v1, MARGIN + labelW, y, valueW, infoH, { fontSize: 7.2 });
+    drawCell(doc, l2, MARGIN + labelW + valueW, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.2, fillColor: BRAND });
+    drawCell(doc, v2, MARGIN + labelW * 2 + valueW, y, valueW, infoH, { fontSize: 7.2 }); y += infoH;
+  }
+  const fullInfoRows: Array<[string, string]> = [
+    ['客戶地址', order.customerAddress || ''],
+    ['廠商資訊', '境曜有限公司｜統編：60373507｜地址：臺北市中山區民權東路二段92巷6之1號｜電話：0912-727-596'],
+  ];
+  for (const [label, value] of fullInfoRows) {
+    drawCell(doc, label, MARGIN, y, labelW, infoH, { background: SOFT, align: 'center', fontSize: 7.2, fillColor: BRAND });
+    drawCell(doc, value, MARGIN + labelW, y, CONTENT_WIDTH - labelW, infoH, { fontSize: label === '廠商資訊' ? 6.3 : 7.2 }); y += infoH;
   }
   y += 8;
   const baseQuotationItems = order.quotationItems
@@ -68,7 +77,7 @@ export async function buildQuotationPdf(order: QuotationPdfData): Promise<Buffer
     : createDefaultQuotationItems(order.productName, order.productPriceNote, order.quantity, order.eventName, order.note, order.borrowDate, order.returnDate, order.productCategory);
   const quotationItems = applyQuotationPricingRules(baseQuotationItems, order.productCategory, order.quantity, order.borrowDate, order.returnDate);
   const visibleItems = quotationItems.filter(item => item.label.trim() || item.unitPrice !== null || item.quantity !== null || item.note.trim());
-  const relaxedLayout = visibleItems.length <= 4;
+  const relaxedLayout = visibleItems.length <= 2;
   const columns = [168, 64, 38, 62, 61, CONTENT_WIDTH - 168 - 64 - 38 - 62 - 61];
   const headers = ['項目／服務內容', '單價', '數量', '計價天數／係數', '金額', '備註'];
   let x = MARGIN;
