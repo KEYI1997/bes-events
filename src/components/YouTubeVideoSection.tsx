@@ -69,7 +69,6 @@ export default function YouTubeVideoSection({ source, className = '' }: { source
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h2 className="text-lg font-bold text-[#4a4947]">影片介紹</h2>
-        <p className="mt-1 text-sm text-[#756e66]">依播放清單順序瀏覽同系列影片</p>
       </div>
       <p aria-live="polite" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#805e45]"><ListVideo size={16} aria-hidden="true" />{loading ? '載入清單中…' : `共 ${totalCount || playlistItems.length} 支影片`}</p>
     </div>
