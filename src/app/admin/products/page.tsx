@@ -609,8 +609,9 @@ export default function ProductsPage() {
 
               {/* YouTube 連結 */}
               <div>
-                <label className="block text-sm font-medium mb-1">YouTube 影片連結</label>
-                <input value={form.youtube_url} onChange={e => setForm(f => ({ ...f, youtube_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                <label className="block text-sm font-medium mb-1">YouTube 影片／播放清單連結</label>
+                <input value={form.youtube_url} onChange={e => setForm(f => ({ ...f, youtube_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=... 或 .../playlist?list=..." className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
+                <p className="mt-1 text-xs text-gray-400">可貼單支影片或播放清單的一般 YouTube 網址。</p>
               </div>
 
               {/* 展示圖片（多選） */}
