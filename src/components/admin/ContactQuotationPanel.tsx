@@ -19,6 +19,7 @@ type Props = {
   products: Product[];
   getHeaders: () => Record<string, string>;
   onConvert: (productId: string) => void;
+  onProductChange?: (productId: string) => void;
 };
 
 function inferredProductId(contact: Contact, products: Product[]) {
@@ -30,7 +31,7 @@ function inferredProductId(contact: Contact, products: Product[]) {
   return eligible.find(product => product.name === requestedName)?.id || (eligible.length === 1 ? eligible[0].id : '');
 }
 
-export default function ContactQuotationPanel({ contact, products, getHeaders, onConvert }: Props) {
+export default function ContactQuotationPanel({ contact, products, getHeaders, onConvert, onProductChange }: Props) {
   const service = getServiceDefinition(contact.service_type);
   const eligibleProducts = products.filter(product => product.visible && (
     service.productCategories.length === 0 || service.productCategories.includes(product.category)
@@ -72,11 +73,12 @@ export default function ContactQuotationPanel({ contact, products, getHeaders, o
         sentRevision: result.sentRevision || null,
       });
       setProductId(nextProductId);
+      onProductChange?.(nextProductId);
       setLoading(false);
     };
     void loadMeta();
     return () => { active = false; };
-  // getHeaders and products are stable for the open contact detail.
+  // Props are stable for the open contact detail.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contact.id]);
 
@@ -206,7 +208,12 @@ export default function ContactQuotationPanel({ contact, products, getHeaders, o
             id={`quotation-product-${contact.id}`}
             value={productId}
             disabled={isConverted || loading}
-            onChange={event => { setProductId(event.target.value); setError(''); }}
+            onChange={event => {
+              const nextProductId = event.target.value;
+              setProductId(nextProductId);
+              onProductChange?.(nextProductId);
+              setError('');
+            }}
             className="mt-1.5 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#8E5F43] disabled:bg-stone-100"
           >
             <option value="">請選擇服務方案</option>

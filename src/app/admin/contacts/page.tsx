@@ -7,6 +7,7 @@ import { getServiceDefinition, SERVICE_DEFINITIONS } from '@/lib/services';
 import { isSinglePurchaseOnly } from '@/lib/productOptions';
 import Pagination from '@/components/admin/Pagination';
 import ContactQuotationPanel from '@/components/admin/ContactQuotationPanel';
+import ContactInventoryStatus from '@/components/admin/ContactInventoryStatus';
 import { normalizeTaiwanPhone } from '@/lib/phone';
 
 function splitContactDescription(description?: string, savedEventLocation?: string) {
@@ -40,6 +41,7 @@ export default function ContactsPage() {
   const pageSize = 50;
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [detail, setDetail] = useState<Contact | null>(null);
+  const [detailProductId, setDetailProductId] = useState('');
   const [convertContact, setConvertContact] = useState<Contact | null>(null);
   const [selectedServiceType, setSelectedServiceType] = useState('其他');
   const [staffNoteEdit, setStaffNoteEdit] = useState<{ id: string; note: string } | null>(null);
@@ -246,6 +248,12 @@ export default function ContactsPage() {
     setConverting(false);
   };
 
+  const openDetail = (contact: Contact) => {
+    setDetailProductId('');
+    setDetail(contact);
+    if (!contact.read) void markAsRead(contact.id);
+  };
+
   // 取得列的背景色
   const getRowBgColor = (contact: Contact) => {
     if (contact.status === 'converted') return 'bg-green-50';
@@ -385,7 +393,7 @@ export default function ContactsPage() {
                 {filteredContacts.map(c => (
                   <tr 
                     key={c.id} 
-                    onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} 
+                    onClick={() => openDetail(c)}
                     className={`border-b last:border-0 hover:opacity-80 cursor-pointer transition-colors ${getRowBgColor(c)}`}
                   >
                     <td className="px-4 py-3 text-center">
@@ -407,7 +415,7 @@ export default function ContactsPage() {
                     <td className="px-4 py-3 text-gray-500 text-xs">{new Date(c.created_at).toLocaleString('zh-TW')}</td>
                     <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => { setDetail(c); if (!c.read) markAsRead(c.id); }} className="p-1.5 rounded-lg hover:bg-white/50" title="檢視">
+                        <button onClick={() => openDetail(c)} className="p-1.5 rounded-lg hover:bg-white/50" title="檢視">
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>
                         <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="刪除">
@@ -459,6 +467,12 @@ export default function ContactsPage() {
                 <p className="text-xs text-gray-500 mb-1">客戶需求描述</p>
                 <p className="text-sm bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">{detailContent?.description || '（無）'}</p>
               </div>
+
+              <ContactInventoryStatus
+                contact={detail}
+                productId={detailProductId}
+                getHeaders={getHeaders}
+              />
 
               {/* 工作人員備註 */}
               <div className="border-t pt-4">
@@ -516,6 +530,7 @@ export default function ContactsPage() {
                 products={products}
                 getHeaders={getHeaders}
                 onConvert={productId => openConvert(detail, productId)}
+                onProductChange={setDetailProductId}
               />
             </div>
             <div className="p-5 border-t flex flex-wrap items-center justify-between gap-3">
