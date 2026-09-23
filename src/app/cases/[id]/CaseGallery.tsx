@@ -58,7 +58,7 @@ export default function CaseGallery({ images, videos = [], title }: { images: st
             onClick={() => setActive(index)}
             className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-md border-2 transition-colors sm:h-24 sm:w-36 ${index === activeIndex ? 'border-[#b89a67]' : 'border-[#e0ddd7]'}`}
           >
-            {item.type === 'image' ? <Image src={item.url} alt="" fill sizes="144px" className="object-cover" /> : <video src={item.url} muted preload="metadata" className="h-full w-full object-cover" />}
+            {item.type === 'image' ? <Image src={item.url} alt={`${title}活動照片縮圖 ${images.indexOf(item.url) + 1}`} fill sizes="144px" className="object-cover" /> : <video src={item.url} muted preload="metadata" className="h-full w-full object-cover" />}
             {item.type === 'video' && <span className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-xs font-medium text-white">影片</span>}
           </button>
         ))}

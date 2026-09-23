@@ -105,7 +105,7 @@ export default function ShowGirlPage() {
               <div className="break-inside-avoid rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <img
                   src={url}
-                  alt={`Show Girl 案例 ${i + 1}`}
+                  alt={`SHOW GIRL 展場接待與品牌活動人員案例 ${i + 1}`}
                   className="w-full object-cover"
                   loading="lazy"
                 />

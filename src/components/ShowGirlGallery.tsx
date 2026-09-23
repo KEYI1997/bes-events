@@ -27,7 +27,7 @@ export default function ShowGirlGallery({ images }: ShowGirlGalleryProps) {
           <img
             key={i}
             src={url}
-            alt={`Show Girl ${i + 1}`}
+            alt={`SHOW GIRL 展場接待與活動人員案例 ${i + 1}`}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
               i === current ? 'opacity-100' : 'opacity-0'
             }`}
@@ -75,7 +75,7 @@ export default function ShowGirlGallery({ images }: ShowGirlGalleryProps) {
               i === current ? 'border-cta scale-105' : 'border-transparent opacity-60 hover:opacity-100'
             }`}
           >
-            <img src={url} alt={`縮圖 ${i + 1}`} className="w-full h-full object-cover" />
+            <img src={url} alt={`SHOW GIRL 活動人員案例縮圖 ${i + 1}`} className="w-full h-full object-cover" />
           </button>
         ))}
       </div>

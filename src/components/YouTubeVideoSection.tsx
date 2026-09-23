@@ -91,7 +91,7 @@ export default function YouTubeVideoSection({ source, className = '' }: { source
               <span className="relative block aspect-video w-24 shrink-0 overflow-hidden rounded-md bg-[#e9e1d7]">
                 {item.thumbnail ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.thumbnail} alt="" className="h-full w-full object-cover" />
+                  <img src={item.thumbnail} alt={`${item.title}影片縮圖`} className="h-full w-full object-cover" />
                 ) : <span className="flex h-full items-center justify-center text-[#8a8177]"><Play size={18} fill="currentColor" aria-hidden="true" /></span>}
                 <span className="absolute inset-0 flex items-center justify-center bg-black/15 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><Play size={20} fill="currentColor" aria-hidden="true" /></span>
               </span>

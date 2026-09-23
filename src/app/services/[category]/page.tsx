@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: CATEGORY_DESC[category] || service.summary,
     path: `/services/${category}`,
     image: service.image,
-    keywords: [service.name, ...service.intents.split('、'), '境曜有限公司'],
+    keywords: [...service.keywords, '境曜有限公司'],
   });
 }
 

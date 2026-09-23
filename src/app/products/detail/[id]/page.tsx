@@ -324,7 +324,7 @@ export default function ProductDetailPage() {
           </h2>
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="relative w-full" style={{ aspectRatio: '3/2' }}>
-              <Image src={parsed.sizeImg} alt="尺寸圖" fill className="object-contain" />
+              <Image src={parsed.sizeImg} alt={`${product.name}設備尺寸說明圖`} fill className="object-contain" />
             </div>
           </div>
         </section>
@@ -490,7 +490,7 @@ function EquipmentProductDetail({
 
         {detailSections.length > 0 && <section className="mt-14 grid gap-x-12 md:grid-cols-2">{detailSections.map(section => <section key={section.title} className="border-t border-[#e6dfd6] py-7"><h2 className="text-lg font-bold text-[#4a4947]">{section.title}</h2><div className="mt-4 space-y-3">{section.lines.map((line, index) => <p key={`${section.title}-${index}`} className="text-[15px] leading-7 text-[#706c66]">{line}</p>)}</div></section>)}</section>}
 
-        {parsed.sizeImg && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">尺寸說明</h2><div className="relative mt-5 aspect-[3/2] max-w-4xl overflow-hidden rounded-xl bg-white"><Image src={parsed.sizeImg} alt="尺寸圖" fill className="object-contain" /></div></section>}
+        {parsed.sizeImg && <section className="mt-8 border-t border-[#e6dfd6] pt-7"><h2 className="text-lg font-bold text-[#4a4947]">尺寸說明</h2><div className="relative mt-5 aspect-[3/2] max-w-4xl overflow-hidden rounded-xl bg-white"><Image src={parsed.sizeImg} alt={`${product.name}設備尺寸說明圖`} fill className="object-contain" /></div></section>}
         {youtubeSource && <YouTubeVideoSection key={parsed.youtube} source={youtubeSource} className="mt-8 border-t border-[#e6dfd6] pt-7" />}
       </div>
 

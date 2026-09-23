@@ -194,7 +194,7 @@ function Card({
         {item.src ? (
           <img
             src={item.src}
-            alt={item.alt || ""}
+            alt={item.alt || `境曜有限公司活動案例 ${index + 1}`}
             draggable={false}
             style={{
               width: "100%",

@@ -79,7 +79,7 @@ export default function ServicesPage() {
                 {/* 背景圖片 */}
                 <Image
                   src={service.image}
-                  alt={service.title}
+                  alt={`${service.title}活動服務與現場執行`}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />

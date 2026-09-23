@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: page.summary,
     path: `/products/${category}`,
     image: page.image,
-    keywords: [CATEGORY_MAP[category], page.name, '境曜有限公司'],
+    keywords: [...page.keywords, '境曜有限公司'],
   });
 }
 

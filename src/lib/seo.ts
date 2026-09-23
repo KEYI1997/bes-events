@@ -1,12 +1,8 @@
 import type { Metadata } from 'next';
 import { FACEBOOK_URL, LINE_URL } from '@/lib/siteLinks';
 
-const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-
-export const SITE_URL = (configuredSiteUrl?.startsWith('http')
-  ? configuredSiteUrl
-  : 'https://besevent.com'
-).replace(/\/$/, '');
+// Canonical and structured-data URLs must never inherit localhost or a preview deployment.
+export const SITE_URL = 'https://besevent.com';
 
 export const SITE_NAME = '境曜有限公司';
 export const SITE_ALTERNATE_NAME = 'BES Events';
@@ -24,6 +20,7 @@ export const SERVICE_SEO_PAGES = [
     name: 'AI 互動道具',
     summary: '以生成式 AI、影像與聲音互動，打造可參與、可分享的品牌活動體驗。',
     intents: '品牌互動、展覽體驗、企業活動',
+    keywords: ['AI 互動道具', 'AI 活動體驗', '生成式 AI 活動', '品牌互動體驗'],
     image: '/images/services/AI互動道具.png',
   },
   {
@@ -31,6 +28,7 @@ export const SERVICE_SEO_PAGES = [
     name: '活動企劃統包',
     summary: '整合策略企劃、視覺設計、舞台技術、流程控管與現場執行。',
     intents: '記者會、發表會、尾牙春酒、家庭日',
+    keywords: ['活動企劃統包', '企業活動企劃', '記者會企劃', '尾牙春酒活動'],
     image: '/images/services/活動策劃統包.png',
   },
   {
@@ -38,6 +36,7 @@ export const SERVICE_SEO_PAGES = [
     name: '啟動儀式',
     summary: '提供星辰運轉、全息投影、沙漏、燈球與客製啟動道具。',
     intents: '開幕典禮、揭牌、品牌發表會',
+    keywords: ['啟動儀式', '開幕啟動儀式', '揭牌儀式', '品牌發表會道具'],
     image: '/images/services/啟動儀式.png',
   },
   {
@@ -45,6 +44,7 @@ export const SERVICE_SEO_PAGES = [
     name: '活動特效',
     summary: '依場地與流程規劃低煙、泡泡、彩帶、冷焰火與 CO₂ 等現場效果。',
     intents: '舞台演出、典禮、企業活動',
+    keywords: ['活動特效', '舞台特效', '低煙機', '彩帶機', '冷焰火'],
     image: '/images/services/活動特效.png',
   },
   {
@@ -52,6 +52,7 @@ export const SERVICE_SEO_PAGES = [
     name: '外派調酒',
     summary: '行動吧台、專業調酒師、客製酒單與活動用酒的一站式服務。',
     intents: '婚禮、派對、品牌活動、企業晚宴',
+    keywords: ['外派調酒', '活動調酒師', '行動吧台', '企業活動酒吧'],
     image: '/images/services/外派調酒.png',
   },
   {
@@ -59,6 +60,7 @@ export const SERVICE_SEO_PAGES = [
     name: 'SHOW GIRL 活動人員',
     summary: '提供展場接待、品牌推廣、頒獎與活動現場協助人員。',
     intents: '展覽、記者會、品牌活動',
+    keywords: ['Show Girl', '活動人員派遣', '展場接待人員', '品牌活動人員'],
     image: '/images/services/show girl.png',
   },
 ] as const;
@@ -68,24 +70,28 @@ export const PRODUCT_CATEGORY_SEO_PAGES = [
     slug: 'opening-ceremony',
     name: '啟動儀式產品與方案',
     summary: '瀏覽星辰運轉、全息投影、沙漏啟動等創意啟動道具與活動方案。',
+    keywords: ['啟動儀式道具', '全息投影啟動', '沙漏啟動儀式', '開幕儀式設備'],
     image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196606975-syj452041wn.png',
   },
   {
     slug: 'stage-lighting',
     name: '燈光音響舞台設備',
     summary: '瀏覽活動燈光、音響、舞台與視訊設備，依場地及流程規劃專業現場技術。',
+    keywords: ['燈光音響舞台', '活動音響設備', '舞台搭建', '活動燈光設計'],
     image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196622151-e7httcbmjkj.png',
   },
   {
     slug: 'event-planning',
     name: '活動專案企劃方案',
     summary: '瀏覽記者會、企業家庭日、尾牙春酒與品牌活動的一站式企劃執行方案。',
+    keywords: ['活動專案企劃', '企業家庭日企劃', '記者會執行', '尾牙春酒企劃'],
     image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196617398-71mam68zxfp.png',
   },
   {
     slug: 'bartending',
     name: '外派調酒方案',
     summary: '瀏覽行動吧台、專業調酒師、客製酒單與不同活動規模的外派調酒方案。',
+    keywords: ['外派調酒方案', '行動吧台服務', '活動客製酒單', '專業調酒師'],
     image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196611709-wyxmfyfx61r.png',
   },
 ] as const;
@@ -116,7 +122,7 @@ export function createPageMetadata({
   return {
     title: { absolute: fullTitle },
     description,
-    keywords,
+    keywords: [...new Set(keywords.map(keyword => keyword.trim()).filter(Boolean))],
     alternates: { canonical },
     openGraph: {
       type: 'website',
@@ -142,7 +148,7 @@ export function createPageMetadata({
 export function organizationJsonLd() {
   return {
     '@context': 'https://schema.org',
-    '@type': ['Organization', 'ProfessionalService'],
+    '@type': ['Organization', 'LocalBusiness', 'ProfessionalService'],
     '@id': `${SITE_URL}/#organization`,
     name: SITE_NAME,
     legalName: SITE_NAME,
@@ -171,6 +177,12 @@ export function organizationJsonLd() {
       areaServed: 'TW',
       availableLanguage: ['zh-TW'],
     },
+    openingHoursSpecification: [{
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '09:00',
+      closes: '18:00',
+    }],
   };
 }
 

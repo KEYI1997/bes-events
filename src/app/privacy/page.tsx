@@ -7,6 +7,7 @@ export const metadata = createPageMetadata({
   title: '隱私權政策',
   description,
   path: '/privacy',
+  keywords: ['境曜有限公司隱私權政策', '網站個人資料保護', 'Cookie 使用說明'],
 });
 
 export default function PrivacyPage() {

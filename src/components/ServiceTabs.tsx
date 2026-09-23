@@ -156,7 +156,7 @@ export default function ServiceTabs() {
             <div className="w-full lg:w-1/2 relative min-h-[300px] lg:min-h-[400px]">
               <Image
                 src={activeService.image}
-                alt={activeService.title}
+                alt={`${activeService.title}活動服務與現場執行`}
                 fill
                 className="object-cover"
               />
