@@ -5,10 +5,10 @@ import { createPageMetadata, webPageJsonLd } from '@/lib/seo';
 const description = '認識境曜有限公司（BES Events）的活動整合理念、專業團隊與服務經驗，從策略企劃、舞台技術到現場執行，協助品牌完成重要活動。';
 
 export const metadata = createPageMetadata({
-  title: '關於境曜',
-  description,
+  title: '境曜有限公司｜台北活動企劃、啟動儀式與現場整合',
+  description: '境曜有限公司提供台北、新北、桃園與新竹的活動企劃統包、啟動儀式、舞台技術、活動特效、AI 互動與外派調酒服務，從需求盤點到現場執行提供整合規劃。',
   path: '/about',
-  keywords: ['境曜有限公司', 'BES Events', '台北活動公司'],
+  keywords: ['境曜有限公司', 'BES Events', '台北活動企劃', '啟動儀式', '活動整合'],
 });
 
 export default function AboutPage() {
