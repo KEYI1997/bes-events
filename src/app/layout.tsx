@@ -6,6 +6,7 @@ import FloatingButtons from "@/components/FloatingButtons";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import JsonLd from "@/components/JsonLd";
+import OrganizationOfferCatalogJsonLd from "@/components/OrganizationOfferCatalogJsonLd";
 import {
   DEFAULT_OG_IMAGE,
   SITE_DESCRIPTION,
@@ -100,6 +101,7 @@ export default function RootLayout({
     <html lang="zh-Hant-TW">
       <body className="antialiased overflow-x-hidden">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+        <OrganizationOfferCatalogJsonLd />
         <LayoutWrapper
           header={<Header />}
           footer={<Footer />}

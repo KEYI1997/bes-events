@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Phone, Mail, MapPin, MessageCircle, Building2 } from 'lucide-react';
 import { FACEBOOK_URL, LINE_URL } from '@/lib/siteLinks';
 import { SERVICE_NAV_LINKS } from '@/lib/navigation';
+import { SITE_ADDRESS } from '@/lib/seo';
 
 export default function Footer() {
   return (
@@ -65,7 +66,7 @@ export default function Footer() {
               </p>
               <p className="flex items-start gap-2 text-[16px] text-white/70">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span className="lg:whitespace-nowrap">地址：235新北市中和區新南里圓通路52號</span>
+                <span className="lg:whitespace-nowrap">地址：{SITE_ADDRESS}</span>
               </p>
             </div>
             {/* 社群 */}
