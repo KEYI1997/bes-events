@@ -12,6 +12,7 @@ const PAGE_SIZE_MAX = 100;
 const DEFAULT_PAGE_SIZE = 50;
 const PAGINATED_TABLES = new Set(['contacts', 'orders', 'customers']);
 const PUBLIC_SITE_CONTENT_KEYS = new Set(['hero_title', 'hero_subtitle', 'company_phone', 'company_email', 'company_line']);
+const CASE_ENRICHMENT_FIELDS = ['venue_area', 'venue_type', 'guest_count', 'project_goal', 'project_challenge', 'solution', 'outcome'] as const;
 
 async function syncPublicSiteContent(supabase: ReturnType<typeof getServiceClient>, record: { key?: unknown; value?: unknown }) {
   if (typeof record.key !== 'string' || !PUBLIC_SITE_CONTENT_KEYS.has(record.key) || typeof record.value !== 'string') return;
@@ -30,6 +31,16 @@ function toPositiveInteger(value: string | null, fallback: number) {
 
 function searchTerm(value: string | null) {
   return (value || '').trim().replace(/[(),.%_]/g, ' ');
+}
+
+function withoutCaseEnrichment(record: Record<string, unknown>) {
+  const legacyRecord = { ...record };
+  CASE_ENRICHMENT_FIELDS.forEach(field => { delete legacyRecord[field]; });
+  return legacyRecord;
+}
+
+function isMissingCaseEnrichmentColumn(error: { code?: string; message?: string } | null) {
+  return error?.code === 'PGRST204' || error?.code === '42703' || /venue_area|project_goal|project_challenge|guest_count|venue_type|solution|outcome/i.test(error?.message || '');
 }
 
 // GET /api/admin?table=xxx
@@ -200,7 +211,11 @@ export async function POST(request: NextRequest) {
     : table === 'orders'
       ? { ...record, customer_phone: normalizeTaiwanPhone(record.customer_phone) }
       : record;
-  const { data, error } = await supabase.from(table).insert(normalizedRecord).select().single();
+  let { data, error } = await supabase.from(table).insert(normalizedRecord).select().single();
+  // 資料庫欄位遷移尚未完成時，保持原案例管理可用；新欄位會待遷移後才儲存。
+  if (table === 'cases' && isMissingCaseEnrichmentColumn(error)) {
+    ({ data, error } = await supabase.from(table).insert(withoutCaseEnrichment(normalizedRecord)).select().single());
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -224,12 +239,21 @@ export async function PUT(request: NextRequest) {
     : table === 'orders'
       ? { ...record, customer_phone: normalizeTaiwanPhone(record.customer_phone) }
       : record;
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from(table)
     .update(normalizedRecord)
     .eq("id", id)
     .select()
     .single();
+
+  if (table === 'cases' && isMissingCaseEnrichmentColumn(error)) {
+    ({ data, error } = await supabase
+      .from(table)
+      .update(withoutCaseEnrichment(normalizedRecord))
+      .eq("id", id)
+      .select()
+      .single());
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
