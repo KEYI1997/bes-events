@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '@/lib/adminAuth';
+import { getServiceClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,53 @@ $$;
 const CASE_ACTIVITY_DATE_MIGRATION = `
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS activity_date DATE;
 COMMENT ON COLUMN cases.activity_date IS 'Actual event date entered manually by admins.';
+`;
+
+const PUBLIC_CASE_MEDIA_MIGRATION = `
+CREATE TABLE IF NOT EXISTS public_case_media (
+  case_id uuid PRIMARY KEY REFERENCES cases(id) ON DELETE CASCADE,
+  source_url text,
+  image_urls text[] NOT NULL DEFAULT '{}',
+  video_urls text[] NOT NULL DEFAULT '{}',
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public_case_media DROP COLUMN IF EXISTS facebook_video_ids;
+CREATE INDEX IF NOT EXISTS public_case_media_updated_at_idx ON public_case_media (updated_at DESC);
+ALTER TABLE public_case_media ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read visible case media" ON public_case_media;
+CREATE POLICY "Public read visible case media" ON public_case_media FOR SELECT USING (EXISTS (
+  SELECT 1 FROM cases WHERE cases.id = public_case_media.case_id AND cases.visible = true
+));
+`;
+
+const CASE_CONTENT_COMPLETE_MIGRATION = `
+ALTER TABLE cases
+  ADD COLUMN IF NOT EXISTS venue_area TEXT,
+  ADD COLUMN IF NOT EXISTS venue_type TEXT,
+  ADD COLUMN IF NOT EXISTS guest_count TEXT,
+  ADD COLUMN IF NOT EXISTS project_goal TEXT,
+  ADD COLUMN IF NOT EXISTS project_challenge TEXT,
+  ADD COLUMN IF NOT EXISTS solution TEXT,
+  ADD COLUMN IF NOT EXISTS outcome TEXT;
+ALTER TABLE public_case_media
+  ADD COLUMN IF NOT EXISTS image_captions TEXT[] NOT NULL DEFAULT '{}';
+`;
+
+const PUBLIC_SITE_CONTENT_KEYS = ['hero_title', 'hero_subtitle', 'company_phone', 'company_email', 'company_line'] as const;
+
+const PUBLIC_SITE_CONTENT_MIGRATION = `
+CREATE TABLE IF NOT EXISTS public_site_content (
+  key text PRIMARY KEY,
+  value text NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public_site_content ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read allowed site content" ON public_site_content;
+CREATE POLICY "Public read allowed site content" ON public_site_content FOR SELECT USING (true);
+`;
+
+const LOCK_SITE_CONTENT_PUBLIC_READ = `
+DROP POLICY IF EXISTS "Public read site_content" ON site_content;
 `;
 
 const BARTENDING_PLAN_DATA = [
@@ -103,6 +151,132 @@ async function runSql(sql: string) {
   });
 }
 
+function cleanStrings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? [...new Set(value.filter((item): item is string => typeof item === 'string').map(item => item.trim()).filter(Boolean))]
+    : [];
+}
+
+function cleanMediaUrls(value: unknown): string[] {
+  return cleanStrings(value).filter(url => /^https:\/\//.test(url));
+}
+
+function normalisePublicMedia(value: Record<string, unknown>) {
+  return {
+    sourceUrl: typeof value.sourceUrl === 'string' ? value.sourceUrl : null,
+    imageUrls: cleanMediaUrls(value.imageUrls),
+    videoUrls: cleanMediaUrls(value.videoUrls),
+  };
+}
+
+type MigrationSupabaseClient = ReturnType<typeof getServiceClient>;
+
+async function backfillPublicCaseMedia(supabase: MigrationSupabaseClient) {
+  const [{ data: sourceRows, error: sourceError }, { data: caseRows, error: caseError }] = await Promise.all([
+    supabase.from('site_content').select('key,value').like('key', 'facebook_case_detail_%'),
+    supabase.from('cases').select('id'),
+  ]);
+  if (sourceError) throw new Error(`讀取案例媒體來源失敗：${sourceError.message}`);
+  if (caseError) throw new Error(`讀取案例清單失敗：${caseError.message}`);
+
+  const caseIds = new Set((caseRows || []).map(row => row.id));
+  const rows: Array<{
+    case_id: string;
+    source_url: string | null;
+    image_urls: string[];
+    video_urls: string[];
+    updated_at: string;
+  }> = [];
+
+  for (const row of sourceRows || []) {
+    const caseId = row.key.replace(/^facebook_case_detail_/, '');
+    if (!caseIds.has(caseId)) continue;
+    try {
+      const parsed = JSON.parse(row.value || '{}') as Record<string, unknown>;
+      rows.push({
+        case_id: caseId,
+        source_url: typeof parsed.sourceUrl === 'string' ? parsed.sourceUrl : null,
+        image_urls: cleanMediaUrls(parsed.imageUrls),
+        video_urls: cleanMediaUrls(parsed.videoUrls),
+        updated_at: new Date().toISOString(),
+      });
+    } catch {
+      // 損毀的舊資料保留在原表，不讓單筆錯誤中斷整體備份；由後臺人工處理。
+    }
+  }
+
+  if (rows.length > 0) {
+    const { error } = await supabase.from('public_case_media').upsert(rows, { onConflict: 'case_id' });
+    if (error) throw new Error(`案例媒體回填失敗：${error.message}`);
+  }
+  return { sourceCount: (sourceRows || []).length, copiedCount: rows.length };
+}
+
+async function backfillPublicSiteContent(supabase: MigrationSupabaseClient) {
+  const { data, error } = await supabase
+    .from('site_content')
+    .select('key,value')
+    .in('key', [...PUBLIC_SITE_CONTENT_KEYS]);
+  if (error) throw new Error(`讀取公開網站設定失敗：${error.message}`);
+  const rows = (data || []).map(row => ({ key: row.key, value: row.value, updated_at: new Date().toISOString() }));
+  if (rows.length > 0) {
+    const { error: upsertError } = await supabase.from('public_site_content').upsert(rows, { onConflict: 'key' });
+    if (upsertError) throw new Error(`公開網站設定回填失敗：${upsertError.message}`);
+  }
+  return { sourceCount: rows.length, copiedCount: rows.length };
+}
+
+async function lockSiteContentPublicRead(supabase: MigrationSupabaseClient) {
+  const [{ data: sourceRows, error: sourceError }, { data: caseRows, error: caseError }, { data: copiedRows, error: copiedError }, { data: sourceSettings, error: settingsError }, { data: copiedSettings, error: copiedSettingsError }] = await Promise.all([
+    supabase.from('site_content').select('key,value').like('key', 'facebook_case_detail_%'),
+    supabase.from('cases').select('id'),
+    supabase.from('public_case_media').select('case_id,source_url,image_urls,video_urls'),
+    supabase.from('site_content').select('key,value').in('key', [...PUBLIC_SITE_CONTENT_KEYS]),
+    supabase.from('public_site_content').select('key,value'),
+  ]);
+  if (sourceError) throw new Error(`檢查舊案例媒體失敗：${sourceError.message}`);
+  if (caseError) throw new Error(`檢查案例清單失敗：${caseError.message}`);
+  if (copiedError) throw new Error(`檢查新案例媒體失敗：${copiedError.message}`);
+  if (settingsError) throw new Error(`檢查公開網站設定失敗：${settingsError.message}`);
+  if (copiedSettingsError) throw new Error(`檢查新公開網站設定失敗：${copiedSettingsError.message}`);
+
+  const caseIds = new Set((caseRows || []).map(row => row.id));
+  const expectedMedia = new Map<string, ReturnType<typeof normalisePublicMedia>>();
+  for (const row of sourceRows || []) {
+    const caseId = row.key.replace(/^facebook_case_detail_/, '');
+    if (!caseIds.has(caseId)) throw new Error(`案例媒體來源包含不存在的案例：${caseId}`);
+    let parsed: Record<string, unknown>;
+    try { parsed = JSON.parse(row.value || '{}') as Record<string, unknown>; }
+    catch { throw new Error(`案例媒體資料格式錯誤，尚未鎖定 site_content：${row.key}`); }
+    expectedMedia.set(caseId, normalisePublicMedia(parsed));
+  }
+  const actualMedia = new Map((copiedRows || []).map(row => [row.case_id, {
+    sourceUrl: row.source_url || null,
+    imageUrls: cleanMediaUrls(row.image_urls),
+    videoUrls: cleanMediaUrls(row.video_urls),
+  }]));
+  if (expectedMedia.size !== actualMedia.size) {
+    throw new Error(`尚未允許鎖定 site_content：案例媒體投影筆數不一致（來源 ${expectedMedia.size}，公開 ${actualMedia.size}）。`);
+  }
+  for (const [caseId, expected] of expectedMedia) {
+    if (JSON.stringify(expected) !== JSON.stringify(actualMedia.get(caseId))) {
+      throw new Error(`尚未允許鎖定 site_content：案例 ${caseId} 媒體內容尚未一致。`);
+    }
+  }
+
+  const expectedSettings = new Map((sourceSettings || []).map(row => [row.key, row.value]));
+  const actualSettings = new Map((copiedSettings || []).map(row => [row.key, row.value]));
+  if (expectedSettings.size !== actualSettings.size) {
+    throw new Error(`尚未允許鎖定 site_content：公開網站設定筆數不一致（來源 ${expectedSettings.size}，公開 ${actualSettings.size}）。`);
+  }
+  for (const [key, value] of expectedSettings) {
+    if (actualSettings.get(key) !== value) throw new Error(`尚未允許鎖定 site_content：公開設定 ${key} 尚未一致。`);
+  }
+  const result = await runSql(LOCK_SITE_CONTENT_PUBLIC_READ);
+  if (!result.ok) throw new Error(`移除 site_content 公開讀取政策失敗：${await result.text()}`);
+  return { sourceCount: expectedMedia.size, copiedCount: actualMedia.size, publicSettingCount: expectedSettings.size };
+}
+
 export async function GET(request: NextRequest) {
   if (!await verifyAdminRequest(request)) {
     return NextResponse.json({ error: '未授權' }, { status: 401 });
@@ -113,9 +287,33 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  const siteContentPhase = request.nextUrl.searchParams.get('siteContentPhase');
+  if (siteContentPhase === 'prepare') {
+    const result = await runSql(`${PUBLIC_CASE_MEDIA_MIGRATION}${PUBLIC_SITE_CONTENT_MIGRATION}`);
+    if (!result.ok) {
+      return NextResponse.json({ status: 'need_manual', error: await result.text() }, { status: 500 });
+    }
+    try {
+      const backfill = await backfillPublicCaseMedia(supabase);
+      const publicSettings = await backfillPublicSiteContent(supabase);
+      return NextResponse.json({ status: 'success', phase: 'prepare', ...backfill, publicSettings, oldSiteContentPreserved: true });
+    } catch (error) {
+      return NextResponse.json({ status: 'need_manual', error: error instanceof Error ? error.message : '案例媒體回填失敗' }, { status: 500 });
+    }
+  }
+
+  if (siteContentPhase === 'lock') {
+    try {
+      const locked = await lockSiteContentPublicRead(supabase);
+      return NextResponse.json({ status: 'success', phase: 'lock', ...locked, oldSiteContentPreserved: true });
+    } catch (error) {
+      return NextResponse.json({ status: 'need_manual', error: error instanceof Error ? error.message : 'site_content 鎖定失敗' }, { status: 500 });
+    }
+  }
+
   // 舊版環境可能缺少 ai_file_url；與產品分類限制一起做成可重複執行的固定遷移。
   const { error } = await supabase.from('products').select('ai_file_url').limit(1);
-  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}${CASE_ACTIVITY_DATE_MIGRATION}${PAGE_VIEW_MIGRATION}`;
+  const sql = `${error?.code === '42703' ? 'ALTER TABLE products ADD COLUMN IF NOT EXISTS ai_file_url text;\n' : ''}${PRODUCT_CATEGORY_MIGRATION}${CASE_ACTIVITY_DATE_MIGRATION}${PUBLIC_CASE_MEDIA_MIGRATION}${CASE_CONTENT_COMPLETE_MIGRATION}${PAGE_VIEW_MIGRATION}`;
   const result = await runSql(sql);
   const migrationWarning = result.ok ? null : await result.text();
 

@@ -11,6 +11,17 @@ async function verifyAdmin(request: NextRequest) {
 const PAGE_SIZE_MAX = 100;
 const DEFAULT_PAGE_SIZE = 50;
 const PAGINATED_TABLES = new Set(['contacts', 'orders', 'customers']);
+const PUBLIC_SITE_CONTENT_KEYS = new Set(['hero_title', 'hero_subtitle', 'company_phone', 'company_email', 'company_line']);
+
+async function syncPublicSiteContent(supabase: ReturnType<typeof getServiceClient>, record: { key?: unknown; value?: unknown }) {
+  if (typeof record.key !== 'string' || !PUBLIC_SITE_CONTENT_KEYS.has(record.key) || typeof record.value !== 'string') return;
+  const { error } = await supabase.from('public_site_content').upsert({
+    key: record.key,
+    value: record.value,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'key' });
+  if (error && error.code !== 'PGRST205') throw error;
+}
 
 function toPositiveInteger(value: string | null, fallback: number) {
   const parsed = Number.parseInt(value || '', 10);
@@ -195,6 +206,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  if (table === 'site_content') await syncPublicSiteContent(supabase, normalizedRecord);
+
   return NextResponse.json({ data });
 }
 
@@ -221,6 +234,8 @@ export async function PUT(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  if (table === 'site_content') await syncPublicSiteContent(supabase, normalizedRecord);
 
   return NextResponse.json({ data });
 }

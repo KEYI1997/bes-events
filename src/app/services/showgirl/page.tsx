@@ -2,6 +2,7 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 import JsonLd from '@/components/JsonLd';
 import ShowGirlGallery from '@/components/ShowGirlGallery';
 import ShowGirlInquiryForm from '@/components/ShowGirlInquiryForm';
+import ServiceDecisionGuide from '@/components/ServiceDecisionGuide';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, webPageJsonLd } from '@/lib/seo';
 
 const description = '專業活動人員派遣，提供展場接待、品牌推廣、頒獎與活動現場協助。';
@@ -114,6 +115,8 @@ export default function ShowGirlPage() {
           ))}
         </div>
       </section>
+
+      <ServiceDecisionGuide category="showgirl" />
 
     </main></>
   );

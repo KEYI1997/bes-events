@@ -7,7 +7,7 @@ export const SITE_URL = 'https://besevent.com';
 export const SITE_NAME = '境曜有限公司';
 export const SITE_ALTERNATE_NAME = 'BES Events';
 export const SITE_DESCRIPTION =
-  '境曜有限公司（BES Events）是台北活動整合公司，提供活動企劃統包、啟動儀式、AI 互動道具、活動特效、外派調酒與專業活動人員派遣。';
+  '境曜有限公司（BES Events）是台北活動整合公司，提供活動企劃統包、活動道具出租、啟動儀式、活動特效設備租借、AI 互動道具、外派調酒與專業活動人員派遣。';
 export const SITE_PHONE = '+886912727596';
 export const SITE_EMAIL = 'Jingyaoactivities@gmail.com';
 export const SITE_TAX_ID = '60373507';
@@ -36,7 +36,7 @@ export const SERVICE_SEO_PAGES = [
     name: '啟動儀式',
     summary: '提供星辰運轉、全息投影、沙漏、燈球與客製啟動道具。',
     intents: '開幕典禮、揭牌、品牌發表會',
-    keywords: ['啟動儀式', '開幕啟動儀式', '揭牌儀式', '品牌發表會道具'],
+    keywords: ['啟動儀式', '啟動儀式道具租借', '開幕道具出租', '記者會道具出租', '品牌發表會啟動道具'],
     image: '/images/services/啟動儀式.png',
   },
   {
@@ -44,7 +44,7 @@ export const SERVICE_SEO_PAGES = [
     name: '活動特效',
     summary: '依場地與流程規劃低煙、泡泡、彩帶、冷焰火與 CO₂ 等現場效果。',
     intents: '舞台演出、典禮、企業活動',
-    keywords: ['活動特效', '舞台特效', '低煙機', '彩帶機', '冷焰火'],
+    keywords: ['活動特效', '活動特效設備租借', '舞台特效設備出租', '低煙機租借', '彩帶機租借', '冷焰火設備'],
     image: '/images/services/活動特效.png',
   },
   {
@@ -70,7 +70,7 @@ export const PRODUCT_CATEGORY_SEO_PAGES = [
     slug: 'opening-ceremony',
     name: '啟動儀式產品與方案',
     summary: '瀏覽星辰運轉、全息投影、沙漏啟動等創意啟動道具與活動方案。',
-    keywords: ['啟動儀式道具', '全息投影啟動', '沙漏啟動儀式', '開幕儀式設備'],
+    keywords: ['活動道具出租', '啟動儀式道具租借', '全息投影啟動', '沙漏啟動儀式', '開幕典禮活動道具出租', '新品發表會啟動道具租借'],
     image: 'https://urswpmgnkiirqcrbnuie.supabase.co/storage/v1/object/public/images/hero/1784196606975-syj452041wn.png',
   },
   {
@@ -98,6 +98,50 @@ export const PRODUCT_CATEGORY_SEO_PAGES = [
 
 export function absoluteUrl(path = '/') {
   return new URL(path, `${SITE_URL}/`).toString();
+}
+
+type ProductSearchRecord = {
+  name: string;
+  category?: string | null;
+};
+
+const RENTAL_PRODUCT_CATEGORIES = new Set(['啟動儀式', '活動特效', '燈光音響舞台']);
+
+export function productIntentSummary(product: ProductSearchRecord) {
+  if (product.category === '啟動儀式') {
+    return `${product.name}道具租借方案，適合開幕典禮、記者會、新品發表會與企業活動；可依活動地點、進撤場與現場流程洽詢運送、安裝及控師安排。`;
+  }
+  if (product.category === '活動特效') {
+    return `${product.name}活動特效設備租借方案，可依場地條件、活動流程與進撤場需求規劃設備、安裝及現場操作。`;
+  }
+  if (product.category === '燈光音響舞台') {
+    return `${product.name}活動設備租借方案，可依場地規模、流程與技術需求規劃設備及現場執行。`;
+  }
+  if (product.category === '外派調酒') {
+    return `${product.name}外派調酒方案，包含活動調酒、行動吧台與服務內容說明，實際配置依活動人數與需求規劃。`;
+  }
+  return `${product.name}活動服務方案，實際內容可依活動需求與場地條件洽詢。`;
+}
+
+export function productSeoTitle(product: ProductSearchRecord) {
+  if (RENTAL_PRODUCT_CATEGORIES.has(product.category || '')) {
+    return `${product.name}租借｜價格、規格與活動用途`;
+  }
+  if (product.category === '外派調酒') {
+    return `${product.name}｜外派調酒價格與服務內容`;
+  }
+  return product.name;
+}
+
+export function productSeoKeywords(product: ProductSearchRecord) {
+  const base = [product.name, product.category || '活動服務', SITE_NAME];
+  if (RENTAL_PRODUCT_CATEGORIES.has(product.category || '')) {
+    return [...base, `${product.name}租借`, `${product.name}出租`, `${product.name}價格`, `台北${product.name}租借`, `桃園${product.name}出租`, `新竹${product.name}租借`];
+  }
+  if (product.category === '外派調酒') {
+    return [...base, '外派調酒價格', '活動調酒方案', '行動吧台服務'];
+  }
+  return base;
 }
 
 type PageMetadataOptions = {

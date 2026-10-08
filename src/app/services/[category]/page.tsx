@@ -5,6 +5,7 @@ import BartendingPlans from '@/components/BartendingPlans';
 import EventCaseSmoothSlider from '@/components/EventCaseSmoothSlider';
 import JsonLd from '@/components/JsonLd';
 import ServiceProductGrid from '@/components/ServiceProductGrid';
+import ServiceDecisionGuide from '@/components/ServiceDecisionGuide';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, SERVICE_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
@@ -24,10 +25,15 @@ const CATEGORY_MAP: Record<string, string> = {
 const CATEGORY_DESC: Record<string, string> = {
   'ai-interactive-props': '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗，讓每位賓客成為活動的主角。',
   'event-package': '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
-  'opening-ceremony': '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。',
-  'special-effects': '從夢幻泡泡、低煙雲霧到彩帶、火花與 CO₂ 氣柱，依活動節奏打造安全、精準且有記憶點的現場效果。',
+  'opening-ceremony': '提供開幕典禮、記者會與新品發表會的啟動儀式道具出租，可依地點與流程規劃運送、安裝及現場控制。',
+  'special-effects': '提供泡泡、低煙、彩帶、火花與 CO₂ 等活動特效設備租借，依場地與流程規劃安裝及現場操作。',
   'bartending': '從 50 杯到 400 杯的行動酒吧方案，包含專業調酒、客製酒單、吧台器具與場地規劃。',
   'showgirl': '專業活動人員派遣，提供展場接待、活動協助等服務。',
+};
+
+const CATEGORY_SEO_TITLE: Record<string, string> = {
+  'opening-ceremony': '啟動儀式道具出租｜開幕、記者會與品牌發表會',
+  'special-effects': '活動特效設備租借｜泡泡、低煙、彩帶與火花效果',
 };
 
 const DB_CATEGORY_MAP: Record<string, string> = {
@@ -59,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = SERVICE_SEO_PAGES.find(item => item.slug === category);
   if (!service) return createPageMetadata({ title: '服務項目', description: '境曜有限公司活動整合服務。', path: '/services' });
   return createPageMetadata({
-    title: service.name,
+    title: CATEGORY_SEO_TITLE[category] || service.name,
     description: CATEGORY_DESC[category] || service.summary,
     path: `/services/${category}`,
     image: service.image,
@@ -129,7 +135,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
   // 外派調酒：由 BartendingPlans 呈現後臺可維護的方案產品
   if (category === 'bartending') {
     return (
-      <><JsonLd data={structuredData} /><BartendingPlans products={(products || []) as Product[]} /></>
+      <><JsonLd data={structuredData} /><BartendingPlans products={(products || []) as Product[]} /><ServiceDecisionGuide category={category} /></>
     );
   }
 
@@ -148,6 +154,7 @@ export default async function ServiceCategoryPage({ params }: Props) {
           <div className="text-center py-16"><p className="text-primary/60 text-lg">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}
       </section>
+      <ServiceDecisionGuide category={category} />
     </main></>
   );
 }
@@ -161,7 +168,7 @@ function SpecialEffectsPage({ products }: { products: Product[] }) {
             <p className="mb-5 text-sm font-medium uppercase tracking-[0.24em] text-[#b58445]">SPECIAL EFFECTS</p>
             <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">活動特效</h1>
             <p className="mt-3 text-2xl text-[#303746] md:text-3xl">從夢幻泡泡、低煙雲霧到彩帶、火花與 CO₂ 氣柱</p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">依活動節奏打造安全、精準且有記憶點的<br className="hidden md:block" />現場效果。</p>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-[#4f535b] md:text-lg">提供活動特效設備租借，可依場地條件、活動流程與進撤場需求，規劃設備、安裝及現場操作。</p>
           </AnimateOnScroll>
         </div>
         <CeremonyHeroLines />
@@ -169,6 +176,7 @@ function SpecialEffectsPage({ products }: { products: Product[] }) {
       <section className="relative z-10 mx-auto max-w-7xl px-4 py-14 md:py-16">
         {products.length > 0 ? <ServiceProductGrid products={products} showDetailCta /> : <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>}
       </section>
+      <ServiceDecisionGuide category="special-effects" />
     </main>
   );
 }
@@ -204,7 +212,7 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">OPENING CEREMONY</p>
             <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">啟動儀式</h1>
             <p className="mt-3 text-2xl text-[#303746] md:text-3xl">讓開場成為活動最具記憶點的一刻</p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[#4f535b] md:text-lg">星辰運轉、全息投影、沙漏啟動等多種創意儀式，<br className="hidden md:block" />以精準節奏與現場執行，為品牌揭開精彩序幕。</p>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-[#4f535b] md:text-lg">提供台北、新北、桃園、新竹地區的啟動儀式道具出租與租借諮詢，適合開幕典禮、記者會、新品發表會與企業活動；可依場地需求規劃運送、安裝及現場控師。</p>
           </AnimateOnScroll>
         </div>
         <CeremonyHeroLines />
@@ -212,13 +220,14 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
 
       <section className="relative mx-auto max-w-[1400px] px-6 py-20 md:px-12 lg:px-20 lg:py-24">
         <CeremonyProductGlow />
-        <SectionHeading title="啟動儀式方案" english="CEREMONY SOLUTIONS" />
+        <SectionHeading title="啟動儀式道具出租方案" english="CEREMONY SOLUTIONS" />
         {products.length > 0 ? (
           <div className="relative z-10 mt-12"><ServiceProductGrid products={products} showDetailCta /></div>
         ) : (
           <div className="py-16 text-center"><p className="text-lg text-[#5b5e65]">目前尚無產品資料，請洽詢我們取得最新資訊。</p></div>
         )}
       </section>
+      <ServiceDecisionGuide category="opening-ceremony" />
     </main>
   );
 }
@@ -331,6 +340,7 @@ function EventPackagePage() {
         <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-[15px] leading-7 text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
         <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">正在規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">告訴我們活動日期、規模與需求，<br />由專人協助您規劃最合適的方案。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢活動企劃 →</a></div>
       </section>
+      <ServiceDecisionGuide category="event-package" />
     </main>
   );
 }

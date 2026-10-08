@@ -5,6 +5,9 @@ import {
   absoluteUrl,
   breadcrumbJsonLd,
   createPageMetadata,
+  productIntentSummary,
+  productSeoKeywords,
+  productSeoTitle,
   SITE_NAME,
   SITE_URL,
   webPageJsonLd,
@@ -30,9 +33,11 @@ function summarizeProduct(product: ProductSeoRecord) {
   const summary = product.description
     ?.replace(/【[^】]+】/g, ' ')
     .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/\[\{[\s\S]*$/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  return (summary || `${SITE_NAME}提供${product.name}活動服務、適用場合與方案說明。`).slice(0, 180);
+  const intent = productIntentSummary(product);
+  return `${intent}${summary ? ` ${summary}` : ''}`.slice(0, 180);
 }
 
 function productImages(product: ProductSeoRecord) {
@@ -62,11 +67,11 @@ export async function generateMetadata({ params }: Omit<Props, 'children'>): Pro
     });
   }
   return createPageMetadata({
-    title: product.name,
+    title: productSeoTitle(product),
     description: summarizeProduct(product),
     path: `/products/detail/${id}`,
     image: productImages(product)[0],
-    keywords: [product.name, product.category || '活動服務', SITE_NAME],
+    keywords: productSeoKeywords(product),
   });
 }
 

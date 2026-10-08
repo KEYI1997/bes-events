@@ -64,7 +64,8 @@ function parseProduct(p: ProductData) {
   const singlePurchaseOnly = isSinglePurchaseOnly(p.description);
   const standardVideo = (p.description || '').match(/【公版影片】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
   if (p.service_content !== undefined && p.service_content !== '') {
-    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
+    const fullDescription = p.description || '';
+    return { service: p.service_content || '', features: '', occasions: '', notice: p.notice || '', specifications: fullDescription.match(/【產品規格】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '', siteRequirements: fullDescription.match(/【場地條件】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '', installation: fullDescription.match(/【安裝與現場服務】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '', preparation: fullDescription.match(/【交件與準備】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '', youtube: p.youtube_url || '', ai_file: p.ai_file_url || '', standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
   }
   const desc = (p.description || '').replace(/\n*【尺寸圖】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【AI圖檔】\n?https?:\/\/[^\s]+/g, '').replace(/\n*【公版影片】\n?https?:\/\/[^\s]+/g, '');
   const service = desc.match(/【(?:服務內容|效果介紹)】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
@@ -73,7 +74,11 @@ function parseProduct(p: ProductData) {
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const ai_file = (p.description || '').match(/【AI圖檔】\n?(https?:\/\/[^\s]+)/)?.[1]?.trim() || '';
-  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, youtube, ai_file, standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
+  const specifications = desc.match(/【產品規格】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const siteRequirements = desc.match(/【場地條件】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const installation = desc.match(/【安裝與現場服務】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const preparation = desc.match(/【交件與準備】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  return { service: service || (desc.includes('【') ? '' : desc), features, occasions, notice, specifications, siteRequirements, installation, preparation, youtube, ai_file, standardVideo, priceOptions, addOns, choices, singlePurchaseOnly };
 }
 
 function getAllProductImages(p: ProductData): string[] {
@@ -89,7 +94,7 @@ export default function ProductsPage() {
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [form, setForm] = useState({
     name: '', category: '啟動儀式', price_options: [] as ProductOptionRow[], add_ons: [] as ProductOptionRow[], choices: [] as ProductOptionRow[],
-    service_content: '', features: '', occasions: '', notice: '', youtube_url: '',
+    service_content: '', features: '', occasions: '', notice: '', specifications: '', site_requirements: '', installation_service: '', preparation_notes: '', youtube_url: '',
     image_url: '', size_image_url: '', ai_file_url: '', standard_video_url: '',
     stock: 1, visible: true, single_purchase_only: false,
   });
@@ -127,7 +132,7 @@ export default function ProductsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', category: '啟動儀式', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', standard_video_url: '', stock: 1, visible: true, single_purchase_only: false });
+    setForm({ name: '', category: '啟動儀式', price_options: [], add_ons: [], choices: [], service_content: '', features: '', occasions: '', notice: '', specifications: '', site_requirements: '', installation_service: '', preparation_notes: '', youtube_url: '', image_url: '', size_image_url: '', ai_file_url: '', standard_video_url: '', stock: 1, visible: true, single_purchase_only: false });
     setShowModal(true);
   };
 
@@ -147,6 +152,10 @@ export default function ProductsPage() {
       features: parsed.features,
       occasions: parsed.occasions,
       notice: parsed.notice,
+      specifications: parsed.specifications,
+      site_requirements: parsed.siteRequirements,
+      installation_service: parsed.installation,
+      preparation_notes: parsed.preparation,
       youtube_url: parsed.youtube || p.youtube_url || '',
       image_url: getAllProductImages(p).join(','),
       size_image_url: sizeUrl,
@@ -226,6 +235,10 @@ export default function ProductsPage() {
       form.features ? `【效果特色】\n${form.features}` : '',
       form.notice ? `【注意事項】\n${form.notice}` : '',
       form.occasions ? `【適用場合】\n${form.occasions}` : '',
+      form.specifications ? `【產品規格】\n${form.specifications}` : '',
+      form.site_requirements ? `【場地條件】\n${form.site_requirements}` : '',
+      form.installation_service ? `【安裝與現場服務】\n${form.installation_service}` : '',
+      form.preparation_notes ? `【交件與準備】\n${form.preparation_notes}` : '',
       form.youtube_url ? `【YouTube】\n${form.youtube_url}` : '',
       form.size_image_url ? `【尺寸圖】\n${form.size_image_url}` : '',
       form.ai_file_url ? `【AI圖檔】\n${form.ai_file_url}` : '',
@@ -599,6 +612,27 @@ export default function ProductsPage() {
                 <label className="block text-sm font-medium mb-1">注意事項</label>
                 <textarea value={form.notice} onChange={e => setForm(f => ({ ...f, notice: e.target.value }))} rows={4} placeholder="每行一項" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" />
               </div>
+
+              <section className="rounded-xl border border-[#E4DBD0] bg-[#FCFAF7] p-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-[#4A4947]">商品規格模板</h3>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">依實際資料填寫；未填欄位不會顯示於前台。固定價格請仍放在上方「價格選項」。</p>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <label className="block text-sm font-medium">產品規格
+                    <textarea value={form.specifications} onChange={e => setForm(f => ({ ...f, specifications: e.target.value }))} rows={4} placeholder="每行一項，例如：尺寸、材質、數量或使用限制" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" />
+                  </label>
+                  <label className="block text-sm font-medium">場地條件
+                    <textarea value={form.site_requirements} onChange={e => setForm(f => ({ ...f, site_requirements: e.target.value }))} rows={4} placeholder="每行一項，例如：電力、網路、挑高、舞台或貨梯需求" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" />
+                  </label>
+                  <label className="block text-sm font-medium">安裝與現場服務
+                    <textarea value={form.installation_service} onChange={e => setForm(f => ({ ...f, installation_service: e.target.value }))} rows={4} placeholder="每行一項，例如：運送、安裝、撤場、現場控師或服務時段" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" />
+                  </label>
+                  <label className="block text-sm font-medium">交件與準備
+                    <textarea value={form.preparation_notes} onChange={e => setForm(f => ({ ...f, preparation_notes: e.target.value }))} rows={4} placeholder="每行一項，例如：客製檔案、確認期限、彩排或活動前準備" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" />
+                  </label>
+                </div>
+              </section>
 
               {form.category === '活動特效' && (
                 <div>

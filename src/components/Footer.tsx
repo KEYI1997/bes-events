@@ -45,6 +45,12 @@ export default function Footer() {
               >
                 隱私權及個資保護政策
               </Link>
+              <Link
+                href="/service-areas"
+                className="block text-[16px] text-white/70 hover:text-cta transition-colors"
+              >
+                活動服務地區與報價說明
+              </Link>
             </nav>
           </div>
 

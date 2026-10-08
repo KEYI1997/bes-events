@@ -14,7 +14,7 @@ export const metadata = createPageMetadata({
   title: "境曜有限公司｜台北活動企劃、啟動儀式與活動整合",
   description: SITE_DESCRIPTION,
   path: "/",
-  keywords: ["境曜有限公司", "BES Events", "台北活動企劃", "活動整合公司"],
+  keywords: ["境曜有限公司", "BES Events", "台北活動企劃", "活動整合公司", "活動道具出租", "活動設備租借", "台北活動道具出租", "桃園活動道具出租", "新竹活動道具租借"],
 });
 
 export default async function HomePage() {
@@ -54,6 +54,9 @@ export default async function HomePage() {
               </h2>
               <p className="text-primary/70 text-lg">
                 一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值
+              </p>
+              <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-primary/60 md:text-base">
+                提供啟動儀式道具、活動特效設備與企業活動用品租借，服務台北、新北、桃園、新竹及其他地區。
               </p>
             </div>
           </AnimateOnScroll>

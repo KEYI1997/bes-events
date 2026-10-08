@@ -73,6 +73,13 @@ export interface Case {
   used_services: string[];
   used_products: string[];
   applicable_occasions: string[];
+  venue_area?: string | null;
+  venue_type?: string | null;
+  guest_count?: string | null;
+  project_goal?: string | null;
+  project_challenge?: string | null;
+  solution?: string | null;
+  outcome?: string | null;
   sort_order: number;
   visible: boolean;
   created_at: string;

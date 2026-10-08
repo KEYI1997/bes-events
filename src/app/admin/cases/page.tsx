@@ -26,7 +26,7 @@ const SERVICE_TYPES = ['活動策劃統包', '啟動儀式', '活動特效', '�
 
 const EMPTY_CASE = {
   title: '', category: '開幕典禮' as string, service_type: '',
-  description: '', image_url: '', video_urls: [] as string[], client_name: '', event_date: '', activity_date: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
+  description: '', image_url: '', image_captions: [] as string[], video_urls: [] as string[], client_name: '', event_date: '', activity_date: '', venue_area: '', venue_type: '', guest_count: '', project_goal: '', project_challenge: '', solution: '', outcome: '', used_services: [] as string[], used_products: [] as string[], applicable_occasions: [] as string[], visible: true, sort_order: 0,
 };
 
 function toList(value: string) {
@@ -86,7 +86,7 @@ export default function CasesPage() {
     setEditing(c);
     setUploadError('');
     setSaveError('');
-    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, video_urls: [], client_name: c.client_name, event_date: c.event_date, activity_date: c.activity_date || '', used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
+    setForm({ title: c.title, category: c.category, service_type: c.service_type || '', description: c.description, image_url: c.image_url, image_captions: [], video_urls: [], client_name: c.client_name, event_date: c.event_date, activity_date: c.activity_date || '', venue_area: c.venue_area || '', venue_type: c.venue_type || '', guest_count: c.guest_count || '', project_goal: c.project_goal || '', project_challenge: c.project_challenge || '', solution: c.solution || '', outcome: c.outcome || '', used_services: c.used_services || [], used_products: c.used_products || [], applicable_occasions: c.applicable_occasions || [], visible: c.visible, sort_order: c.sort_order ?? 0 });
     setShowModal(true);
     try {
       const response = await fetch(`/api/admin/case-media?caseId=${encodeURIComponent(c.id)}`, { headers: getHeaders() });
@@ -96,6 +96,7 @@ export default function CasesPage() {
       setForm(current => ({
         ...current,
         image_url: uniqueUrls(media.imageUrls?.length ? media.imageUrls : imageList(c.image_url)).join(','),
+        image_captions: Array.isArray(media.imageCaptions) ? media.imageCaptions : [],
         video_urls: uniqueUrls(media.videoUrls || []),
       }));
     } catch (error) {
@@ -119,7 +120,7 @@ export default function CasesPage() {
         return json.url as string;
       }));
       const urls = uploaded.filter((url): url is string => Boolean(url));
-      if (urls.length) setForm(f => ({ ...f, image_url: uniqueUrls([...imageList(f.image_url), ...urls]).join(',') }));
+      if (urls.length) setForm(f => ({ ...f, image_url: uniqueUrls([...imageList(f.image_url), ...urls]).join(','), image_captions: [...f.image_captions, ...urls.map(() => '')] }));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : '圖片上傳失敗，請稍後再試');
     } finally {
@@ -163,7 +164,7 @@ export default function CasesPage() {
     setSaveError('');
     setSaving(true);
     const headers = { ...getHeaders(), 'Content-Type': 'application/json' };
-    const { video_urls, ...formRecord } = form;
+    const { video_urls, image_captions, ...formRecord } = form;
     // Supabase DATE 欄位不能接收空字串；刪除日期後要送 null，才能正常更新案例媒體。
     const record = {
       ...formRecord,
@@ -180,7 +181,7 @@ export default function CasesPage() {
       const mediaResponse = await fetch('/api/admin/case-media', {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ caseId: json.data.id, imageUrls: imageList(record.image_url), videoUrls: video_urls }),
+        body: JSON.stringify({ caseId: json.data.id, imageUrls: imageList(record.image_url), imageCaptions: image_captions, videoUrls: video_urls }),
       });
       const mediaJson = await mediaResponse.json();
       if (!mediaResponse.ok) throw new Error(mediaJson.error || '案例媒體儲存失敗');
@@ -342,6 +343,11 @@ export default function CasesPage() {
                 <label className="block text-sm font-medium mb-1">主辦方</label>
                 <input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：教育部" />
               </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div><label className="block text-sm font-medium mb-1">活動城市／地區</label><input value={form.venue_area} onChange={e => setForm(f => ({ ...f, venue_area: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：台北市" /></div>
+                <div><label className="block text-sm font-medium mb-1">場地類型</label><input value={form.venue_type} onChange={e => setForm(f => ({ ...f, venue_type: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：飯店宴會廳" /></div>
+                <div><label className="block text-sm font-medium mb-1">活動規模</label><input value={form.guest_count} onChange={e => setForm(f => ({ ...f, guest_count: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="例：約 200 人" /></div>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1">活動類型 *</label>
                 <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2">
@@ -379,6 +385,16 @@ export default function CasesPage() {
                 <label className="block text-sm font-medium mb-1">描述</label>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2" placeholder="活動簡介..." />
               </div>
+              <section className="rounded-xl border border-[#E4DBD0] bg-[#FCFAF7] p-4">
+                <h3 className="text-sm font-semibold text-[#4A4947]">案例內容完整化</h3>
+                <p className="mt-1 text-xs leading-5 text-gray-500">填寫後會在前台案例頁分段呈現；不公開或尚未確認的資訊可留空。</p>
+                <div className="mt-4 space-y-4">
+                  <label className="block text-sm font-medium">活動目標<textarea value={form.project_goal} onChange={e => setForm(f => ({ ...f, project_goal: e.target.value }))} rows={3} placeholder="例：讓貴賓共同完成新品亮相，強化品牌記憶。" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" /></label>
+                  <label className="block text-sm font-medium">現場挑戰<textarea value={form.project_challenge} onChange={e => setForm(f => ({ ...f, project_challenge: e.target.value }))} rows={3} placeholder="例：流程時間短、場地進撤場有限，需在指定時間完成安裝。" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" /></label>
+                  <label className="block text-sm font-medium">規劃與執行方式<textarea value={form.solution} onChange={e => setForm(f => ({ ...f, solution: e.target.value }))} rows={3} placeholder="例：規劃啟動儀式道具、現場控師與流程彩排，依舞台動線完成配置。" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" /></label>
+                  <label className="block text-sm font-medium">活動成果<textarea value={form.outcome} onChange={e => setForm(f => ({ ...f, outcome: e.target.value }))} rows={3} placeholder="例：依實際成果描述現場完成的畫面與流程；請避免未經驗證的數字。" className="mt-1.5 w-full px-3 py-2 border rounded-lg font-normal focus:outline-none focus:ring-2" /></label>
+                </div>
+              </section>
               <div>
                 <label className="block text-sm font-medium mb-1">活動圖片</label>
                 <div className="flex items-center gap-3">
@@ -388,7 +404,7 @@ export default function CasesPage() {
                     <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
                   </label>
                 </div>
-                {imageList(form.image_url).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{imageList(form.image_url).map((url, index) => <div key={`${url}-${index}`} className="relative"><img src={url} alt={`預覽圖片 ${index + 1}`} className="h-16 w-16 rounded-lg object-cover" /><button type="button" onClick={() => setForm(f => ({ ...f, image_url: imageList(f.image_url).filter((_, imageIndex) => imageIndex !== index).join(',') }))} className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 text-xs text-white" aria-label={`移除第 ${index + 1} 張圖片`}>×</button></div>)}</div>}
+                {imageList(form.image_url).length > 0 && <div className="mt-3 space-y-3">{imageList(form.image_url).map((url, index) => <div key={`${url}-${index}`} className="flex gap-3 rounded-lg border border-gray-200 p-2"><img src={url} alt={`預覽圖片 ${index + 1}`} className="h-16 w-16 shrink-0 rounded-lg object-cover" /><div className="min-w-0 flex-1"><label className="block text-xs font-medium text-gray-700">圖片說明／替代文字</label><input value={form.image_captions[index] || ''} onChange={e => setForm(f => { const image_captions = [...f.image_captions]; image_captions[index] = e.target.value; return { ...f, image_captions }; })} placeholder="例：台北新品發表會倒沙顯字啟動儀式，貴賓共同完成品牌亮相。" className="mt-1 w-full px-2.5 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2" /></div><button type="button" onClick={() => setForm(f => ({ ...f, image_url: imageList(f.image_url).filter((_, imageIndex) => imageIndex !== index).join(','), image_captions: f.image_captions.filter((_, captionIndex) => captionIndex !== index) }))} className="self-start rounded-md px-2 py-1 text-sm text-red-600 hover:bg-red-50" aria-label={`移除第 ${index + 1} 張圖片`}>移除</button></div>)}</div>}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">活動影片</label>

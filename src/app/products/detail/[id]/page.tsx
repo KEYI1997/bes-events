@@ -12,6 +12,7 @@ import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 import YouTubeVideoSection from '@/components/YouTubeVideoSection';
 import { parseYouTubeSource } from '@/lib/youtube';
+import { productIntentSummary } from '@/lib/seo';
 
 interface ProductDetail {
   id: string;
@@ -30,10 +31,14 @@ function parseDescription(desc: string) {
   const features = desc.match(/【效果特色】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const notice = desc.match(/【注意事項】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const occasions = desc.match(/【適用場合】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const specifications = desc.match(/【產品規格】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const siteRequirements = desc.match(/【場地條件】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const installation = desc.match(/【安裝與現場服務】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
+  const preparation = desc.match(/【交件與準備】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const youtube = desc.match(/【YouTube】\n?([\s\S]*?)(?=\n*【|$)/)?.[1]?.trim() || '';
   const sizeImg = desc.match(/【尺寸圖】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
   const standardVideo = desc.match(/【公版影片】\n?(https?:\/\/[^\s]+)/)?.[1] || '';
-  return { service, features, notice, occasions, youtube, sizeImg, standardVideo, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案'), choices: parseProductOptionRows(desc, '選配商品') };
+  return { service, features, notice, occasions, specifications, siteRequirements, installation, preparation, youtube, sizeImg, standardVideo, priceOptions: parseProductOptionRows(desc, '價格選項'), addOns: parseProductOptionRows(desc, '加購方案'), choices: parseProductOptionRows(desc, '選配商品') };
 }
 
 function parseLines(text: string): string[] {
@@ -90,6 +95,10 @@ export default function ProductDetailPage() {
     { title: '效果特色', lines: parseLines(parsed.features), tone: 'green', numbered: true },
     { title: '注意事項', lines: parseLines(parsed.notice), tone: 'orange', numbered: true },
     { title: '適用場合', lines: parseLines(parsed.occasions), tone: 'purple', numbered: true },
+    { title: '產品規格', lines: parseLines(parsed.specifications), tone: 'stone', numbered: false },
+    { title: '場地條件', lines: parseLines(parsed.siteRequirements), tone: 'stone', numbered: false },
+    { title: '安裝與現場服務', lines: parseLines(parsed.installation), tone: 'stone', numbered: false },
+    { title: '交件與準備', lines: parseLines(parsed.preparation), tone: 'stone', numbered: false },
   ].filter(section => section.lines.length > 0);
 
   const openEquipmentOrder = () => {
@@ -448,7 +457,8 @@ function EquipmentProductDetail({
             <div className="min-w-0 py-1 lg:py-3">
               <p className="text-[13px] font-semibold tracking-[0.12em] text-[#aa7452]">{product.category}</p>
               <h1 className="mt-3 text-[32px] font-bold leading-tight tracking-[-0.025em] text-[#3f3f3d] md:text-[36px]">{product.name}</h1>
-              
+              <p className="mt-4 max-w-[42rem] text-[15px] leading-7 text-[#706c66]">{productIntentSummary(product)}</p>
+
 
               <div className="mt-8 space-y-3">
                 {priceOptions.length > 0 ? <fieldset>

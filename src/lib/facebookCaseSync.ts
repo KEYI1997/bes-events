@@ -410,6 +410,20 @@ async function readCaseMedia(caseId: string) {
   return parseCaseMedia(data?.value);
 }
 
+async function writePublicCaseMedia(caseId: string, media: FacebookCaseMedia) {
+  const { error } = await getServiceClient().from('public_case_media').upsert({
+    case_id: caseId,
+    source_url: media.sourceUrl || null,
+    image_urls: cleanUrls(media.imageUrls),
+    video_urls: cleanUrls(media.videoUrls),
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'case_id' });
+  // 允許新版本先部署、資料庫遷移稍後執行；舊表資料仍完整保留。
+  if (error && error.code !== 'PGRST205') {
+    throw new Error(`公開案例媒體同步失敗：${error.message}`);
+  }
+}
+
 async function syncExistingCaseVideos(post: FacebookPost, caseId: string) {
   const existing = await readCaseMedia(caseId);
   const copied = await copyNewFacebookVideos(post.attachments?.data, post.id, cleanVideoIds(existing.facebookVideoIds));
@@ -426,6 +440,7 @@ async function syncExistingCaseVideos(post: FacebookPost, caseId: string) {
       value: JSON.stringify(value),
     }, { onConflict: 'key' });
     if (error) throw new Error(`影片資料儲存失敗：${error.message}`);
+    await writePublicCaseMedia(caseId, value);
   }
   return copied;
 }
@@ -563,6 +578,12 @@ export async function syncFacebookCases(limit = 20): Promise<FacebookCaseSyncRes
           }),
         },
       ], { onConflict: 'key' });
+      await writePublicCaseMedia(createdCase.id, {
+        sourceUrl: post.permalink_url || '',
+        imageUrls,
+        videoUrls: copiedVideos.urls,
+        facebookVideoIds: copiedVideos.videoIds,
+      });
       result.imported += 1;
     } catch (error) {
       result.failed.push({
