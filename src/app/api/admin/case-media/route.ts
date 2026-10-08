@@ -111,17 +111,24 @@ export async function PUT(request: NextRequest) {
     .upsert({ key: mediaKey(caseId), value: JSON.stringify(value) }, { onConflict: 'key' });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const publicRecord = {
+    case_id: caseId,
+    source_url: value.sourceUrl || null,
+    image_urls: cleanUrls(value.imageUrls),
+    image_captions: cleanCaptions(value.imageCaptions, cleanUrls(value.imageUrls).length),
+    video_urls: cleanUrls(value.videoUrls),
+    updated_at: new Date().toISOString(),
+  };
   const { error: publicError } = await supabase
     .from('public_case_media')
-    .upsert({
-      case_id: caseId,
-      source_url: value.sourceUrl || null,
-      image_urls: cleanUrls(value.imageUrls),
-      image_captions: cleanCaptions(value.imageCaptions, cleanUrls(value.imageUrls).length),
-      video_urls: cleanUrls(value.videoUrls),
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'case_id' });
-  if (publicError && publicError.code !== 'PGRST205') {
+    .upsert(publicRecord, { onConflict: 'case_id' });
+  // 部署完成、資料庫欄位尚未遷移的短暫期間，仍可儲存既有媒體；圖片說明會保留在 site_content，待遷移後同步公開投影。
+  const shouldFallbackToLegacyProjection = publicError?.code === 'PGRST204' || publicError?.code === '42703';
+  if (shouldFallbackToLegacyProjection) {
+    const { image_captions: _imageCaptions, ...legacyRecord } = publicRecord;
+    const { error: legacyError } = await supabase.from('public_case_media').upsert(legacyRecord, { onConflict: 'case_id' });
+    if (legacyError && legacyError.code !== 'PGRST205') return NextResponse.json({ error: legacyError.message }, { status: 500 });
+  } else if (publicError && publicError.code !== 'PGRST205') {
     return NextResponse.json({ error: publicError.message }, { status: 500 });
   }
   return NextResponse.json({ data: value });
