@@ -5,7 +5,7 @@ import AnimateOnScroll from '@/components/AnimateOnScroll';
 import JsonLd from '@/components/JsonLd';
 import { createPageMetadata, itemListJsonLd, SERVICE_SEO_PAGES, webPageJsonLd } from '@/lib/seo';
 
-const description = '境曜有限公司提供 AI 互動道具、活動企劃統包、啟動儀式、活動特效、外派調酒與 SHOW GIRL 活動人員等一站式活動服務。';
+const description = '境曜有限公司提供 AI 互動道具、活動企劃統包、啟動儀式、活動特效、外派調酒與 SHOW GIRL 活動人員服務，依活動目標、場地條件與預算範圍安排執行內容。';
 
 export const metadata = createPageMetadata({
   title: '活動企劃與整合服務',
@@ -17,37 +17,37 @@ export const metadata = createPageMetadata({
 const SERVICES = [
   {
     title: 'AI 互動道具',
-    desc: '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗。',
+    desc: '讓賓客的照片、文字或動作，成為可即時分享的品牌互動內容。',
     image: '/images/services/AI互動道具.png',
     href: '/services/ai-interactive-props',
   },
   {
     title: '活動策劃統包',
-    desc: '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
+    desc: '把企劃、視覺、設備、人員與現場流程，整理成一套可執行的活動計畫。',
     image: '/images/services/活動策劃統包.png',
     href: '/services/event-package',
   },
   {
     title: '啟動儀式',
-    desc: '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。',
+    desc: '為開幕、發表會與典禮，設計品牌亮相的關鍵畫面。',
     image: '/images/services/啟動儀式.png',
     href: '/services/opening-ceremony',
   },
   {
     title: '活動特效',
-    desc: '專業活動特效服務，為現場營造震撼視覺效果。',
+    desc: '依舞台流程、場地條件與安全規範，安排開場、亮相與高潮段落的特效效果。',
     image: '/images/services/活動特效.png',
     href: '/services/special-effects',
   },
   {
     title: '外派調酒',
-    desc: '專業調酒師現場調製，為活動增添品味與儀式感。',
+    desc: '依賓客人數、服務時段與場地配置，安排調酒方案、吧台與飲品體驗。',
     image: '/images/services/外派調酒.png',
     href: '/services/bartending',
   },
   {
     title: 'SHOW GIRL',
-    desc: '專業活動人員派遣，提供展場接待、活動協助等服務。',
+    desc: '依接待、引導、產品展示或舞台互動需求，安排符合品牌形象的活動人員。',
     image: '/images/services/show girl.png',
     href: '/services/showgirl',
   },
@@ -65,7 +65,7 @@ export default function ServicesPage() {
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">服務項目</h1>
-            <p className="text-white/80 text-lg max-w-2xl mx-auto">一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值</p>
+            <p className="text-white/80 text-lg max-w-2xl mx-auto">依活動目標、場地條件與預算範圍，安排企劃、設備與現場執行</p>
           </AnimateOnScroll>
         </div>
       </section>
@@ -96,7 +96,7 @@ export default function ServicesPage() {
                   </p>
                   {/* 了解更多箭頭 */}
                   <span className="inline-flex items-center gap-1 text-cta text-sm font-semibold mt-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                    了解更多 <ArrowRight size={14} />
+                    查看服務內容 <ArrowRight size={14} />
                   </span>
                 </div>
               </Link>

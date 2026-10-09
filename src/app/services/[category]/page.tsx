@@ -24,11 +24,11 @@ const CATEGORY_MAP: Record<string, string> = {
 
 const CATEGORY_DESC: Record<string, string> = {
   'ai-interactive-props': '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗，讓每位賓客成為活動的主角。',
-  'event-package': '從企劃到執行，提供一站式活動統包服務，讓您省心省力。',
-  'opening-ceremony': '提供開幕典禮、記者會與新品發表會的啟動儀式道具出租，可依地點與流程規劃運送、安裝及現場控制。',
-  'special-effects': '提供泡泡、低煙、彩帶、火花與 CO₂ 等活動特效設備租借，依場地與流程規劃安裝及現場操作。',
-  'bartending': '從 50 杯到 400 杯的行動酒吧方案，包含專業調酒、客製酒單、吧台器具與場地規劃。',
-  'showgirl': '專業活動人員派遣，提供展場接待、活動協助等服務。',
+  'event-package': '協助企業把活動目標、場地條件與預算範圍，整理成可執行的企劃、設備與現場流程。',
+  'opening-ceremony': '提供開幕典禮、記者會與新品發表會的啟動儀式道具，依地點與流程規劃運送、安裝及現場控制。',
+  'special-effects': '提供泡泡、低煙、彩帶、火花與 CO₂ 等活動特效設備，依場地與流程規劃安裝及現場操作。',
+  'bartending': '依賓客人數、服務時段與場地配置，安排調酒方案、客製酒單、吧台器具與現場服務。',
+  'showgirl': '依接待、引導、產品展示或舞台互動需求，安排符合品牌形象的活動人員。',
 };
 
 const CATEGORY_SEO_TITLE: Record<string, string> = {
@@ -212,7 +212,7 @@ function OpeningCeremonyPage({ products }: { products: Product[] }) {
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">OPENING CEREMONY</p>
             <h1 className="text-5xl font-medium leading-tight tracking-tight md:text-6xl">啟動儀式</h1>
             <p className="mt-3 text-2xl text-[#303746] md:text-3xl">讓開場成為活動最具記憶點的一刻</p>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-[#4f535b] md:text-lg">提供台北、新北、桃園、新竹地區的啟動儀式道具出租與租借諮詢，適合開幕典禮、記者會、新品發表會與企業活動；可依場地需求規劃運送、安裝及現場控師。</p>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-[#4f535b] md:text-lg">提供全台本島的啟動儀式道具出租與租借諮詢，適合開幕典禮、記者會、新品發表會與企業活動；可依場地需求規劃運送、安裝及現場控師。</p>
           </AnimateOnScroll>
         </div>
         <CeremonyHeroLines />
@@ -262,20 +262,20 @@ function CeremonyProductGlow() {
 
 function EventPackagePage() {
   const services = [
-    ['策略企劃', '深入了解需求，制定完整活動策略與創意主軸。'],
-    ['視覺設計', '活動主視覺、KV延伸與場地動線整合設計，建立一致的品牌形象。'],
-    ['舞台技術', '燈光、音響、視訊、特效整合規劃，提升活動現場的體驗與專業度。'],
-    ['活動執行', '專案團隊現場控場與流程執行，確保活動順利進行、零失誤完成。'],
-    ['影像紀錄', '專業拍攝與剪輯，完整記錄精彩時刻，延續活動價值與影響力。'],
-    ['專案管理', '全程專人專案管理，控管時程與預算，讓您放心專注於核心目標。'],
+    ['策略企劃', '先釐清活動目標、參與對象、品牌訊息與預算範圍，再決定活動形式。'],
+    ['視覺設計', '從主視覺、現場物到螢幕畫面，讓賓客在每個接觸點看見一致的品牌訊息。'],
+    ['舞台技術', '依場地、流程與演出需求，安排燈光、音響、視訊與特效配置。'],
+    ['活動執行', '依流程表掌握報到、舞台、貴賓動線與時間節點，讓現場按計畫進行。'],
+    ['影像紀錄', '依活動需求安排拍攝與剪輯，保留可用於回顧、社群或內部溝通的影像素材。'],
+    ['專案管理', '統整時程、窗口與執行清單，減少跨單位溝通的遺漏。'],
   ];
   const processes = [
-    ['需求溝通', '了解活動目標、預算與期望，提供專業建議與方向。'],
-    ['企劃提案', '提出創意企劃與執行策略，確認活動主軸與亮點。'],
-    ['設計規劃', '依據策略進行設計與流程規劃，細化各項執行內容。'],
-    ['執行準備', '設備、場地、人員等全面準備，進行彩排與細節檢查。'],
-    ['活動執行', '專案團隊現場控場，確保流程順暢、氣氛到位。'],
-    ['檢討回饋', '活動結束後檢討成果與盤整，持續優化後續活動。'],
+    ['需求盤點', '確認活動日期、地點、人數、預算與必須完成的任務。'],
+    ['企劃提案', '整理活動主軸、流程與執行範圍，確認優先順序。'],
+    ['設計規劃', '依確認內容製作視覺、動線與現場執行細節。'],
+    ['執行準備', '安排設備、人員、場地協調與彩排，確認進撤場時程。'],
+    ['活動當日', '依確認流程執行現場工作，處理各時間節點與現場協調。'],
+    ['活動回顧', '依需求整理活動紀錄與後續可延用的素材。'],
   ];
   const occasions = ['品牌發表會', '企業活動', '開幕典禮', '記者會', '展覽活動', '商場活動', '園區嘉年華', '春酒尾牙', '政府活動', '其他客製活動'];
 
@@ -285,10 +285,10 @@ function EventPackagePage() {
         <div className="relative z-10 mx-auto max-w-[1280px] px-6 pb-12 pt-16 sm:px-8 sm:pb-16 sm:pt-20 md:px-12 md:py-20 lg:flex lg:h-full lg:items-center lg:px-16 lg:py-0">
           <AnimateOnScroll>
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-[#b58445]">EVENT SOLUTION</p>
-            <h1 className="max-w-[10em] text-5xl font-medium leading-[1.16] tracking-tight md:text-6xl">活動策畫統包</h1>
-            <p className="mt-5 text-xl leading-relaxed text-[#303746] md:text-2xl">從概念到現場，一站到位</p>
-            <p className="mt-8 max-w-[42rem] text-base leading-8 text-[#4f535b] md:text-lg">整合策略企劃、視覺設計、舞台技術與現場執行，<br className="hidden md:block" />為品牌打造專屬活動體驗，讓每一場活動都精彩且具價值。</p>
-            <a href="/contact" className="mt-9 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢專案規劃 →</a>
+            <h1 className="max-w-[10em] text-5xl font-medium leading-[1.16] tracking-tight md:text-6xl">活動策劃統包</h1>
+            <p className="mt-5 text-xl leading-relaxed text-[#303746] md:text-2xl">活動流程與現場執行，由同一個團隊整合</p>
+            <p className="mt-8 max-w-[42rem] text-base leading-8 text-[#4f535b] md:text-lg">先確認活動目標、參與對象與場地條件，<br className="hidden md:block" />再安排企劃、視覺、技術、人員與活動當日流程。</p>
+            <a href="/contact" className="mt-9 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">提供活動資訊，開始規劃</a>
           </AnimateOnScroll>
         </div>
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none">
@@ -338,7 +338,7 @@ function EventPackagePage() {
       <Divider />
       <section className="mx-auto grid max-w-[1280px] items-start gap-14 px-6 py-20 sm:px-8 md:px-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(25rem,0.85fr)] lg:gap-20 lg:px-16 lg:py-28">
         <div><SectionHeading title="服務適用場合" english="SERVICE OCCASIONS" align="left" /><div className="mt-10 flex max-w-2xl flex-wrap gap-y-4 text-[15px] leading-7 text-[#4f535b]">{occasions.map(occasion => <span key={occasion} className="border-r border-[#d8d4cd] px-4 first:pl-0 last:border-r-0">{occasion}</span>)}</div></div>
-        <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">正在規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">告訴我們活動日期、規模與需求，<br />由專人協助您規劃最合適的方案。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">洽詢活動企劃 →</a></div>
+        <div className="rounded-2xl border border-[#e2d8c9] bg-[#fbf9f5] p-8 md:p-10"><h2 className="text-2xl font-semibold">準備規劃下一場活動？</h2><p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b58445]">LET&apos;S PLAN YOUR NEXT EVENT</p><p className="mt-7 text-base leading-8 text-[#5b5e65]">提供活動日期、地點、預估人數與需求，<br />我們會先協助確認可安排的服務方向。</p><a href="/contact" className="mt-7 inline-flex rounded-md bg-[#b58445] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#996f39]">填寫活動需求</a></div>
       </section>
       <ServiceDecisionGuide category="event-package" />
     </main>

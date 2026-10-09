@@ -53,10 +53,10 @@ export default async function HomePage() {
                 服務項目
               </h2>
               <p className="text-primary/70 text-lg">
-                一站式活動服務，協助品牌在每一個重要時刻精準傳遞價值
+                依活動目標、場地條件與預算範圍，安排企劃、設備與現場人員
               </p>
               <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-primary/60 md:text-base">
-                提供啟動儀式道具、活動特效設備與企業活動用品租借，服務台北、新北、桃園、新竹及其他地區。
+                提供活動企劃、啟動儀式道具、活動特效設備與企業活動用品租借，全台本島皆可服務。
               </p>
             </div>
           </AnimateOnScroll>
@@ -122,7 +122,7 @@ export default async function HomePage() {
             <AnimateOnScroll>
               <div className="text-center">
                 <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">客戶一覽</h2>
-                <p className="text-primary/70">感謝以下企業與單位的信賴與合作</p>
+                <p className="text-primary/70">合作過的品牌與單位</p>
               </div>
             </AnimateOnScroll>
           </div>
@@ -147,7 +147,7 @@ export default async function HomePage() {
       <section data-snap="true" className="py-20 bg-white border-b-2 border-gray-300">
         <div className="max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary text-center mb-10">聯絡我們</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary text-center mb-10">說說您的活動計畫</h2>
             <div className="bg-gray-50 rounded-2xl p-8 md:p-12 border border-gray-200">
               <ContactFormInline />
             </div>

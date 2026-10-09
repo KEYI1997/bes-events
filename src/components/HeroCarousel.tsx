@@ -82,16 +82,14 @@ export default function HeroCarousel() {
                 境曜有限公司 BES EVENTS
               </p>
               <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-6 tracking-tight">
-                每一場活動
+                讓品牌的重要時刻
                 <br />
-                成為品牌被記住的時刻
+                準時發生在現場
               </h1>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
-                從企劃、設計到現場執行，境曜整合每一個環節，將品牌想法完整呈現
+                境曜協助企業規劃啟動儀式、活動道具、舞台技術與現場執行
                 <br />
-                專注企業活動整合與現場執行
-                <br />
-                提供從啟動儀式、舞台燈光到整體專案企劃與媒體曝光的一站式服務
+                從需求確認到活動當日流程，讓每個環節都有清楚安排
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
                 <Link
@@ -99,14 +97,14 @@ export default function HeroCarousel() {
                   className="group relative inline-flex items-center px-6 py-3 text-[15.4px] font-bold rounded-lg border-2 border-cta transition-all duration-300 ease-in-out bg-cta text-white hover:bg-white hover:text-cta overflow-hidden"
                 >
                   <ArrowRight size={14} className="mr-2 transition-all duration-300 ease-in-out opacity-100 translate-x-0 group-hover:opacity-0 group-hover:-translate-x-4" />
-                  <span>免費諮詢</span>
+                  <span>提出活動需求</span>
                   <ArrowRight size={14} className="ml-2 rotate-180 transition-all duration-300 ease-in-out opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0" />
                 </Link>
                 <Link
                   href="/cases"
                   className="inline-flex items-center gap-2 px-6 py-3 border border-white/60 text-white text-sm font-semibold rounded-lg hover:bg-white/10 transition-colors"
                 >
-                  查看案例
+                  查看執行案例
                 </Link>
               </div>
             </div>

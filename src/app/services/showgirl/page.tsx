@@ -5,7 +5,7 @@ import ShowGirlInquiryForm from '@/components/ShowGirlInquiryForm';
 import ServiceDecisionGuide from '@/components/ServiceDecisionGuide';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, webPageJsonLd } from '@/lib/seo';
 
-const description = '專業活動人員派遣，提供展場接待、品牌推廣、頒獎與活動現場協助。';
+const description = '依接待、引導、產品展示與舞台互動需求，安排符合品牌形象的活動人員。';
 
 export const metadata = createPageMetadata({
   title: 'SHOW GIRL 活動人員派遣',
@@ -65,7 +65,7 @@ export default function ShowGirlPage() {
         <div className="relative z-10 text-center px-4">
           <AnimateOnScroll>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">SHOW GIRL</h1>
-            <p className="text-white/80 text-lg max-w-2xl mx-auto">專業活動人員派遣，提供展場接待、活動協助等服務</p>
+            <p className="text-white/80 text-lg max-w-2xl mx-auto">依接待、引導、產品展示與舞台互動需求，安排活動人員與現場工作內容</p>
           </AnimateOnScroll>
         </div>
       </section>
@@ -82,8 +82,8 @@ export default function ShowGirlPage() {
           {/* 右側：詢問表單 */}
           <div className="w-full lg:w-[45%]">
             <div className="bg-white rounded-3xl shadow-sm p-8 h-full">
-              <h2 className="text-2xl font-bold text-primary mb-2">需求詢問</h2>
-              <p className="text-primary/50 text-sm mb-6">填寫您的需求，我們將為您推薦最合適的人選</p>
+              <h2 className="text-2xl font-bold text-primary mb-2">告訴我們現場工作內容</h2>
+              <p className="text-primary/50 text-sm mb-6">提供活動日期、地點、人數與服裝需求，我們會依執行條件確認人員安排與報價。</p>
               <ShowGirlInquiryForm />
             </div>
           </div>

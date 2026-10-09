@@ -10,7 +10,7 @@ const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date',
 // 台灣手機 (09xxxxxxxx 或 09xx-xxx-xxx) 或市話 (0x-xxxxxxx 或 0xx-xxxxxxx)
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
-export default function ContactFormInline({ submitLabel = '送出諮詢' }: { submitLabel?: string }) {
+export default function ContactFormInline({ submitLabel = '送出活動需求' }: { submitLabel?: string }) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service_type: '', event_date: '', event_end_date: '', event_location: '', description: ''
   });
@@ -78,8 +78,8 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
     return (
       <div className="text-center py-12">
         <CheckCircle size={48} className="mx-auto text-cta mb-4" />
-        <h3 className="text-2xl font-bold text-primary mb-2">感謝您的諮詢！</h3>
-        <p className="text-primary/70">我們將在 24 小時內與您聯繫</p>
+        <h3 className="text-2xl font-bold text-primary mb-2">已收到您的活動需求</h3>
+        <p className="text-primary/70">我們會依序確認檔期與執行條件，再與您聯繫。</p>
       </div>
     );
   }
@@ -178,7 +178,7 @@ export default function ContactFormInline({ submitLabel = '送出諮詢' }: { su
           onChange={(e) => setForm({...form, description: e.target.value})}
           rows={4}
           className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:ring-2 focus:ring-cta focus:border-transparent bg-white"
-          placeholder="請簡述您的活動需求..."
+          placeholder="例如：活動主題、預估人數、服務時段與場地條件"
         />
       </div>
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}

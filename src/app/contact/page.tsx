@@ -65,7 +65,7 @@ export default function ContactPage() {
               聯絡我們
             </h1>
             <p className="text-white/80 text-lg max-w-2xl mx-auto">
-              有任何活動需求，歡迎與我們聯繫
+              提供活動日期、地點、預估人數與需求，我們協助您確認合適的服務方向
             </p>
           </AnimateOnScroll>
         </div>
@@ -107,9 +107,9 @@ export default function ContactPage() {
 
               {/* Quick Note */}
               <div className="mt-10 p-6 bg-cta/5 rounded-2xl border border-cta/10">
-                <h3 className="font-bold text-primary mb-2">快速回覆</h3>
+                <h3 className="font-bold text-primary mb-2">需求確認</h3>
                 <p className="text-primary/70 text-sm">
-                  我們將在收到您的諮詢後 24 小時內回覆。急件請直接來電或加 LINE 聯繫。
+                  收到需求後，我們會依序確認檔期與執行條件；急件可直接來電或透過 LINE 聯繫。
                 </p>
               </div>
             </AnimateOnScroll>
@@ -120,7 +120,7 @@ export default function ContactPage() {
             <AnimateOnScroll direction="right">
               <div className="bg-white rounded-2xl p-8 shadow-sm">
                 <h2 className="text-2xl font-bold text-primary mb-6">
-                  填寫諮詢表單
+                  填寫活動需求
                 </h2>
                 <ContactFormInline />
               </div>

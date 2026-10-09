@@ -4,7 +4,7 @@ import AIInteractiveExperience from '@/components/AIInteractiveExperience';
 import JsonLd from '@/components/JsonLd';
 import { absoluteUrl, breadcrumbJsonLd, createPageMetadata, serviceJsonLd, webPageJsonLd } from '@/lib/seo';
 
-const description = '讓影像、聲音與想像即時成為可參與、可分享的 AI 活動體驗。';
+const description = '讓賓客的照片、文字或動作，成為可即時分享的品牌互動內容。';
 
 export const metadata = createPageMetadata({
   title: 'AI 互動道具',
@@ -44,15 +44,15 @@ export default function AIInteractivePropsPage() {
               AI INTERACTIVE EXPERIENCE
             </div>
             <h1 className="max-w-xl text-5xl font-semibold leading-[1.08] tracking-[-0.04em] md:text-7xl">
-              讓每一次互動，
-              <span className="bg-gradient-to-r from-cyan-200 via-blue-300 to-indigo-300 bg-clip-text text-transparent">都即時生成驚喜。</span>
+              讓賓客的參與，
+              <span className="bg-gradient-to-r from-cyan-200 via-blue-300 to-indigo-300 bg-clip-text text-transparent">成為可帶走的品牌內容。</span>
             </h1>
             <p className="mt-7 max-w-lg text-base leading-8 text-slate-300 md:text-lg">
-              從一張照片、一句話到一個動作，AI 把賓客的參與轉化成專屬內容，讓活動不只被看見，更能被玩、被分享、被記住。
+              以照片、文字或動作啟動互動，現場產生專屬內容，方便賓客分享，也讓品牌留下可延伸的素材。
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link href="/contact?service=AI%20互動道具" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#07101f] transition hover:-translate-y-0.5 hover:bg-cyan-100">
-                規劃互動體驗
+                討論互動形式
               </Link>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function AIInteractivePropsPage() {
                 className="aspect-[4/3] w-full rounded-[1.55rem] object-cover"
               />
               <div className="absolute inset-x-2 bottom-2 flex items-center justify-between rounded-b-[1.55rem] bg-gradient-to-t from-[#04101f]/95 via-[#04101f]/55 to-transparent px-6 pb-5 pt-20">
-                <p className="text-sm text-slate-200">即時辨識・即時生成・即時分享</p>
+                <p className="text-sm text-slate-200">即時互動・專屬內容・現場分享</p>
                 <span className="rounded-full border border-cyan-200/30 bg-cyan-200/10 px-3 py-1 text-xs text-cyan-100">LIVE</span>
               </div>
             </div>

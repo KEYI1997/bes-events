@@ -8,37 +8,37 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const SERVICES = [
   {
     title: 'AI 互動道具',
-    desc: '結合人工智慧技術的創新互動道具，打造沉浸式活動體驗。透過 AI 人臉辨識、手勢互動、即時生成等技術，讓每位賓客都能成為活動的主角。',
+    desc: '讓賓客的照片、文字或動作，成為可即時分享的品牌互動內容。',
     image: '/images/services/AI互動道具.png',
     href: '/services/ai-interactive-props',
   },
   {
     title: '活動策劃統包',
-    desc: '從企劃到執行，提供一站式活動統包服務，讓您省心省力。我們整合所有環節，包含場地規劃、流程設計、人員調度、設備安排，確保活動順利進行。',
+    desc: '把企劃、視覺、設備、人員與現場流程，整理成一套可執行的活動計畫。',
     image: '/images/services/活動策劃統包.png',
     href: '/services/event-package',
   },
   {
     title: '啟動儀式',
-    desc: '星辰運轉、全息投影、沙漏啟動等多種創意儀式，為活動開場製造震撼記憶點。專業設備搭配精準執行，讓每一次啟動都成為難忘時刻。',
+    desc: '為開幕、發表會與典禮，設計品牌亮相的關鍵畫面。',
     image: '/images/services/啟動儀式.png',
     href: '/services/opening-ceremony',
   },
   {
     title: '活動特效',
-    desc: '專業活動特效服務，為現場營造震撼視覺效果。提供乾冰、泡泡、彩帶、煙火等多種特效選擇，讓活動氛圍更加精彩動人。',
+    desc: '依舞台流程、場地條件與安全規範，安排開場、亮相與高潮段落的特效效果。',
     image: '/images/services/活動特效.png',
     href: '/services/special-effects',
   },
   {
     title: '外派調酒',
-    desc: '專業調酒師現場調製，為活動增添品味與儀式感。提供客製化調酒菜單、特色飲品設計，讓賓客享受獨特的味覺體驗。',
+    desc: '依賓客人數、服務時段與場地配置，安排調酒方案、吧台與飲品體驗。',
     image: '/images/services/外派調酒.png',
     href: '/services/bartending',
   },
   {
     title: 'SHOW GIRL',
-    desc: '專業活動人員派遣，提供展場接待、活動協助等服務。嚴選優質人員，專業培訓，展現品牌最佳形象。',
+    desc: '依接待、引導、產品展示或舞台互動需求，安排符合品牌形象的活動人員。',
     image: '/images/services/show girl.png',
     href: '/services/showgirl',
   },
@@ -148,7 +148,7 @@ export default function ServiceTabs() {
                 href={activeService.href}
                 className="inline-flex items-center gap-2 text-cta font-medium hover:underline"
               >
-                了解更多
+                查看服務內容
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>

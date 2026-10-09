@@ -79,9 +79,9 @@ export default function ServiceDecisionGuide({ category }: { category: string })
           <DecisionBlock title="詢價前請準備"><List items={content.confirm} /></DecisionBlock>
         </div>
         <div className="mt-12 border-t border-[#ddd5ca] pt-8">
-          <h3 className="text-xl font-semibold text-[#252b3a]">北部活動服務範圍</h3>
-          <p className="mt-3 max-w-4xl text-base leading-8 text-[#555961]">境曜以台北、新北、桃園與新竹為主要服務範圍，提供活動企劃、啟動儀式、活動道具、特效設備、燈光音響舞台、外派調酒及活動人員服務。其他縣市可依活動日期、設備、人員與物流條件個別評估。</p>
-          <Link href="/service-areas" className="mt-5 inline-flex text-sm font-semibold text-[#8f633b] underline decoration-[#c5a071] underline-offset-4 transition-colors hover:text-[#654528]">查看服務地區與報價確認方式 →</Link>
+          <h3 className="text-xl font-semibold text-[#252b3a]">全台活動服務範圍</h3>
+          <p className="mt-3 max-w-4xl text-base leading-8 text-[#555961]">境曜提供全台本島的活動企劃、啟動儀式、活動道具、特效設備、燈光音響舞台、外派調酒及活動人員服務。各案件會依活動日期、場地、設備、人員與物流條件確認安排方式。</p>
+          <Link href="/service-areas" className="mt-5 inline-flex text-sm font-semibold text-[#8f633b] underline decoration-[#c5a071] underline-offset-4 transition-colors hover:text-[#654528]">確認服務地區與報價方式 →</Link>
         </div>
       </div>
     </section>

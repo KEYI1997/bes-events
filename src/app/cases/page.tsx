@@ -43,7 +43,7 @@ export default async function CasesPage() {
               活動案例
             </h1>
             <p className="text-white/80 text-lg max-w-2xl mx-auto">
-              每一場活動都是獨一無二的創意實現
+              看見境曜如何把活動目標、場地條件與現場流程，轉化為實際成果
             </p>
           </AnimateOnScroll>
         </div>
