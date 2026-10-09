@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import { getTaiwanToday } from '@/lib/eventDate';
+import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 
 // 台灣手機格式：09xx-xxx-xxx 或 09xxxxxxxx（10碼）
 const PHONE_REGEX = /^09\d{2}-?\d{3}-?\d{3}$/;
@@ -96,6 +97,7 @@ export default function ShowGirlInquiryForm() {
         <CheckCircle size={56} className="text-cta mb-4" />
         <h3 className="text-xl font-bold text-primary mb-2">已收到您的需求！</h3>
         <p className="text-primary/60">我們將盡快與您聯繫，為您安排最適合的人選。</p>
+        <OfficialLineQrCard />
       </div>
     );
   }

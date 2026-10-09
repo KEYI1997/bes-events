@@ -4,6 +4,7 @@ import { Send, CheckCircle } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
+import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 
@@ -80,6 +81,7 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
         <CheckCircle size={48} className="mx-auto text-cta mb-4" />
         <h3 className="text-2xl font-bold text-primary mb-2">已收到您的活動需求</h3>
         <p className="text-primary/70">我們會依序確認檔期與執行條件，再與您聯繫。</p>
+        <OfficialLineQrCard />
       </div>
     );
   }

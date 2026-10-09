@@ -7,6 +7,7 @@ import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import OrderPriceSummary from '@/components/OrderPriceSummary';
 import { formatProductAmount, formatProductPrice, optionKey, productExtraTotals, productOptionTotals, productPriceAmount, type ProductExtraSelection, type ProductOptionRow } from '@/lib/productOptions';
 import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
+import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 const REQUIRED_FIELDS = ['name', 'phone', 'email', 'service_type', 'event_date', 'event_end_date', 'event_location'] as const;
 const PHONE_REGEX = /^(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})$/;
 
@@ -182,7 +183,8 @@ export default function ContactModal({ isOpen, onClose, productName, productId, 
             <div className="text-center py-8">
               <CheckCircle size={48} className="mx-auto mb-4" style={{ color: '#AA7452' }} />
               <h3 className="text-xl font-bold mb-2" style={{ color: '#4A4947' }}>感謝您的諮詢！</h3>
-              <p className="text-gray-500 mb-6">我們將在 24 小時內與您聯繫</p>
+              <p className="text-gray-500 mb-6">我們會依序確認檔期與執行條件，再與您聯繫。</p>
+              <OfficialLineQrCard />
               <button
                 onClick={handleClose}
                 className="px-6 py-2.5 text-white rounded-lg font-medium hover:opacity-90 transition"

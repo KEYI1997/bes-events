@@ -19,6 +19,7 @@ import {
 import { CONTACT_SERVICE_TYPES, getServiceDefinition } from '@/lib/services';
 import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
 import { normalizeTaiwanPhone } from '@/lib/phone';
+import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TAIWAN_PHONE_PATTERN = /^0\d{7,11}$/;
@@ -226,7 +227,7 @@ export default function LineOrderForm({
   };
 
   if (success) {
-    return <div className="flex min-h-screen items-center justify-center bg-[#F7F4EE] px-5 py-12"><div className="w-full max-w-lg rounded-3xl border border-primary/10 bg-white p-8 text-center shadow-sm"><CheckCircle className="mx-auto mb-5 text-[#06C755]" size={64} /><h1 className="mb-3 text-2xl font-bold text-primary">訂單需求已送出</h1><p className="leading-7 text-primary/65">管理人員已收到通知，確認服務內容與檔期後會與您聯絡，並建立正式訂單。</p><button type="button" onClick={() => window.close()} className="mt-8 w-full rounded-full bg-primary py-3.5 font-semibold text-white">返回 LINE</button></div></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-[#F7F4EE] px-5 py-12"><div className="w-full max-w-lg rounded-3xl border border-primary/10 bg-white p-8 text-center shadow-sm"><CheckCircle className="mx-auto mb-5 text-[#06C755]" size={64} /><h1 className="mb-3 text-2xl font-bold text-primary">訂單需求已送出</h1><p className="leading-7 text-primary/65">管理人員已收到通知，確認服務內容與檔期後會與您聯絡，並建立正式訂單。</p><OfficialLineQrCard /><button type="button" onClick={() => window.close()} className="mt-8 w-full rounded-full bg-primary py-3.5 font-semibold text-white">返回 LINE</button></div></div>;
   }
 
   return (

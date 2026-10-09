@@ -6,6 +6,7 @@ import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
 import OrderPriceSummary from '@/components/OrderPriceSummary';
 import { productPriceAmount } from '@/lib/productOptions';
 import { getTaiwanToday } from '@/lib/eventDate';
+import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 
 const EVENT_TYPES = [
   '婚宴 / 婚禮',
@@ -180,6 +181,7 @@ export default function BartendingOrderModal({ planName, price = '', onClose }: 
             </div>
             <h3 className="text-xl font-bold text-primary mb-2">訂單已送出！</h3>
             <p className="text-primary/60 text-sm mb-6">我們將盡快與您聯繫，確認活動細節。</p>
+            <OfficialLineQrCard />
             <button
               onClick={onClose}
               className="bg-cta text-white px-8 py-3 rounded-full font-semibold hover:bg-cta-hover transition-colors"
