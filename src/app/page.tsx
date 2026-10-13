@@ -43,20 +43,17 @@ export default async function HomePage() {
       {/* ── Section 1：Hero 樞紐區 ── */}
       <HeroCarousel />
 
-      {/* ── Section 2：服務項目 ── */}
       <ScrollRevealSection>
-      <section data-snap="true" className="py-20 bg-white border-b-2 border-gray-300">
-        <div className="max-w-6xl mx-auto px-4 md:px-16">
+      <section data-snap="true" className="border-b border-[#d9d0c5] bg-[#f4f0e9] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 md:px-12">
           <AnimateOnScroll>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                服務項目
+            <div className="mb-12 grid gap-8 border-b border-[#cfc5b8] pb-10 md:mb-14 md:grid-cols-[1.2fr_0.8fr] md:items-end">
+              <h2 className="max-w-2xl text-4xl font-semibold leading-[1.12] tracking-[-0.045em] text-[#24211e] sm:text-5xl md:text-6xl">
+                把每一個想法，
+                <br />落實成現場。
               </h2>
-              <p className="text-primary/70 text-lg">
-                依活動目標、場地條件與預算範圍，安排企劃、設備與現場人員
-              </p>
-              <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-primary/60 md:text-base">
-                提供活動企劃、啟動儀式道具、活動特效設備與企業活動用品租借，全台本島皆可服務。
+              <p className="max-w-md text-base leading-8 text-[#544e47] md:justify-self-end">
+                從目標與預算出發，將企劃、道具、技術與人員整合成能被妥善執行的活動方案。
               </p>
             </div>
           </AnimateOnScroll>
@@ -67,23 +64,19 @@ export default async function HomePage() {
       </section>
       </ScrollRevealSection>
 
-      {/* ── Section 3：案例展示 + 客戶一覽（同一區塊） ── */}
       <ScrollRevealSection>
-      <section data-snap="true" className="bg-white overflow-hidden border-b-2 border-gray-300">
-
-        {/* 分隔線 */}
-        <div className="flex justify-center px-8">
-          <div className="w-full h-[2px] bg-gray-300"></div>
-        </div>
-
-        {/* 案例展示輪播 */}
-        <div className="py-16 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 mb-10">
+      <section data-snap="true" className="overflow-hidden border-b border-[#433c35] bg-[#1f1b17] py-20 text-white md:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 md:px-12">
+          <div className="mb-12 grid gap-7 md:mb-14 md:grid-cols-[1.2fr_0.8fr] md:items-end">
             <AnimateOnScroll>
-              <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">案例展示</h2>
+              <h2 className="max-w-xl text-4xl font-semibold leading-[1.12] tracking-[-0.045em] sm:text-5xl md:text-6xl">讓品牌被看見的，不只是一場活動。</h2>
+            </AnimateOnScroll>
+            <AnimateOnScroll delay={100}>
+              <p className="max-w-md text-base leading-8 text-white/65 md:justify-self-end">從啟動儀式、企業典禮到大型戶外活動，現場的畫面與節奏，是每一次合作留下的證明。</p>
             </AnimateOnScroll>
           </div>
-          <div className="home-case-carousel relative h-[300px] w-full sm:h-[460px]">
+        </div>
+        <div className="home-case-carousel relative h-[320px] w-full sm:h-[440px] lg:h-[500px]">
             <CoverflowCarousel
               images={[
                 { src: "/images/cases/case-1.jpg", alt: "企業品牌發表會舞台與燈光案例" },
@@ -100,55 +93,55 @@ export default async function HomePage() {
               autoplay={true}
               autoplayDirection="rightToLeft"
               showArrows={true}
-              activeWidth={600}
-              activeHeight={400}
-              restWidth={200}
-              restHeight={270}
-              gap={30}
-              radius={4}
-              transition={{ duration: 0.3, delay: 2 }}
+              activeWidth={680}
+              activeHeight={440}
+              restWidth={220}
+              restHeight={300}
+              gap={28}
+              radius={2}
+              arrowColor="#26211c"
+              arrowBackground="#f7f2ea"
+              transition={{ duration: 0.45, delay: 3 }}
             />
-          </div>
         </div>
+      </section>
+      </ScrollRevealSection>
 
-        {/* 分隔線 */}
-        <div className="flex justify-center px-8">
-          <div className="w-full h-[2px] bg-gray-300"></div>
-        </div>
-
-        {/* 客戶一覽 */}
-        <div className="py-16 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 mb-10">
+      <ScrollRevealSection>
+      <section data-snap="true" className="overflow-hidden border-b border-[#d9d0c5] bg-[#fffdf9] py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 md:px-12">
+          <div className="mb-10 flex flex-col gap-3 border-b border-[#d9d0c5] pb-6 sm:flex-row sm:items-end sm:justify-between">
             <AnimateOnScroll>
-              <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">客戶一覽</h2>
-                <p className="text-primary/70">合作過的品牌與單位</p>
-              </div>
+              <h2 className="text-3xl font-semibold tracking-[-0.035em] text-[#24211e] sm:text-4xl">被信任的現場夥伴</h2>
             </AnimateOnScroll>
+            <p className="text-sm tracking-[0.08em] text-[#625b53]">與品牌及單位，共同完成重要時刻</p>
           </div>
           {managedClients.length > 0 && (
-            <div className="relative w-full overflow-hidden">
-              <div className="flex items-center gap-12 w-max animate-scroll-clients">
+            <div className="relative -mx-5 w-[calc(100%+2.5rem)] overflow-hidden sm:-mx-8 sm:w-[calc(100%+4rem)] md:-mx-12 md:w-[calc(100%+6rem)]">
+              <div className="flex w-max items-center gap-12 animate-scroll-clients md:gap-16">
                 {[...managedClients, ...managedClients].map((client, i) => (
-                  <div key={`${client.id}-${i}`} className="flex-shrink-0 w-[240px] h-[120px] flex items-center justify-center">
-                    <img src={client.logo_url} alt={client.name} className="max-w-full max-h-full object-contain" />
+                  <div key={`${client.id}-${i}`} className="flex h-20 w-44 shrink-0 items-center justify-center sm:h-24 sm:w-52">
+                    <img src={client.logo_url} alt={client.name} className="max-h-full max-w-full object-contain opacity-80 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0" />
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
-
       </section>
       </ScrollRevealSection>
 
-      {/* ── Section 4：聯絡我們 ── */}
       <ScrollRevealSection>
-      <section data-snap="true" className="py-20 bg-white border-b-2 border-gray-300">
-        <div className="max-w-4xl mx-auto px-4">
+      <section data-snap="true" className="border-b border-[#d9d0c5] bg-[#e9dfd1] py-20 md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[0.82fr_1.18fr] md:px-12">
           <AnimateOnScroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary text-center mb-10">說說您的活動計畫</h2>
-            <div className="bg-gray-50 rounded-2xl p-8 md:p-12 border border-gray-200">
+            <div className="md:sticky md:top-28">
+              <h2 className="max-w-md text-4xl font-semibold leading-[1.12] tracking-[-0.045em] text-[#29241f] sm:text-5xl">一個需求，<br />可以從這裡開始。</h2>
+              <p className="mt-7 max-w-sm text-base leading-8 text-[#5e554d]">留下活動日期、地點與初步需求，我們會協助您釐清適合的服務與執行方向。</p>
+            </div>
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={100}>
+            <div className="bg-[#fffdf9] p-6 shadow-[0_20px_55px_rgba(62,45,31,0.12)] sm:p-9 md:p-11">
               <ContactFormInline />
             </div>
           </AnimateOnScroll>

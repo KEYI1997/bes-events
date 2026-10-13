@@ -82,11 +82,10 @@ export default function ServiceTabs() {
 
   return (
     <div className="w-full">
-      {/* Tab 按鈕列 */}
-      <div className="relative mb-8">
+      <div className="relative mb-7 border-y border-[#cfc5b8] py-2">
         <div 
           ref={tabsContainerRef}
-          className="relative flex justify-center gap-3 flex-wrap"
+          className="relative flex justify-start gap-x-6 gap-y-1 overflow-x-auto pb-1 md:justify-between"
         >
           {SERVICES.map((service, index) => (
             <button
@@ -94,10 +93,10 @@ export default function ServiceTabs() {
               type="button"
               ref={(el) => { tabRefs.current[index] = el; }}
               onClick={() => setActiveIndex(index)}
-              className={`px-6 py-2.5 rounded-full border-2 text-sm font-medium transition-all duration-300 ${
+              className={`shrink-0 px-1 py-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96d3f] ${
                 activeIndex === index
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-primary/30 text-primary hover:border-primary/60'
+                  ? 'text-[#9a6037]'
+                  : 'text-[#3d3934]/65 hover:text-[#3d3934]'
               }`}
             >
               {service.title}
@@ -106,7 +105,7 @@ export default function ServiceTabs() {
           {/* 底部滑動線 */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-3 h-0.5 bg-cta rounded-full transition-[left,width] duration-500 ease-out"
+            className="pointer-events-none absolute bottom-0 h-px bg-[#a96d3f] transition-[left,width] duration-500 ease-out"
             style={{
               left: underlineStyle.left,
               width: underlineStyle.width,
@@ -115,51 +114,51 @@ export default function ServiceTabs() {
         </div>
       </div>
 
-      {/* 內容區域 */}
       <div className="relative">
-        {/* 左右箭頭 */}
         <button
           onClick={handlePrev}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 w-10 h-10 rounded-full border-2 border-primary/30 bg-white hover:border-primary/60 flex items-center justify-center transition-all z-10"
+          className="absolute left-3 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/70 bg-black/35 text-white transition-colors hover:bg-white hover:text-[#2b2824] lg:flex"
           aria-label="上一個"
         >
           <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 w-10 h-10 rounded-full border-2 border-primary/30 bg-white hover:border-primary/60 flex items-center justify-center transition-all z-10"
+          className="absolute right-3 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/70 bg-black/35 text-white transition-colors hover:bg-white hover:text-[#2b2824] lg:flex"
           aria-label="下一個"
         >
           <ChevronRight className="w-5 h-5 text-primary" />
         </button>
 
-        {/* 內容框 */}
-        <div className="border-2 border-primary/20 rounded-[32px] overflow-hidden bg-white">
-          <div className="flex flex-col lg:flex-row min-h-[400px]">
-            {/* 左側文字 */}
-            <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
-              <h3 className="text-2xl lg:text-3xl font-bold text-primary mb-4">
+        <div className="overflow-hidden bg-[#28231e]">
+          <div className="flex min-h-[440px] flex-col lg:min-h-[510px] lg:flex-row">
+            <div className="flex w-full flex-col justify-between p-8 text-white sm:p-12 lg:w-[42%] lg:p-14">
+              <div>
+                <h3 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
                 {activeService.title}
               </h3>
-              <p className="text-primary/70 leading-relaxed mb-6">
+                <p className="mt-6 max-w-sm text-base leading-8 text-white/72">
                 {activeService.desc}
               </p>
+              </div>
               <Link
                 href={activeService.href}
-                className="inline-flex items-center gap-2 text-cta font-medium hover:underline"
+                className="group mt-12 inline-flex w-fit items-center gap-3 border-b border-[#d8a36f] pb-2 text-sm font-bold text-[#f4d3ae] transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
-                查看服務內容
-                <ChevronRight className="w-4 h-4" />
+                探索服務內容
+                <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
-            {/* 右側圖片 */}
-            <div className="w-full lg:w-1/2 relative min-h-[300px] lg:min-h-[400px]">
+            <div className="relative min-h-[320px] w-full overflow-hidden lg:w-[58%] lg:min-h-[510px]">
               <Image
                 src={activeService.image}
                 alt={`${activeService.title}活動服務與現場執行`}
                 fill
-                className="object-cover"
+                sizes="(min-width: 1024px) 58vw, 100vw"
+                className="object-cover transition-transform duration-700 ease-out hover:scale-[1.025]"
               />
+              <div className="absolute inset-0 bg-black/10" />
+              <p className="absolute bottom-5 right-6 text-[10px] font-semibold tracking-[0.2em] text-white/70">BES EVENTS</p>
             </div>
           </div>
         </div>
