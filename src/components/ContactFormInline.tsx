@@ -101,9 +101,12 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
       `}</style>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">姓名 *</label>
+          <label htmlFor="contact-name" className="block text-sm font-medium text-primary mb-1">姓名 *</label>
           <input
+            id="contact-name"
+            name="name"
             type="text"
+            autoComplete="name"
             value={form.name}
             onChange={(e) => setForm({...form, name: e.target.value})}
             className={inputClass('name')}
@@ -111,20 +114,28 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">電話 *</label>
+          <label htmlFor="contact-phone" className="block text-sm font-medium text-primary mb-1">電話 *</label>
           <input
+            id="contact-phone"
+            name="phone"
             type="tel"
+            autoComplete="tel"
+            inputMode="tel"
             value={form.phone}
             onChange={(e) => setForm({...form, phone: e.target.value})}
             className={inputClass('phone')}
             placeholder="您的電話"
           />
-          {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
+          {phoneError && <p role="alert" className="text-red-500 text-xs mt-1">{phoneError}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">Email *</label>
+          <label htmlFor="contact-email" className="block text-sm font-medium text-primary mb-1">Email *</label>
           <input
+            id="contact-email"
+            name="email"
             type="email"
+            autoComplete="email"
+            spellCheck={false}
             value={form.email}
             onChange={(e) => setForm({...form, email: e.target.value})}
             className={inputClass('email')}
@@ -132,8 +143,11 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">服務類型 *</label>
+          <label htmlFor="contact-service-type" className="block text-sm font-medium text-primary mb-1">服務類型 *</label>
           <select
+            id="contact-service-type"
+            name="service_type"
+            autoComplete="off"
             value={form.service_type}
             onChange={(e) => setForm({...form, service_type: e.target.value})}
             className={inputClass('service_type')}
@@ -143,8 +157,10 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">活動起日 *</label>
+          <label htmlFor="contact-event-date" className="block text-sm font-medium text-primary mb-1">活動起日 *</label>
           <input
+            id="contact-event-date"
+            name="event_date"
             type="date"
             value={form.event_date}
             min={getTaiwanToday()}
@@ -153,8 +169,10 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary mb-1">活動迄日 *</label>
+          <label htmlFor="contact-event-end-date" className="block text-sm font-medium text-primary mb-1">活動迄日 *</label>
           <input
+            id="contact-event-end-date"
+            name="event_end_date"
             type="date"
             value={form.event_end_date}
             min={getTaiwanDateMin(form.event_date)}
@@ -163,9 +181,12 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-primary mb-1">活動地點 *</label>
+          <label htmlFor="contact-event-location" className="block text-sm font-medium text-primary mb-1">活動地點 *</label>
           <input
+            id="contact-event-location"
+            name="event_location"
             type="text"
+            autoComplete="street-address"
             value={form.event_location}
             onChange={(e) => setForm({...form, event_location: e.target.value})}
             className={inputClass('event_location')}
@@ -174,8 +195,11 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-primary mb-1">需求說明</label>
+        <label htmlFor="contact-description" className="block text-sm font-medium text-primary mb-1">需求說明</label>
         <textarea
+          id="contact-description"
+          name="description"
+          autoComplete="off"
           value={form.description}
           onChange={(e) => setForm({...form, description: e.target.value})}
           rows={4}
@@ -183,7 +207,7 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
           placeholder="例如：活動主題、預估人數、服務時段與場地條件"
         />
       </div>
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+      {error && <p role="alert" className="text-red-500 text-sm text-center">{error}</p>}
       <div className="flex justify-center">
         <button
           type="submit"
