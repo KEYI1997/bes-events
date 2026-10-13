@@ -88,7 +88,7 @@ export default async function HomePage() {
             <section className="relative flex min-h-[90svh] items-center overflow-hidden bg-[#4db3ff] px-4 py-20 text-[#111111] sm:px-7 md:py-28 lg:px-10">
               <div className="mx-auto grid w-full max-w-[1600px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
                 <HomeReveal>
-                  <h2 className="max-w-5xl text-[clamp(3.4rem,8.8vw,9.4rem)] font-bold leading-[0.87] tracking-[-0.075em] text-balance">活動現場，<br />是品牌留下的畫面。</h2>
+                  <h2 className="max-w-5xl text-[clamp(3.4rem,8.8vw,9.4rem)] font-bold leading-[0.87] tracking-[-0.075em] text-balance">現場，<br />留下印象。</h2>
                 </HomeReveal>
                 <HomeReveal delay={90} className="grid gap-7 sm:grid-cols-[0.78fr_1.22fr] sm:items-end lg:pb-3">
                   <figure className="home-drift relative aspect-[4/5] overflow-hidden bg-[#111111] sm:aspect-[3/4]">
@@ -124,7 +124,7 @@ export default async function HomePage() {
             <section id="services" className="scroll-mt-20 bg-[#f4f5f0] px-4 py-20 text-[#111111] sm:px-7 md:py-28 lg:px-10">
               <div className="mx-auto max-w-[1600px]">
                 <HomeReveal className="grid gap-9 md:grid-cols-[1.12fr_0.88fr] md:items-end">
-                  <h2 className="max-w-5xl text-[clamp(3.4rem,8vw,8.8rem)] font-bold leading-[0.87] tracking-[-0.075em] text-balance">每一個需求，<br />都有可執行的方向。</h2>
+                  <h2 className="max-w-5xl text-[clamp(3.4rem,8vw,8.8rem)] font-bold leading-[0.87] tracking-[-0.075em] text-balance">每個需求，<br />都能執行。</h2>
                   <p className="max-w-xl text-lg font-medium leading-8 md:justify-self-end">你不需要先決定所有細節。先從想完成的活動畫面開始，再一起整理需要的服務與現場條件。</p>
                 </HomeReveal>
                 <div className="mt-16 grid gap-x-12 gap-y-10 lg:grid-cols-2">
@@ -137,7 +137,6 @@ export default async function HomePage() {
                         <div className="flex min-h-full flex-col items-start justify-center">
                           <h3 className="text-2xl font-bold tracking-[-0.055em] sm:text-3xl">{service.title}</h3>
                           <p className="mt-2 max-w-md text-base leading-7">{service.summary}</p>
-                          <span className="mt-4 inline-flex items-center gap-2 bg-[#111111] px-3 py-2 text-sm font-bold text-[#f4f5f0] transition-colors group-hover:bg-[#de194b]">查看服務 <ArrowUpRight size={16} /></span>
                         </div>
                       </Link>
                     </HomeReveal>
@@ -169,7 +168,7 @@ export default async function HomePage() {
             <section id="enquiry" className="scroll-mt-20 bg-[#de194b] px-4 py-20 text-[#f4f5f0] sm:px-7 md:py-28 lg:px-10">
               <div className="mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
                 <HomeReveal>
-                  <h2 className="max-w-4xl text-[clamp(3.6rem,8vw,8.4rem)] font-bold leading-[0.85] tracking-[-0.08em] text-balance">把日期、地點、想像交給我們。</h2>
+                  <h2 className="max-w-4xl text-[clamp(3.6rem,8vw,8.4rem)] font-bold leading-[0.85] tracking-[-0.08em] text-balance">把想像，<br />交給現場。</h2>
                   <p className="mt-8 max-w-lg text-lg font-medium leading-8">填寫你已經確定的條件；還沒想好的部分，也可以直接寫進需求說明。我們會依序確認可行的服務方向與檔期。</p>
                   <a href={LINE_URL} target="_blank" rel="noopener noreferrer" className="mt-8 inline-flex min-h-12 items-center gap-2 bg-[#111111] px-5 text-sm font-bold text-[#f4f5f0] transition-colors hover:bg-[#c5f53d] hover:text-[#111111] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111111]">
                     透過 LINE 聯絡 <ArrowUpRight size={18} />

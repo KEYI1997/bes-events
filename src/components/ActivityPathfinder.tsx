@@ -9,7 +9,7 @@ const paths = [
   {
     id: 'moment',
     label: '我要安排重要登場',
-    title: '讓開場，成為被記得的那一刻。',
+    title: '開場，被記得。',
     description: '從舞台流程、啟動形式到活動效果，先把重要畫面安排到正確的位置。',
     image: '/images/services/啟動儀式.png',
     imageAlt: '境曜啟動儀式服務案例',
@@ -22,7 +22,7 @@ const paths = [
   {
     id: 'interaction',
     label: '我要讓賓客參與',
-    title: '把到場的每一個人，帶進品牌情境。',
+    title: '讓賓客，走進情境。',
     description: '透過互動道具、現場引導與可分享的體驗，把活動主題留在參與者手上。',
     image: '/images/services/AI互動道具.png',
     imageAlt: '境曜 AI 互動道具服務案例',
@@ -35,7 +35,7 @@ const paths = [
   {
     id: 'hospitality',
     label: '我要完善招待氛圍',
-    title: '讓賓客一走進現場，就感受到安排。',
+    title: '招待，從進場開始。',
     description: '從空間節奏、吧台服務到舞台技術，依活動規模整理現場接待與氛圍。',
     image: '/images/services/外派調酒.png',
     imageAlt: '境曜外派調酒服務案例',
@@ -55,7 +55,7 @@ export default function ActivityPathfinder() {
     <section id="needs" className="scroll-mt-20 bg-[#c5f53d] px-4 py-20 text-[#111111] sm:px-7 md:min-h-[100svh] md:py-28 lg:px-10">
       <div className="mx-auto max-w-[1600px]">
         <div className="grid gap-10 md:grid-cols-[0.88fr_1.12fr] md:items-end">
-          <h2 className="max-w-3xl text-[clamp(3.1rem,7.6vw,8.2rem)] font-bold leading-[0.88] tracking-[-0.065em] text-balance">先說說，你想讓活動發生什麼。</h2>
+          <h2 className="max-w-3xl text-[clamp(3.1rem,7.6vw,8.2rem)] font-bold leading-[0.88] tracking-[-0.065em] text-balance">先定義，<br />那一刻。</h2>
           <p className="max-w-xl text-lg font-medium leading-8 md:justify-self-end">先選擇最接近的活動目標。我們會帶你看到通常需要一起考量的服務方向。</p>
         </div>
 
@@ -79,7 +79,7 @@ export default function ActivityPathfinder() {
               <Image key={active.image} src={active.image} alt={active.imageAlt} fill sizes="(min-width: 1024px) 32vw, (min-width: 640px) 42vw, 92vw" className="object-cover" />
             </div>
             <div className="pb-1">
-              <p className="max-w-2xl text-[clamp(2.4rem,5.2vw,5.8rem)] font-bold leading-[0.9] tracking-[-0.06em] text-balance">{active.title}</p>
+              <h3 className="max-w-2xl text-[clamp(2.25rem,4.4vw,4rem)] font-bold leading-[0.9] tracking-[-0.06em] text-balance">{active.title}</h3>
               <p className="mt-6 max-w-xl text-base leading-8 sm:text-lg">{active.description}</p>
               <div className="mt-9 flex flex-wrap gap-3">
                 {active.services.map((service) => (
