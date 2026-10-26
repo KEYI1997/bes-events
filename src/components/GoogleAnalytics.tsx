@@ -17,7 +17,7 @@ export default async function GoogleAnalytics() {
   return (
     <>
       <Script src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}`} strategy="afterInteractive" />
-      <Script id="google-tag" strategy="afterInteractive">
+      <Script id="google-tag" strategy="beforeInteractive">
         {`window.__BES_GOOGLE_TAG_ENABLED__ = true;
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}

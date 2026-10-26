@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  async redirects() {
+    return [{
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www.besevent.com' }],
+      destination: 'https://besevent.com/:path*',
+      permanent: true,
+    }];
+  },
   async headers() {
     const contentSecurityPolicy = [
       "default-src 'self'",

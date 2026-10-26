@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import FloatingButtons from "@/components/FloatingButtons";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import LeadAttributionCapture from "@/components/LeadAttributionCapture";
 import JsonLd from "@/components/JsonLd";
 import OrganizationOfferCatalogJsonLd from "@/components/OrganizationOfferCatalogJsonLd";
 import {
@@ -110,6 +111,7 @@ export default function RootLayout({
           {children}
         </LayoutWrapper>
         <GoogleAnalytics />
+        <LeadAttributionCapture />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { CheckCircle, ChevronDown, ClipboardList, LoaderCircle } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import { getLeadAttribution } from '@/lib/leadAttribution';
 import ProductExtrasSelection from '@/components/ProductExtrasSelection';
 import ProductQuantitySelector from '@/components/ProductQuantitySelector';
 import {
@@ -199,6 +200,7 @@ export default function LineOrderForm({
           event_end_date: form.eventEndDate || form.eventDate,
           event_location: form.eventLocation.trim(),
           source: 'line_order',
+          attribution: getLeadAttribution(),
           description: [
             '【LINE 圖文選單新增訂單】',
             selectedService.key === 'showgirl' ? `【Show Girl 需求】\n身高：${form.showGirlHeight || '不限'}\n需求人數：${form.showGirlHeadcount} 人\n工作及服裝要求：${form.showGirlRequirements.trim()}` : '',

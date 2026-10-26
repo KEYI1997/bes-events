@@ -6,6 +6,7 @@ import { pushAdminLineNotification } from "@/lib/adminLineNotifications";
 import { productSelectionSummary } from '@/lib/productSelectionSummary';
 import { normalizeTaiwanPhone } from '@/lib/phone';
 import { isDateBeforeTaiwanToday } from '@/lib/eventDate';
+import { formatLeadAttribution } from '@/lib/leadAttribution';
 
 export const dynamic = "force-dynamic";
 
@@ -65,12 +66,14 @@ export async function POST(request: Request) {
     }
 
     // 寫入 Supabase
+    const attributionNote = formatLeadAttribution(body.attribution);
+    const savedDescription = [description, attributionNote].filter(Boolean).join('\n\n');
     const { error } = await supabase.from("contacts").insert({
       name,
       phone: normalizedPhone,
       email: email || null,
       service_type: service_type || null,
-      description: description || null,
+      description: savedDescription || null,
       event_end_date: event_end_date || null,
       event_date: event_date || null,
       event_location: location || null,

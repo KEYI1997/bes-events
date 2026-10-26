@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import { CONTACT_SERVICE_TYPES } from '@/lib/services';
 import { trackGoogleAdsLeadConversion } from '@/lib/googleAds';
+import { getLeadAttribution } from '@/lib/leadAttribution';
 import { getTaiwanDateMin, getTaiwanToday } from '@/lib/eventDate';
 import OfficialLineQrCard from '@/components/OfficialLineQrCard';
 
@@ -52,7 +53,7 @@ export default function ContactFormInline({ submitLabel = '送出活動需求' }
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, attribution: getLeadAttribution() }),
       });
       if (res.ok) {
         trackGoogleAdsLeadConversion();

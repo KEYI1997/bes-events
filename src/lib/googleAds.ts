@@ -17,8 +17,11 @@ export function trackGoogleAdsLeadConversion() {
   if (typeof window === 'undefined') return;
   if (!window.__BES_GOOGLE_TAG_ENABLED__ || !isOfficialTrackingHost(window.location.hostname.toLowerCase())) return;
 
-  const gtag = window.gtag;
-  if (!gtag) return;
+  // Queue a successful submission even if the external Google library is still loading.
+  const gtag = window.gtag || function (...args: unknown[]) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(args);
+  };
 
   gtag('event', 'conversion', {
     send_to: GOOGLE_ADS_LEAD_SEND_TO,
